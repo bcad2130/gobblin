@@ -1,4 +1,4 @@
-  
+﻿  
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,16 +17,18 @@ public class BattleManager : MonoBehaviour
     // public GameObject enmButton;
     // public GameObject nextLvlButton;
     public GameObject targetButton;
+    // public Text unitNamePrefab;
 
+    // private int defaultUnitFontSize = 24;
     // public GameObject gameOverText;
     // public GameObject gameWinText;
     // public GameObject levelUpText;
 
 
-    private string nextAction;
-    private BattleManager bm;
-    private UnitStats unit;
-    private UnitStats targetUnit;
+    // private string nextAction;
+    // private BattleManager bm;
+    private UnitStats currentUnit;
+    // private UnitStats targetUnit;
     // private UnitStats player;
     // private UnitStats enemy;
     // private GameObject canvas;
@@ -39,104 +41,57 @@ public class BattleManager : MonoBehaviour
 
     private bool gameOver = false;
 
+    public Action CurrentAction { get; set; }
 
-    //I SHOULD GRAB THE UNIT STATS SOONER?
+    // [SerializeField]
+    public Inventory playerItems;
 
-    // Start is called before the first frame update
-    private void Start()
+    // // Start is called before the first frame update
+    // private void Start()
+    private void Awake()
     {
-        if (bm == null) {
-            bm = this.gameObject.GetComponent<BattleManager>();
-        }
-
-        // canvas = GameObject.Find("Canvas");
+        playerItems  = new Inventory();
 
         completeList = new List<UnitStats>();
         nextUpList   = new List<UnitStats>();
         allyList     = new List<UnitStats>();
         enemyList    = new List<UnitStats>();
 
-        // player = GameObject.FindWithTag("Player").GetComponent<UnitStats>();
-        // enemy = GameObject.FindWithTag("Enemy").GetComponent<UnitStats>();
-
-        // enemyList = GameObject.FindGameObjectsWithTag("Enemy");
-
-        // GameObject[] enemyObjects = GameObject.FindGameObjectsWithTag("Enemy");
-
-        // foreach (GameObject enemyObject in enemyObjects) {
-        //     enemyList.Add(enemyObject.GetComponent<UnitStats>());
-        //     completeList.Add(enemyObject.GetComponent<UnitStats>());
-        // }
-
         PopulateList("Player", ref allyList);
-
-        // foreach (UnitStats ally in allyList) {
-        //     completeList.Add(ally);
-        // }
-
         PopulateList("Enemy", ref enemyList);
-
-        // foreach (UnitStats enemy in enemyList) {
-        //     completeList.Add(enemy);
-        // }
-
-        // completeList.Add(player);
-        // completeList.Add(enemy);
-
-        // enemyList.Add(enemy);
+        // SetUnitTurnNumbers();
 
 
-        // GameObject[] enemyObjs = GameObject.FindGameObjectsWithTag("Enemy");
-
-        // foreach (GameObject enemyObj in enemyObjs) {
-        //     UnitStats current = enemyObj.GetComponent<UnitStats>();
-        //     enemyList.Add(current);
-        //     completeList.Add(current);
-        // }
-
-        // InitialButtonDisplay();
         StartTurn();
 
     }
     
     private void StartTurn()
     {
-        
+        currentUnit = WhoseTurn();
 
-        // unit.TurnCheck();
-        CheckDeaths();
-        CheckGameOver();
+        PreTurnStatusCheck();
 
-        if (!gameOver) {
-            unit = WhoseTurn();
+        CurrentAction = new Action();
+        CurrentAction.ParentUnit = currentUnit;
 
-            DisplayMoves(unit);
+
+        // TODO: is it really needed to update here?
+        // what is actually being updated? just the turn order? seems like not health or mana
+        foreach (UnitStats unit in completeList) {
+            unit.UpdateText();
         }
 
+        if (currentUnit.tag == "Player") {
+            DisplayMoves();
+        } else {
+            AutoMove();
+        }
 
+    }
 
-        // if (!gameOver) {
-        //     // unit.TurnCheck();
-
-        //     nextUpList.RemoveAt(0);
-
-        //     ShowUnitButtons(WhoseTurn());
-        // }
-
-        //SendMessage bad?
-        // if (unit.TryMove(action,targetUnit)) {
-        //     unit.TurnCheck();
-        //     CheckDeaths();
-        //     CheckGameOver();
-
-        //     if (!gameOver) {
-        //         // unit.TurnCheck();
-
-        //         nextUpList.RemoveAt(0);
-
-        //         ShowUnitButtons(WhoseTurn());
-        //     }
-        // }
+    private void PreTurnStatusCheck() {
+        currentUnit.CheckPoison();
     }
 
     private void PopulateList(string tag, ref List<UnitStats> list) {
@@ -150,69 +105,153 @@ public class BattleManager : MonoBehaviour
     }
 
     public void EndTurn() {
-        RemoveCurrentUnitFromNextUpList();
-        RemoveAllButtons();
+        UpdateStatus();
 
-        StartTurn();
+        NextTurn();
     }
 
-    private void RemoveCurrentUnitFromNextUpList() {
-        nextUpList.RemoveAt(0);
-    }
-
-    private void DisplayMoves(UnitStats unit) {
-        GameObject canvas = unit.GetCanvasObj();
-        // GameObject canvas = GameObject.Find(unit.name + "Canvas");
-        // print(canvas);
-        
-        // Iterate this value to make position lower
-        float yPos = 10f;
-
-        foreach (Button button in unit.GetMoves()) {
-            Button instantButton = Instantiate(button, new Vector3(40, yPos, 0), Quaternion.identity);
-
-            // instantButton.transform.localScale = new Vector3(0.3f,0.3f,1);
-            // instantButton.transform.position = new Vector3(20,5,0);
-
-            // second param keeps scale etc the same
-            instantButton.transform.SetParent(canvas.transform, false);
-
-            instantButton.GetComponent<MoveButton>().SetParentUnit(unit);
-
-            yPos -= 10f;
+    private void NextTurn() {
+        if (!gameOver) {
+            StartTurn();
         }
     }
 
-    // private void InitialButtonDisplay()
-    // {
-    //     unit = WhoseTurn();
+    private void UpdateStatus() {
+        // TickCurrentUnitStatusEffects();
 
-    //     ShowUnitButtons(unit);
+        RemoveCurrentUnitFromNextUpList();
+        SetUnitTurnNumbers();
+
+        RemoveAllButtons();
+
+        foreach (UnitStats unit in completeList) {
+            unit.UpdateText();
+            unit.CheckIfDead();
+        }
+
+        HandleDeaths();
+        CheckGameOver();
+
+
+    }
+
+    // private void TickCurrentUnitStatusEffects() {
+    //     currentUnit.TickStatusEffects();
+    //     // foreach (keyvaluecurrentUnit.GetAllStatusEffects()
+
+
+    //     // PoisonTicker();
     // }
+
+    private void RemoveCurrentUnitFromNextUpList() {
+        nextUpList[0].turnNumber = 0;
+        nextUpList.RemoveAt(0);
+    }
+
+    private void DisplayMoves() {
+        GameObject canvas = currentUnit.GetCanvasObj();
+        
+        // Text tempTextBox = Instantiate(textPrefab, nextPosition, transform.rotation) as Text;
+        //          //Parent to the panel
+        //           tempTextBox.transform.SetParent(renderCanvas.transform, false);
+        //           //Set the text box's text element font size and style:
+        //            tempTextBox.fontSize = defaultFontSize;
+        //            //Set the text box's text element to the current textToDisplay:
+        //            tempTextBox.text = textToDisplay;
+
+        // Iterate this value to make position lower
+        float yPos = 10f;
+
+        // print(currentUnit.GetMoves());
+
+        if (currentUnit.GetMoves().Count > 0) {
+            foreach (Button button in currentUnit.GetMoves()) {
+                Button instantButton = Instantiate(button, new Vector3(40, yPos, 0), Quaternion.identity);
+
+                // instantButton.transform.localScale = new Vector3(0.3f,0.3f,1);
+                // instantButton.transform.position = new Vector3(20,5,0);
+
+                // second param keeps scale etc the same
+                instantButton.transform.SetParent(canvas.transform, false);
+
+                instantButton.GetComponent<MoveButton>().SetParentUnit(currentUnit);
+
+                yPos -= 10f;
+            }
+        } else {
+            print ("This unit has no moves");
+        }
+    }
+
+    private void AutoMove() {
+        GameObject canvas = currentUnit.GetCanvasObj();
+
+        List<Button> currentUnitMoves = currentUnit.GetMoves();
+
+        if (currentUnitMoves.Count > 0) {
+            var randomIndex = Random.Range(0, currentUnitMoves.Count);
+
+            Button selectedMove = currentUnitMoves[randomIndex];
+
+            Button instantButton = Instantiate(selectedMove, new Vector3(40, 0, 0), Quaternion.identity);
+            // foreach (Button button in currentUnit.GetMoves()) {
+            //     Button instantButton = Instantiate(button, new Vector3(40, yPos, 0), Quaternion.identity);
+
+            //     // instantButton.transform.localScale = new Vector3(0.3f,0.3f,1);
+            //     // instantButton.transform.position = new Vector3(20,5,0);
+
+            //     // second param keeps scale etc the same
+            instantButton.transform.SetParent(canvas.transform, false);
+
+            instantButton.GetComponent<MoveButton>().SetParentUnit(currentUnit);
+
+            //     yPos -= 10f;
+            // }
+        } else {
+            print ("This unit has no moves");
+        }
+    }
 
     private UnitStats WhoseTurn()
     {
         if (nextUpList.Count == 0) {
-            RefreshTurnList();
+            RoundEnd();
         }
 
         return nextUpList[0];
-        // UnitStats current = nextUpList[0];
-
-        // return current;
     }
 
-    private void RefreshTurnList()
+    private void RoundEnd() {
+        SortTurnList();
+        SetUnitTurnNumbers();
+    }
+
+    private void SortTurnList()
     {
-        foreach (UnitStats unit in completeList)
-        {
-            nextUpList.Add(unit);
-        }
+        nextUpList = completeList.OrderBy(w => w.speed).Reverse().ToList();
+
+        // SetUnitTurnNumbers();
+
+        // foreach (UnitStats unit in completeList)
+        // {
+        //     nextUpList.Add(unit);
+        // }
         //objList.Sort((emp1, emp2) => emp1.FirstName.CompareTo(emp2.FirstName));
 
-        nextUpList = nextUpList.OrderBy(w => w.speed).ToList();
-        nextUpList.Reverse();
-        //MAKE SORTING SLIGHTLY RANDOM, BUT HIGHER CHANCE IF HIGH STAT
+        // nextUpList = nextUpList.OrderBy(w => w.speed).Reverse().ToList();
+        // nextUpList.Reverse();
+        // TODO: MAKE SORTING SLIGHTLY RANDOM, BUT HIGHER CHANCE IF HIGH STAT?
+    }
+
+    private void SetUnitTurnNumbers()
+    {
+        int iter = 1;
+
+        foreach (UnitStats unit in nextUpList)
+        {
+            unit.turnNumber = iter;
+            iter++;
+        }
     }
 
     private void DisplayCurrentUnit()
@@ -220,31 +259,62 @@ public class BattleManager : MonoBehaviour
         print(nextUpList[0]);
     }
 
-    public void SelectTargets(List<UnitStats> targets, int damage, string statusEffect = null) {
-        RemoveAllButtons();
-        DisplayTargets(targets, damage, statusEffect);
-    }
+    public void TakeAction() {
+        print("t");
+        CurrentAction.ParentUnit.SpendMana(CurrentAction.ManaCost);
+        CurrentAction.ParentUnit.SpendResource(CurrentAction.ResourceCost);
 
-    public void TakeAction(List<UnitStats> targets, int damage, string statusEffect = null) {
-        // target.DoDamage(damage);
-        foreach (UnitStats target in targets) {
-            // print("doing damage " + damage.ToString());
-            target.DoDamage(damage);
+
+        // TODO: i should reorganize the units automatically. So if there are a ton of units summoned, they get properly organized on the screen
+        // i should have certain slots premade (enumerated?) and then it fills in the next available ally/enemy spot
+        // then i can have a certain number of ally spots available as you level
+        // and maybe a certain number of cauldron spots, upgradeable
+        if (CurrentAction.Summon) {
+            GameObject summon = Instantiate(CurrentAction.Summon, new Vector3(-6, -3, 0), Quaternion.identity); // hardcoded location, should make dynamic
+
+            if (summon.tag == "Player") {
+                allyList.Add(summon.GetComponent<UnitStats>());
+            } else if (summon.tag == "Enemy") {
+                enemyList.Add(summon.GetComponent<UnitStats>());
+            } else {
+                print("who is this?");
+            }
+
+            completeList.Add(summon.GetComponent<UnitStats>());
         }
+
+        // print(CurrentAction.GiveItem);
+
+        if (CurrentAction.GiveItem != null) {
+            // print("succeess");
+            // print (CurrentAction.GiveItem); 
+            playerItems.AddItem(CurrentAction.GiveItem.Name);
+            // playerItems.PrintItems();
+        }
+
+        if (CurrentAction.Targets != null) {
+            foreach (UnitStats target in CurrentAction.Targets) {
+                target.Effect();
+            }
+        }
+
+        // foreach (UnitStats x in completeList) {
+        //     print(x.name);
+        // }
 
         EndTurn();
     }
 
 
-    private void DisplayTargets(List<UnitStats> targets, int damage, string statusEffect = null) {
-        foreach (UnitStats unit in targets) {
-            GameObject canvas = unit.GetCanvasObj();
+    public void DisplayTargets() {
+        RemoveAllButtons();
 
+        foreach (UnitStats targetableUnit in CurrentAction.PossibleTargets) {
+            GameObject canvas = targetableUnit.GetCanvasObj();
             GameObject instantButton = Instantiate(targetButton, new Vector3(40, 0, 0), Quaternion.identity);
 
             instantButton.transform.SetParent(canvas.transform, false);
-            instantButton.GetComponent<TargetButton>().SetParentUnit(unit);
-            instantButton.GetComponent<TargetButton>().SetMove(damage,statusEffect);
+            instantButton.GetComponent<TargetButton>().SetParentUnit(targetableUnit);
         }
     }
 
@@ -262,46 +332,27 @@ public class BattleManager : MonoBehaviour
     {
         if (allyList.Count == 0)
         {
-            gameOver = true;
             GameOver();
         }
+
         if (enemyList.Count == 0) {
-            gameOver = true;
             GameWin();
         }
     }
 
     private void GameWin()
     {
+        gameOver = true;
         print("Game Win");
-        // HideAllButtons();
-
-        // gameWinText.SetActive(true);
-        // levelUpText.SetActive(true);
-
-        // Invoke("GameWinNext", 2.0f);
     }
-
-    // private void GameWinNext()
-    // {
-    //     gameWinText.SetActive(false);
-    //     levelUpText.SetActive(false);
-
-
-    //     nextLvlButton.SetActive(true);
-
-    // }
 
     private void GameOver()
     {
+        gameOver = true;
         print("Game Over");
-        // HideAllButtons();
-
-        // gameOverText.SetActive(true);
-        // player.HideGameObject();
     }
 
-    private void CheckDeaths()
+    private void HandleDeaths()
     {
         completeList.RemoveAll(unit => unit.isDead == true);
         nextUpList.RemoveAll(unit => unit.isDead == true);
@@ -309,192 +360,16 @@ public class BattleManager : MonoBehaviour
         allyList.RemoveAll(unit => unit.isDead == true);
     }
 
-    // void DisplayobjList()
-    // {
-    //     foreach (UnitStats item in nextUpList)
-    //     {
-    //         print(item);
-    //     }
-    // }
-
-    // public void SetAction(string action, Image buttonImage, bool targetable) {
-    //     // print("start");
-    //     nextAction = action;
-    //     StopAllCoroutines();
-    //     if (targetable) {
-    //         IEnumerator coroutine = SelectTarget(buttonImage);
-    //         StartCoroutine(coroutine);
-    //     } else {
-    //         buttonImage.color = Color.white;
-    //         targetUnit = player;
-    //         NextTurn(nextAction);
-    //     }
-
-    // }
-
-    // public string GetAction() {
-    //     return nextAction;
-    // }
-
-    // public void SetTargetToPlayer()
-    // {
-    //     targetUnit = player;
-    // }
-
-    // IEnumerator SelectTarget(Image buttonImage)
-    // {
-    //     bool targetSet = false;
-
-    //     while (true) {
-    //         // print("test");
-    //         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-    //         Vector2 mousePos2D = new Vector2(mousePos.x, mousePos.y);
-            
-    //         RaycastHit2D hit = Physics2D.Raycast(mousePos2D, Vector2.zero);
-    //         if (hit.collider != null) {
-    //             // print("test");
-    //             targetUnit = hit.collider.gameObject.GetComponent<UnitStats>();
-    //             targetSet = true;
-
-    //             SpriteRenderer renderer = targetUnit.GetComponent<SpriteRenderer>();
-    //             renderer.color = Color.red;
-    //             if (Input.GetMouseButtonDown(0)) {
-    //                 // Debug.Log(hit.collider.gameObject.name);
-    //                 ResetEnemyColors();
-    //                 NextTurn(nextAction);
-    //                 buttonImage.color = Color.white;
-    //                 renderer.color = Color.white;
-    //                 yield break;
-    //             }
-    //         } else if (targetSet == true){
-    //             SpriteRenderer renderer = targetUnit.GetComponent<SpriteRenderer>();
-    //             renderer.color = Color.white;
-    //             targetUnit = null;
-    //             targetSet = false;
+    // private void PoisonTicker() {
+    //     Dictionary<string,int> currentStatusEffects = currentUnit.GetAllStatusEffects();
+    //     // if poisoned, do damage for number of stacks, then tick down poison stacks by one
+    //     if (currentStatusEffects.ContainsKey("POISON")) {
+    //         print("ContainsKey");
+    //         if (currentStatusEffects["POISON"] > 0) {
+    //             print(currentStatusEffects["POISON"]);
+    //             currentUnit.TakeDamage(currentStatusEffects["POISON"]);
+    //             currentUnit.UpdateStatusEffect("POISON", currentStatusEffects["POISON"] - 1);
     //         }
-    //         yield return null;
-    //     }
-    // }
-
-    // public void NextTurn(string action)
-    // {
-        
-    //     unit = WhoseTurn();
-
-    //     //SendMessage bad?
-    //     // if (unit.TryMove(action,targetUnit)) {
-    //     //     unit.TurnCheck();
-    //     //     CheckDeaths();
-    //     //     CheckGameOver();
-
-    //         if (!gameOver) {
-    //             print("not gameOver");
-    //             // unit.TurnCheck();
-
-    //             nextUpList.RemoveAt(0);
-
-    //             // ShowUnitButtons(WhoseTurn());
-    //         }
-    //     // }
-    // }
-
-    // private void ShowUnitButtons(UnitStats current)
-    // {
-    //     switch (current.tag)
-    //     {
-    //         case "Player":
-    //             ShowPlayerButtons();
-    //             HideEnemyButtons();
-
-    //             break;
-    //         case "Enemy":
-    //             ShowEnemyButtons();
-    //             HidePlayerButtons();
-
-    //             break;
-    //         default:
-    //             print("Error");
-    //             break;
-    //     }
-    // }
-
-    // private void ShowEnemyButtons()
-    // {
-    //     enmButton.SetActive(true);
-    // }
-
-    // private void ShowPlayerButtons()
-    // {
-    //     if (atkButton) {
-    //         atkButton.SetActive(true);
-    //     }
-
-    //     if (dfdButton) {
-    //         dfdButton.SetActive(true);
-    //     }
-
-    //     if (psnButton) {
-    //         psnButton.SetActive(true);
-    //     }
-
-    //     if (healButton) {
-    //         healButton.SetActive(true);
-    //     }
-
-    //     if (chgButton) {
-    //         chgButton.SetActive(true);
-    //     }
-        
-    //     if (lsrButton) {
-    //         lsrButton.SetActive(true);
-    //     }
-    // }
-
-    // private void HideAllButtons()
-    // {
-    //     HidePlayerButtons();
-
-    //     HideEnemyButtons();     
-    // }
-
-    // private void HidePlayerButtons()
-    // {
-    //     if (atkButton) {
-    //         atkButton.SetActive(false);
-    //     }
-
-    //     if (dfdButton) {
-    //         dfdButton.SetActive(false);
-    //     }
-        
-    //     if (psnButton) {
-    //         psnButton.SetActive(false);
-    //     } 
-
-    //     if (healButton) {
-    //         healButton.SetActive(false);
-    //     } 
-
-    //     if (chgButton) {
-    //         chgButton.SetActive(false);
-    //     } 
-
-    //     if (lsrButton) {
-    //         lsrButton.SetActive(false);
-    //     }
-    // }
-
-    // private void HideEnemyButtons()
-    // {
-    //     enmButton.SetActive(false);
-    // }
-
-    // private void ResetEnemyColors()
-    // {
-    //     foreach (UnitStats enemy in enemyList) {
-    //         // print(renderer.color);
-    //         SpriteRenderer renderer = enemy.GetComponent<SpriteRenderer>();
-    //         renderer.color = Color.white;
     //     }
     // }
 }

@@ -1,74 +1,144 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MoveButton : MonoBehaviour
 {
-    // public Action action;
-    private BattleManager bm;
-    private UnitStats parentUnit;
-    private List<UnitStats> targetedUnits;
+    protected BattleManager bm;
+    protected UnitStats parentUnit;
+    // protected string targetType;
+    // protected int manaCost = 0;
 
-    private void Start() {
+    private void Awake() {
         bm = GameObject.FindObjectOfType<BattleManager>();
-        targetedUnits = new List<UnitStats>();
     }
 
     public void TakeAction() {
-        // UnitStats target = null;
-        // GameObject[] targetableObjects = null;
+        SetUpMove();
 
+        if (parentUnit.CanAffordManaCost(bm.CurrentAction.ManaCost) && parentUnit.CanAffordResourceCost(bm.CurrentAction.ResourceCost)) {
+            // bm.CurrentAction.Damage = parentUnit.attack;
 
-        // INVENT PROPER TARGETING SYSTEM
-        if (parentUnit.tag == "Enemy") {
+            SetTargets();
 
-            // targetableObjects = GameObject.FindGameObjectsWithTag("Player");
+            switch (bm.CurrentAction.TargetType)
+            {
+                case "OneAlly": 
+                case "OneEnemy":
+                    bm.DisplayTargets();
+                    break;
+                case "Self":
+                case "AllEnemies":
+                case "Targetless":
+                    bm.TakeAction();
+                    break;
+                default:
+                    print("Invalid target");
+                    break;
+            }
 
-            FindTargetsByTag("Player");
-            // foreach (GameObject targetableObject in targetableObjects) {
-            //     UnitStats unit = targetableObject.GetComponent<UnitStats>();
-            //     if (!unit.isDead) {
-            //         targetedUnits.Add(unit);
-            //     }
+            // if (targetType != "Targetless") {
+            //     bm.DisplayTargets();
+            // } else {
+            //     bm.TakeAction();
             // }
 
-            // print("now its the enemy turn");
-            // target = GameObject.FindWithTag("Player").GetComponent<UnitStats>();
-            // targetedUnits.Add(target);
         } else {
-            FindTargetsByTag("Enemy");
+            this.GetComponent<Image>().color = Color.red;
 
-            // target = GameObject.FindWithTag("Enemy").GetComponent<UnitStats>();
-            // targetableObjects = GameObject.FindGameObjectsWithTag("Enemy");
+            bm.CurrentAction.Clear();
 
-            // foreach (GameObject targetableObject in targetableObjects) {
-            //     targetedUnits.Add(targetableObject.GetComponent<UnitStats>());
-            // }
+            print("cannot afford");
         }
+    }
 
-        // print(targetableUnits);
-        bm.SelectTargets(targetedUnits, parentUnit.attack);
+    protected virtual void SetUpMove() {
+        print("should you have overridden this?");
 
-        
+        // bm.CurrentAction.Damage = parentUnit.attack;
+    }
 
-        // EndTurn();
+    private void SetTargets() {
+            switch (bm.CurrentAction.TargetType) 
+            {
+                case "Self":
+                    // print('a');
+                    SetTargetToSelf();
+                    break;
+                case "OneAlly": 
+                    FindTargetsByTag(parentUnit.tag);
+                    break;
+                case "OneEnemy":
+                    if (parentUnit.tag == "Enemy") {
+                        FindTargetsByTag("Player");
+                    } else {
+                        FindTargetsByTag("Enemy");
+                    }
+                    break;
+                case "AllEnemies":
+                    if (parentUnit.tag == "Enemy") {
+                        SetTargetsToAllTagged("Player");
+                    } else {
+                        SetTargetsToAllTagged("Enemy");
+                    }
+                    break;
+                case "Targetless":
+                    break;
+                default:
+                    print("Invalid target");
+                    break;
+            }
+
+        // // Can we check the parent units tag and use that?
+        // if (targetType == "OneAlly") {
+        //     FindTargetsByTag(parentUnit.tag);
+        //     // if (parentUnit.tag == "Player") {
+        //     //     FindTargetsByTag("Player");
+
+        //     // } else {
+        //     //     FindTargetsByTag("Enemy");
+        //     // }
+        // } else if (targetType == "OneEnemy") {
+        //     if (parentUnit.tag == "Enemy") {
+        //         FindTargetsByTag("Player");
+        //     } else {
+        //         FindTargetsByTag("Enemy");
+        //     }
+        // }
+    }
+
+    private void SetTargetToSelf() {
+        // print('a');
+        bm.CurrentAction.AddTarget(parentUnit);
     }
 
     private void FindTargetsByTag(string tag) {
+        // TODO use bm to grab the enemy list or ally list as appropriate
+        // maybe actions should have a "targetable group" property, like enemies, allies, dead units, etc
+
+        // thinking that units should be organized in squads
+        // basically grouped into groups of 4, if you kill enough, the groups collapse into new groups
+
         GameObject[] targetableObjects = GameObject.FindGameObjectsWithTag(tag);
 
         foreach (GameObject targetableObject in targetableObjects) {
             UnitStats unit = targetableObject.GetComponent<UnitStats>();
             if (!unit.isDead) {
-                targetedUnits.Add(unit);
+                bm.CurrentAction.AddPossibleTarget(unit);
             }
         }
     }
 
-    private void EndTurn() {
-        bm.RemoveAllButtons();
-        
-        bm.EndTurn();
+    private void SetTargetsToAllTagged(string tag) {
+        GameObject[] targetableObjects = GameObject.FindGameObjectsWithTag(tag);
+
+        foreach (GameObject targetableObject in targetableObjects) {
+            UnitStats unit = targetableObject.GetComponent<UnitStats>();
+            if (!unit.isDead) {
+                bm.CurrentAction.AddTarget(unit);
+            }
+        }
     }
 
     public void SetParentUnit(UnitStats unit) {
