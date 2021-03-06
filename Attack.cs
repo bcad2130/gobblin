@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Attack : MoveButton
+public class Attack
 {
-    protected const int COST = 0;
+    // protected const int COST = 0;
 
-    protected override void SetUpMove() {
-        bm.CurrentAction.TargetType = "OneEnemy";
-        // manaCost = COST;
+    // public override void SetUpMove() {
+    //     TargetType = "OneEnemy";
+    //     // manaCost = COST;
 
-        bm.CurrentAction.ManaCost = COST;
-        bm.CurrentAction.Damage = parentUnit.attack;
+    //     ManaCost = COST;
+    //     Damage = 5;
+    //     // Damage = parentUnit.attack;
 
-        // bm.CurrentAction.TargetedAction = true;
-    }
+    //     // bm.CurrentAction.TargetedAction = true;
+    // }
 }

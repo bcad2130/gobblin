@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class Action
+public class Action : MonoBehaviour
 {
     public int Damage { get; set; }
     public int Heal { get; set; }
@@ -15,13 +16,25 @@ public class Action
     public List<UnitStats> Targets { get; set; }
     public List<UnitStats> PossibleTargets { get; set; }
     public UnitStats ParentUnit { get; set; }
+    public Image ParentButtonImage { get; set; }
     public GameObject Summon { get; set; }
     public Item GiveItem { get; set; }
     public List<Item> ResourceCost { get; set; }
 
+    protected BattleManager bm;
+
     // public StatusEffects Status { get; set; }
 
     private Dictionary<string,int> StatusEffects;
+
+    private void Awake() {
+        SetBattleManager();
+    }
+
+    public void SetBattleManager() {
+        // print('g');
+        bm = GameObject.FindObjectOfType<BattleManager>();
+    }
 
     public void AddTarget(UnitStats targetUnit) {
         if (Targets == null) {
@@ -95,4 +108,27 @@ public class Action
             StatusEffects.Clear();
         }
     }
+
+    public void AttemptAction() {
+
+        bm.CurrentAction = this;
+        
+        SetUpMove();
+        // bm.CurrentAction = this.GetComponent<Action>();
+        // bm.CurrentAction.ParentButtonImage = this.GetComponent<Image>();
+
+        bm.AttemptAction();
+    }
+
+    public virtual void SetUpMove() {
+        Debug.Log ("should you have overridden this?");
+    }
+
+    public void AISetUpMove() {
+        SetBattleManager();
+        SetUpMove();
+    }
+    // public Action Self() {
+    //     return this;
+    // }
 }

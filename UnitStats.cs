@@ -17,7 +17,9 @@ public class UnitStats : MonoBehaviour
     public int shield = 0;
     public int turnNumber = 0;
 
-    private BattleManager bm;
+    // private BattleManager bm;
+    public BattleManager bm;
+
 
 
     //new stuff
@@ -56,14 +58,16 @@ public class UnitStats : MonoBehaviour
         //     StatusEffects = new Dictionary<string,int>();
         // }
         
-        StatusEffects = new Dictionary<string,int>();
+
     // }
 
     // // Start is called before the first frame update
     // public void Start()
     // {
         // print('t');
-        bm = GameObject.FindObjectOfType<BattleManager>();
+
+        SetBattleManager();
+        SetStatusEffects();
 
         nameText = Instantiate(nameTextPrefab, new Vector3(0, 15, 0), Quaternion.identity);
         nameText.transform.SetParent(canvas.transform, false);
@@ -104,6 +108,16 @@ public class UnitStats : MonoBehaviour
         manaText.text = mana.ToString();
     }
 
+    private void SetBattleManager() {
+        bm = GameObject.FindObjectOfType<BattleManager>();
+    }
+
+    private void SetStatusEffects() {
+        if (StatusEffects == null) {
+            StatusEffects = new Dictionary<string,int>();
+        }
+    }
+
     public GameObject GetCanvasObj() {
         return canvas;
     }
@@ -140,6 +154,7 @@ public class UnitStats : MonoBehaviour
     // }
 
     public void TakeDamage (int damage) {
+        print("TakeDamage");
         // if you heal when you have a shield, it adds it to the shield (NOT ANYMORE!)
         // we need to make a heal function
         // we also need max health and mana stats
@@ -160,7 +175,7 @@ public class UnitStats : MonoBehaviour
 
             health -= damage;
 
-            UpdateHealthText();
+            // UpdateHealthText();
             
             if (health <= 0) {
                 health = 0;
@@ -227,9 +242,20 @@ public class UnitStats : MonoBehaviour
     }
 
     public void Effect () {
+        if (!bm) {
+            SetBattleManager();
+            SetStatusEffects();
+            // print(bm.CurrentAction);
+        }
+
+        print("action:");
+        // print(bm.CurrentAction.Damage);
+        // print(bm.CurrentAction);
+        // print(bm.GetCurrentAction().Self());
         // print("effect begins...");
         // health -= bm.CurrentAction.Damage;
         if (bm.CurrentAction.Damage > 0) {
+            print("wtf");
             TakeDamage(bm.CurrentAction.Damage);
         }
 

@@ -27,7 +27,7 @@ public class BattleManager : MonoBehaviour
 
     // private string nextAction;
     // private BattleManager bm;
-    private UnitStats currentUnit;
+    public UnitStats CurrentUnit { get; set; }
     // private UnitStats targetUnit;
     // private UnitStats player;
     // private UnitStats enemy;
@@ -68,12 +68,12 @@ public class BattleManager : MonoBehaviour
     
     private void StartTurn()
     {
-        currentUnit = WhoseTurn();
+        CurrentUnit = WhoseTurn();
 
         PreTurnStatusCheck();
 
-        CurrentAction = new Action();
-        CurrentAction.ParentUnit = currentUnit;
+        ResetCurrentAction();
+        // CurrentAction.ParentUnit = CurrentUnit; // can i delete this?
 
 
         // TODO: is it really needed to update here?
@@ -82,7 +82,7 @@ public class BattleManager : MonoBehaviour
             unit.UpdateText();
         }
 
-        if (currentUnit.tag == "Player") {
+        if (CurrentUnit.tag == "Player") {
             DisplayMoves();
         } else {
             AutoMove();
@@ -91,7 +91,7 @@ public class BattleManager : MonoBehaviour
     }
 
     private void PreTurnStatusCheck() {
-        currentUnit.CheckPoison();
+        CurrentUnit.CheckPoison();
     }
 
     private void PopulateList(string tag, ref List<UnitStats> list) {
@@ -106,6 +106,8 @@ public class BattleManager : MonoBehaviour
 
     public void EndTurn() {
         UpdateStatus();
+
+        ResetCurrentAction();
 
         NextTurn();
     }
@@ -135,8 +137,12 @@ public class BattleManager : MonoBehaviour
 
     }
 
+    public Action GetCurrentAction() {
+        return CurrentAction;
+    }
+
     // private void TickCurrentUnitStatusEffects() {
-    //     currentUnit.TickStatusEffects();
+    //     CurrentUnit.TickStatusEffects();
     //     // foreach (keyvaluecurrentUnit.GetAllStatusEffects()
 
 
@@ -149,7 +155,7 @@ public class BattleManager : MonoBehaviour
     }
 
     private void DisplayMoves() {
-        GameObject canvas = currentUnit.GetCanvasObj();
+        GameObject canvas = CurrentUnit.GetCanvasObj();
         
         // Text tempTextBox = Instantiate(textPrefab, nextPosition, transform.rotation) as Text;
         //          //Parent to the panel
@@ -162,10 +168,11 @@ public class BattleManager : MonoBehaviour
         // Iterate this value to make position lower
         float yPos = 10f;
 
-        // print(currentUnit.GetMoves());
+        // print(CurrentUnit.GetMoves());
 
-        if (currentUnit.GetMoves().Count > 0) {
-            foreach (Button button in currentUnit.GetMoves()) {
+        if (CurrentUnit.GetMoves().Count > 0) {
+            foreach (Button button in CurrentUnit.GetMoves()) {
+                // print(button);
                 Button instantButton = Instantiate(button, new Vector3(40, yPos, 0), Quaternion.identity);
 
                 // instantButton.transform.localScale = new Vector3(0.3f,0.3f,1);
@@ -174,7 +181,7 @@ public class BattleManager : MonoBehaviour
                 // second param keeps scale etc the same
                 instantButton.transform.SetParent(canvas.transform, false);
 
-                instantButton.GetComponent<MoveButton>().SetParentUnit(currentUnit);
+                // instantButton.GetComponent<MoveButton>().SetParentUnit(CurrentUnit);
 
                 yPos -= 10f;
             }
@@ -183,33 +190,91 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    private void AutoMove() {
-        GameObject canvas = currentUnit.GetCanvasObj();
+    public void ResetCurrentAction() {
+        CurrentAction = null;
+        // CurrentAction = new Action();
 
-        List<Button> currentUnitMoves = currentUnit.GetMoves();
+    }
+
+    private void AutoMove() {
+        GameObject canvas = CurrentUnit.GetCanvasObj();
+
+        List<Button> currentUnitMoves = CurrentUnit.GetMoves();
 
         if (currentUnitMoves.Count > 0) {
-            var randomIndex = Random.Range(0, currentUnitMoves.Count);
 
-            Button selectedMove = currentUnitMoves[randomIndex];
+            PickRandomMove();
 
-            Button instantButton = Instantiate(selectedMove, new Vector3(40, 0, 0), Quaternion.identity);
-            // foreach (Button button in currentUnit.GetMoves()) {
-            //     Button instantButton = Instantiate(button, new Vector3(40, yPos, 0), Quaternion.identity);
+            print(CurrentAction.Damage);
 
-            //     // instantButton.transform.localScale = new Vector3(0.3f,0.3f,1);
-            //     // instantButton.transform.position = new Vector3(20,5,0);
+            // USE THESE IF YOU WANT THE MOVE AND TARGET TO BE PICKED AUTOMAGICALLY (not working yet)
+            switch (CurrentAction.TargetType)
+            {
+                case "OneAlly": 
+                case "OneEnemy":
+                    AutoSetTargets();
+                    TakeAction();
+                    break;
+                case "Self":
+                case "AllEnemies":
+                case "Targetless":
+                    TakeAction();
+                    break;
+                default:
+                    print("Invalid target type");
+                    break;
+            }
 
-            //     // second param keeps scale etc the same
-            instantButton.transform.SetParent(canvas.transform, false);
 
-            instantButton.GetComponent<MoveButton>().SetParentUnit(currentUnit);
+            // USE THESE IF YOU WANT THE BUTTON TO SHOW (working)
+            // for some reason the bm.action isn't set in effect
 
-            //     yPos -= 10f;
-            // }
+            // var randomIndex = Random.Range(0, currentUnitMoves.Count);
+            // Button selectedMove = currentUnitMoves[randomIndex];
+
+            // Button instantButton = Instantiate(selectedMove, new Vector3(40, 0, 0), Quaternion.identity);
+            // instantButton.transform.SetParent(canvas.transform, false);
         } else {
             print ("This unit has no moves");
         }
+    }
+
+    private void PickRandomMove() {
+        List<Button> currentUnitMoves = CurrentUnit.GetMoves();
+
+        var randomIndex = Random.Range(0, currentUnitMoves.Count);
+
+        Action tempAction = currentUnitMoves[randomIndex].GetComponent<Action>();
+
+        if (CurrentUnit.CanAffordManaCost(tempAction.ManaCost) && CurrentUnit.CanAffordResourceCost(tempAction.ResourceCost)) {
+            CurrentAction = tempAction;
+            CurrentAction.AISetUpMove();
+        } else {
+            PickRandomMove();
+        }
+    }
+
+    private void AutoSetTargets() {
+        switch (CurrentAction.TargetType) 
+        {
+            case "OneAlly": 
+                FindTargetsByTag(CurrentUnit.tag);
+                break;
+            case "OneEnemy":
+                if (CurrentUnit.tag == "Enemy") {
+                    FindTargetsByTag("Player");
+                } else {
+                    FindTargetsByTag("Enemy");
+                }
+                break;
+            default:
+                print("Invalid target");
+                break;
+        }
+
+        var randomIndex = Random.Range(0, CurrentAction.PossibleTargets.Count);
+
+        CurrentAction.AddTarget(CurrentAction.PossibleTargets[randomIndex]);
     }
 
     private UnitStats WhoseTurn()
@@ -259,10 +324,52 @@ public class BattleManager : MonoBehaviour
         print(nextUpList[0]);
     }
 
+    public void AttemptAction() {
+        // print(CurrentAction.GetType());
+        // CurrentAction.SetUpMove();
+
+        // SetUpMove();
+
+        // JUST FOR TESTING: SET ALL TO MOVES TO BASIC ATTACK
+        // CurrentAction.TargetType = "OneEnemy";
+        // CurrentAction.ManaCost = 0;
+        // CurrentAction.Damage = CurrentUnit.attack;
+
+        if (CurrentUnit.CanAffordManaCost(CurrentAction.ManaCost) && CurrentUnit.CanAffordResourceCost(CurrentAction.ResourceCost)) {
+            SetTargets();
+
+            switch (CurrentAction.TargetType)
+            {
+                case "OneAlly": 
+                case "OneEnemy":
+                    DisplayTargets();
+                    break;
+                case "Self":
+                case "AllEnemies":
+                case "Targetless":
+                    TakeAction();
+                    break;
+                default:
+                    print("Invalid target");
+                    break;
+            }
+        } else {
+            // this.GetComponent<Image>().color = Color.red;
+            CurrentAction.ParentButtonImage.color = Color.red;
+
+            ResetCurrentAction();
+
+            // bm.CurrentAction.Clear();
+
+            print("cannot afford");
+        }
+    }
+
     public void TakeAction() {
-        print("t");
-        CurrentAction.ParentUnit.SpendMana(CurrentAction.ManaCost);
-        CurrentAction.ParentUnit.SpendResource(CurrentAction.ResourceCost);
+        // print(CurrentAction);
+
+        CurrentUnit.SpendMana(CurrentAction.ManaCost);
+        CurrentUnit.SpendResource(CurrentAction.ResourceCost);
 
 
         // TODO: i should reorganize the units automatically. So if there are a ton of units summoned, they get properly organized on the screen
@@ -270,17 +377,7 @@ public class BattleManager : MonoBehaviour
         // then i can have a certain number of ally spots available as you level
         // and maybe a certain number of cauldron spots, upgradeable
         if (CurrentAction.Summon) {
-            GameObject summon = Instantiate(CurrentAction.Summon, new Vector3(-6, -3, 0), Quaternion.identity); // hardcoded location, should make dynamic
-
-            if (summon.tag == "Player") {
-                allyList.Add(summon.GetComponent<UnitStats>());
-            } else if (summon.tag == "Enemy") {
-                enemyList.Add(summon.GetComponent<UnitStats>());
-            } else {
-                print("who is this?");
-            }
-
-            completeList.Add(summon.GetComponent<UnitStats>());
+            SummonUnit();
         }
 
         // print(CurrentAction.GiveItem);
@@ -292,8 +389,12 @@ public class BattleManager : MonoBehaviour
             // playerItems.PrintItems();
         }
 
+
+        // HERE WE ARE NOT SENDING THE REAL UNITS TO EFFECT(), JUST COPIES OF THEIR VALUES, SO THE HEALTH DOESN'T UPDATE AND THE UNITSTATS AWAKE STEPS NEVER HAPPENED
+        // IF I COULD INSTEAD GRAB THESE TARGETS VIA FIND COMPONENT, IT MIGHT GRAB THE REAL ONES
         if (CurrentAction.Targets != null) {
             foreach (UnitStats target in CurrentAction.Targets) {
+                print(target.bm);
                 target.Effect();
             }
         }
@@ -305,6 +406,87 @@ public class BattleManager : MonoBehaviour
         EndTurn();
     }
 
+    // TODO: i should reorganize the units automatically. So if there are a ton of units summoned, they get properly organized on the screen
+    // i should have certain slots premade (enumerated?) and then it fills in the next available ally/enemy spot
+    // then i can have a certain number of ally spots available as you level
+    // and maybe a certain number of cauldron spots, upgradeable
+    private void SummonUnit() {
+        GameObject summon = Instantiate(CurrentAction.Summon, new Vector3(-6, -3, 0), Quaternion.identity); // hardcoded location, should make dynamic
+
+        if (summon.tag == "Player") {
+            allyList.Add(summon.GetComponent<UnitStats>());
+        } else if (summon.tag == "Enemy") {
+            enemyList.Add(summon.GetComponent<UnitStats>());
+        } else {
+            print("who is this?");
+        }
+
+        completeList.Add(summon.GetComponent<UnitStats>());
+    }
+
+    public void SetTargets() {
+            switch (CurrentAction.TargetType) 
+            {
+                case "Self":
+                    // print('a');
+                    SetTargetToSelf();
+                    break;
+                case "OneAlly": 
+                    FindTargetsByTag(CurrentUnit.tag);
+                    break;
+                case "OneEnemy":
+                    if (CurrentUnit.tag == "Enemy") {
+                        FindTargetsByTag("Player");
+                    } else {
+                        FindTargetsByTag("Enemy");
+                    }
+                    break;
+                case "AllEnemies":
+                    if (CurrentUnit.tag == "Enemy") {
+                        SetTargetsToAllTagged("Player");
+                    } else {
+                        SetTargetsToAllTagged("Enemy");
+                    }
+                    break;
+                case "Targetless":
+                    break;
+                default:
+                    print("Invalid target");
+                    break;
+            }
+    }
+
+    private void SetTargetToSelf() {
+        CurrentAction.AddTarget(CurrentUnit);
+    }
+
+    private void FindTargetsByTag(string tag) {
+        // TODO use bm to grab the enemy list or ally list as appropriate
+        // maybe actions should have a "targetable group" property, like enemies, allies, dead units, etc
+
+        // thinking that units should be organized in squads
+        // basically grouped into groups of 4, if you kill enough, the groups collapse into new groups
+
+        GameObject[] targetableObjects = GameObject.FindGameObjectsWithTag(tag);
+
+        foreach (GameObject targetableObject in targetableObjects) {
+            UnitStats unit = targetableObject.GetComponent<UnitStats>();
+            if (!unit.isDead) {
+                CurrentAction.AddPossibleTarget(unit);
+            }
+        }
+    }
+
+    private void SetTargetsToAllTagged(string tag) {
+        GameObject[] targetableObjects = GameObject.FindGameObjectsWithTag(tag);
+
+        foreach (GameObject targetableObject in targetableObjects) {
+            UnitStats unit = targetableObject.GetComponent<UnitStats>();
+            if (!unit.isDead) {
+                CurrentAction.AddTarget(unit);
+            }
+        }
+    }
 
     public void DisplayTargets() {
         RemoveAllButtons();
@@ -361,14 +543,14 @@ public class BattleManager : MonoBehaviour
     }
 
     // private void PoisonTicker() {
-    //     Dictionary<string,int> currentStatusEffects = currentUnit.GetAllStatusEffects();
+    //     Dictionary<string,int> currentStatusEffects = CurrentUnit.GetAllStatusEffects();
     //     // if poisoned, do damage for number of stacks, then tick down poison stacks by one
     //     if (currentStatusEffects.ContainsKey("POISON")) {
     //         print("ContainsKey");
     //         if (currentStatusEffects["POISON"] > 0) {
     //             print(currentStatusEffects["POISON"]);
-    //             currentUnit.TakeDamage(currentStatusEffects["POISON"]);
-    //             currentUnit.UpdateStatusEffect("POISON", currentStatusEffects["POISON"] - 1);
+    //             CurrentUnit.TakeDamage(currentStatusEffects["POISON"]);
+    //             CurrentUnit.UpdateStatusEffect("POISON", currentStatusEffects["POISON"] - 1);
     //         }
     //     }
     // }
