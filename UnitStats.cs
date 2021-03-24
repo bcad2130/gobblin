@@ -36,12 +36,12 @@ public class UnitStats : MonoBehaviour
     private Text turnText;
 
     public GameObject canvas;
-    public List<Button> moves;
+    public List<MoveButton> moves;
 
     // private float yPosHP = -112.98f;
     // private float yPosMP = -152.98f;
 
-    private Dictionary<string,int> StatusEffects { get; set; }
+    private Dictionary<string,int> StatusEffects;
 
     // public List<Action> myActions;
 
@@ -54,9 +54,9 @@ public class UnitStats : MonoBehaviour
 
 
     private void Awake() {
-        // if (StatusEffects == null) {
-        //     StatusEffects = new Dictionary<string,int>();
-        // }
+        if (StatusEffects == null) {
+            StatusEffects = new Dictionary<string,int>();
+        }
         
 
     // }
@@ -122,9 +122,24 @@ public class UnitStats : MonoBehaviour
         return canvas;
     }
 
-    public List<Button> GetMoves()
+    public ref List<MoveButton> GetMoves()
     {
-        return moves;
+        return ref moves;
+    }
+
+    public MoveButton GetRandomAction() {
+        List<MoveButton> tempList = GetMoves();
+
+        var randomIndex = Random.Range(0, tempList.Count);
+
+        MoveButton tempActionButton = tempList[randomIndex];
+        // print(tempActionButton);
+
+        if (tempActionButton.CheckAfford()) {
+            return tempActionButton;
+        }
+
+        return GetRandomAction();
     }
 
     public Dictionary<string,int> GetAllStatusEffects() {
@@ -154,7 +169,7 @@ public class UnitStats : MonoBehaviour
     // }
 
     public void TakeDamage (int damage) {
-        print("TakeDamage");
+        // print("TakeDamage");
         // if you heal when you have a shield, it adds it to the shield (NOT ANYMORE!)
         // we need to make a heal function
         // we also need max health and mana stats
@@ -283,6 +298,11 @@ public class UnitStats : MonoBehaviour
             // on this note, will i have revival? should i even keep dead units around?
             // if not, i should have a more effective way of clearing units, since i might want to move them around, or have them transform, or get "used up" like the cauldron
         }
+    }
+
+    public void DestroySelf() {
+        bm.RemoveUnitFromAllLists(this);
+        Destroy(this.gameObject);
     }
 
     public void ApplySingleEffectStatus(Dictionary<string,int> effects) {
