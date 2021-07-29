@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BoilButton : MoveButton
 {
-    public Item NewItem;
+    // public Item NewItem;
 
     protected const int COST = 0;
     protected const int DAMAGE = 0;
@@ -16,12 +16,13 @@ public class BoilButton : MoveButton
         action.ManaCost = COST;
         action.Damage = DAMAGE;
 
+        // action.AddStatusEffect("BOIL", 1);
 
-        NewItem = new SoupItem();
+        // NewItem = new SoupItem();
 
-        action.GiveItem = NewItem;
+        // action.GiveItem = NewItem;
 
-        action.DestroySelf = true;
+        // action.DestroySelf = true;
         // action.TargetedAction = true;
     }
 }

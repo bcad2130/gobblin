@@ -32,17 +32,20 @@ public class Inventory
     // }
 
     public void AddItem(string itemName) {
+    // public void AddItem(Item item) {
+
         Debug.Log ("Received one " + itemName);
 
         int stacks = 1;
         UpdateItem(itemName, stacks);
     }
 
-    public void RemoveItem(string itemName) {
-        Debug.Log ("Lost one " + itemName);
+    // public void RemoveItem(string itemName) {
+    public void RemoveItem(Item item) {
+        Debug.Log ("Lost one " + item.Name);
 
         int stacks = -1;
-        UpdateItem(itemName, stacks);
+        UpdateItem(item.Name, stacks);
     }
 
     public void UpdateItem(string itemName, int stacks) {
@@ -60,10 +63,12 @@ public class Inventory
     //     }
     // }
 
-    public bool CheckItem(string itemName) {
-
-        if (itemList.ContainsKey(itemName)) {
-            if (itemList[itemName] > 0) {
+    // public bool CheckItem(string itemName) {
+    public bool CheckItem(Item item) {
+        // Debug.Log ("CheckItem");
+        if (itemList.ContainsKey(item.Name)) {
+            // Debug.Log( "you have the item");
+            if (itemList[item.Name] > 0) {
                 return true;
             }
         }

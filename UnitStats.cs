@@ -10,9 +10,16 @@ public class UnitStats : MonoBehaviour
     public int health;
     public int mana;
     public int attack;
-    public int magic;
+    public int defense;
+    // public int magic;
     public int speed;
     public bool isDead;
+
+    public bool isCooking;
+    public int cookTime;
+    public string cookedItem;
+    // public Item cookedItem;
+    public List<string> recipeIngredients;
 
     public int shield = 0;
     public int turnNumber = 0;
@@ -51,20 +58,13 @@ public class UnitStats : MonoBehaviour
     private const string POISON = "POISON";
     private const string SHIELD = "SHIELD";
     private const string DODGE  = "DODGE";
+    private const string BOIL   = "BOIL";
 
 
     private void Awake() {
         if (StatusEffects == null) {
             StatusEffects = new Dictionary<string,int>();
         }
-        
-
-    // }
-
-    // // Start is called before the first frame update
-    // public void Start()
-    // {
-        // print('t');
 
         SetBattleManager();
         SetStatusEffects();
@@ -76,16 +76,8 @@ public class UnitStats : MonoBehaviour
         turnText = Instantiate(turnTextPrefab, new Vector3(-20, 0, 0), Quaternion.identity);
         turnText.transform.SetParent(canvas.transform, false);
 
-        // float xPos = 0f;
-        // if (gameObject.tag == "Player") {
-        //     xPos = -171.95f;
-        // } else {
-        //     // xPos = 171.95f;
-        //     xPos = 0;
-        //     yPosHP = 0;
-        //     yPosMP = 0;
-        // }
-        // healthText = Instantiate(healthTextPrefab, new Vector3(xPos, yPosHP, 0), Quaternion.identity);
+
+        // TODO: make this a function since its repeated for mana
         healthText = Instantiate(healthTextPrefab);
 
         healthText.transform.localScale = new Vector3(0.3f,0.3f,1);
@@ -139,6 +131,7 @@ public class UnitStats : MonoBehaviour
             return tempActionButton;
         }
 
+        // since this is recursive, make sure all units have a free action or we stack overflow
         return GetRandomAction();
     }
 
@@ -168,11 +161,63 @@ public class UnitStats : MonoBehaviour
     //     moves.Add(attackButtonPrefab);
     // }
 
-    public void TakeDamage (int damage) {
+    public void TakeAttack (int rawDamage, int attackSpeed) {
+        int multiplier = 1;
+
+        if (attackSpeed > speed) {
+            int speedDiff = attackSpeed - speed;
+
+            if (speedDiff >= 20) {
+                multiplier = 3;
+            } else if (speedDiff >= 10) {
+                multiplier = 2;
+            }
+        }
+
+        int damage = rawDamage - (defense / 2);
+
+        if (damage < 0) {
+            damage = 0;
+        }
+
+        do {
+            if (!CheckDodge()) {
+                if (shield > 0) {
+                    shield -= damage;
+
+                    if (shield < 0) {
+                        damage = -shield;
+                        shield = 0;
+                    } else {
+                        damage = 0;
+                    }
+
+                    StatusEffects[SHIELD] = shield;
+                }
+
+                health -= damage;
+            }
+
+            multiplier--;
+        } while (multiplier > 0);
+
+        if (health <= 0) {
+            health = 0;
+            isDead = true;
+        }
+    }
+
+    public void TakeDamage (int rawDamage) {
         // print("TakeDamage");
         // if you heal when you have a shield, it adds it to the shield (NOT ANYMORE!)
         // we need to make a heal function
         // we also need max health and mana stats
+
+        int damage = rawDamage - (defense / 2);
+
+        if (damage < 0) {
+            damage = 0;
+        }
 
         if (!CheckDodge()) {
             if (shield > 0) {
@@ -236,7 +281,8 @@ public class UnitStats : MonoBehaviour
         if (resourceCost != null) {
             // print ("resource cost is not null");
             foreach (Item resource in resourceCost) {
-                if (!bm.playerItems.CheckItem(resource.Name)) {
+                // if (!bm.playerItems.CheckItem(resource.Name)) {
+                if (!bm.playerItems.CheckItem(resource)) {
                     // print("return false");
                     return false;
                 }
@@ -249,7 +295,7 @@ public class UnitStats : MonoBehaviour
     public void SpendResource (List<Item> resourceCost) {
         if (resourceCost != null) {
             foreach (Item resource in resourceCost) {
-                bm.playerItems.RemoveItem(resource.Name);
+                bm.playerItems.RemoveItem(resource);
             }
         }
 
@@ -393,6 +439,36 @@ public class UnitStats : MonoBehaviour
                     StatusEffects.Remove(POISON);
                 }
     }
+
+    // public bool CheckRecipe() {
+    //     // print('T');
+    //     if (StatusEffects.ContainsKey(BOIL)) {
+    //         if (StatusEffects[BOIL] >= cookTime) {
+    //             if (recipeIngredients.Count == 0) {
+    //                 return true;
+    //             }
+    //         }
+    //     }
+
+    //     return false;
+    // }
+
+    // public void AddIngredient(List<Item> ingredients)
+    // {
+    //     print("AddIngredient");
+    //     if (ingredients != null) {
+    //         print("ingredients exist");
+    //         foreach (Item ingredient in ingredients) {
+    //             print(this.name);
+    //             print(ingredient.Name);
+    //             print(recipeIngredients.Count);
+    //             if (recipeIngredients.Exists(i => i == ingredient.Name)) {
+    //                 print(ingredient.Name + " removed");
+    //                 recipeIngredients.Remove(ingredient.Name);
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 // gonna have lots of status effects, if you have like 5 heat then catch fire effect

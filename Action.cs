@@ -7,6 +7,7 @@ public class Action
     public int Damage;
     public int Heal;
     public int ManaCost;
+    public int Speed;
 
     public string TargetType;
     public bool DestroySelf;
@@ -16,6 +17,8 @@ public class Action
     public List<UnitStats> Targets;
     public List<UnitStats> PossibleTargets;
     public List<Item> ResourceCost;
+
+    public Recipe Recipe;
 
     //these should be Lists
     public GameObject Summon;
