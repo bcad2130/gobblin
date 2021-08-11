@@ -15,7 +15,8 @@ public class UnitStats : MonoBehaviour
     public int speed;
     public bool isDead;
 
-    public bool isCooking;
+    public bool isCookin;
+    public bool NPC;
     public int cookTime;
     public string cookedItem;
     // public Item cookedItem;

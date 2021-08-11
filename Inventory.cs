@@ -42,7 +42,7 @@ public class Inventory
 
     // public void RemoveItem(string itemName) {
     public void RemoveItem(Item item) {
-        Debug.Log ("Lost one " + item.Name);
+        // Debug.Log ("Lost one " + item.Name);
 
         int stacks = -1;
         UpdateItem(item.Name, stacks);

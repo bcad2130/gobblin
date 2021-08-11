@@ -7,7 +7,10 @@ public class PotatoSoupRecipe : Recipe
     public PotatoSoupRecipe ()
     {
         cookCount = 0;
-        cookTime  = 4;
+        cookTime  = 2;
+
+        stirCount = 0;
+        stirGoal = 1;
 
         result = new SoupItem();
 

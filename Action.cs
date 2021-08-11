@@ -27,7 +27,8 @@ public class Action
 
     // public Button ParentButton;
 
-    public Action () {
+    public Action ()
+    {
         Damage = 0;
         Heal = 0;
         ManaCost = 0;
@@ -40,7 +41,8 @@ public class Action
         ResourceCost = new List<Item>();
     }
 
-    public void AddTarget(ref UnitStats targetUnit) {
+    public void AddTarget(ref UnitStats targetUnit)
+    {
         // print("AddTarget");
         // if (Targets == null) {
         //     Targets = new List<UnitStats>();
@@ -49,18 +51,41 @@ public class Action
         Targets.Add(targetUnit);
     }
 
-    public void AddPossibleTarget(ref UnitStats targetUnit) {
+    public void RemoveTarget(ref UnitStats targetUnit)
+    {
+        Targets.Remove(targetUnit);
+    }
+
+    public void AddPossibleTarget(ref UnitStats targetUnit)
+    {
         // print("AddPossibleTarget");
         // if (PossibleTargets == null) {
         //     PossibleTargets = new List<UnitStats>();
         // }
 
         PossibleTargets.Add(targetUnit);
-    }    
+    }
+
+    public void AddPossibleTargets(ref List<UnitStats> unitList)
+    {
+        PossibleTargets.AddRange(unitList);
+    }
+
+    public void RemovePossibleTarget(ref UnitStats targetUnit)
+    {
+        PossibleTargets.Remove(targetUnit);
+    }
+
+    public void RemovePossibleTargets(ref List<UnitStats> unitList)
+    {
+        PossibleTargets.AddRange(unitList);
+    }
+
 
 // // status effects should be a hash table so that all status effects are predefined
 // // and more importantly, so status effects can stack multiple times
-    public void AddStatusEffect(string statusEffect, int stacks) {
+    public void AddStatusEffect(string statusEffect, int stacks)
+    {
         // if (StatusEffects == null) {
         //     StatusEffects = new Dictionary<string,int>();
         // }
@@ -68,7 +93,8 @@ public class Action
         StatusEffects.Add(statusEffect, stacks);
     }
 
-    public void UpdateStatusEffect(string statusEffect, int stacks) {
+    public void UpdateStatusEffect(string statusEffect, int stacks)
+    {
         // if (StatusEffects == null) {
         //     StatusEffects = new Dictionary<string,int>();
         // }
@@ -80,7 +106,8 @@ public class Action
         }
     }
 
-    public Dictionary<string,int> GetAllStatusEffects() {
+    public Dictionary<string,int> GetAllStatusEffects()
+    {
         // if (StatusEffects == null) {
         //     // return null;
         //     StatusEffects = new Dictionary<string,int>();
@@ -89,7 +116,8 @@ public class Action
         return StatusEffects;
     }
 
-    public void AISetUpMove() {
+    public void AISetUpMove()
+    {
         
     }
 }

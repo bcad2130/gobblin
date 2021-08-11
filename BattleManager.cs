@@ -7,7 +7,9 @@ using System.Linq;
 
 public class BattleManager : MonoBehaviour
 {
-    // GLOBAL VARIABLES
+    // ***************
+    // ***VARIABLES***
+    // ***************
 
     public GameObject targetButton;
     public GameObject HUD;
@@ -17,18 +19,32 @@ public class BattleManager : MonoBehaviour
     private List<UnitStats> completeList;
     private List<UnitStats> nextUpList;
     private List<UnitStats> allyList;
-    private List<UnitStats> enemyList; 
+    private List<UnitStats> enemyList;
+    private List<UnitStats> meleeAllyList;
+    private List<UnitStats> meleeEnemyList;
+    private List<UnitStats> allyCookinList;
+    
+    private Dictionary<string,string> coverUnits;
 
+    private bool myTurn = false;
     private bool gameOver = false;
 
     public Action CurrentAction;
     public Inventory playerItems;
     public Recipe recipe;
 
-    // FUNCTIONS
 
 
-    // TURN MANAGEMENT
+
+
+
+
+    // ***************
+    // ***FUNCTIONS***
+    // ***************
+
+
+    // INITIALIZATION
 
     private void Awake()
     {
@@ -59,6 +75,72 @@ public class BattleManager : MonoBehaviour
         // StartRound();
     }
 
+    private void InitializeItems()
+    {
+        playerItems  = new Inventory();
+
+        // start with one cauldron
+        playerItems.AddItem("Cauldron");
+    }
+
+    private void InitializeCurrentAction()
+    {
+        CurrentAction = new Action();
+    }    
+
+    private void InitializeUnitLists()
+    {
+        completeList    = new List<UnitStats>();
+        nextUpList      = new List<UnitStats>();
+        allyList        = new List<UnitStats>();
+        enemyList       = new List<UnitStats>();
+        meleeAllyList   = new List<UnitStats>();
+        meleeEnemyList  = new List<UnitStats>();
+        allyCookinList  = new List<UnitStats>();
+        coverUnits      = new Dictionary<string, string>();
+
+        PopulateList("Player", ref completeList);
+        PopulateList("Enemy",  ref completeList);
+
+        PopulateList("Player", ref allyList);
+        PopulateList("Enemy",  ref enemyList);
+        PopulateList("Player", ref meleeAllyList);
+        PopulateList("Enemy",  ref meleeEnemyList);
+    }
+
+
+
+
+    // LISTS
+
+    // TODO rename this to PopulateListByTag and reorder params
+    private void PopulateList(string tag, ref List<UnitStats> list)
+    {
+        GameObject[] objects = GameObject.FindGameObjectsWithTag(tag);
+
+        foreach (GameObject obj in objects) {
+            list.Add(obj.GetComponent<UnitStats>());
+        }
+    }
+
+    private void AddUnitToList(ref UnitStats unit, ref List<UnitStats> list)
+    {
+        list.Add(unit);
+    }
+
+    private void RemoveUnitFromList(UnitStats unit, ref List<UnitStats> list)
+    {
+        list.Remove(unit);
+    }
+
+
+
+
+
+
+
+    // TURN MANAGEMENT
+
     public void StartRound()
     {
         StartTurn();
@@ -68,7 +150,11 @@ public class BattleManager : MonoBehaviour
     {
         // print("Turn Start");
         CurrentUnit = WhoseTurn();
-        // print(CurrentUnit.name);
+        if (CurrentUnit.tag == "Player") {
+            myTurn = true;
+        }
+
+        // print("Turn Start for: " + CurrentUnit.name);
         PreTurnStatusCheck();
 
         // ResetCurrentAction();
@@ -77,11 +163,16 @@ public class BattleManager : MonoBehaviour
 
         // TODO: is it really needed to update here?
         // what is actually being updated? just the turn order? seems like not health or mana
+        // we're also doing this at end of turn, is there any damage that happens preturn except for poison/gross
         foreach (UnitStats unit in completeList) {
             unit.UpdateText();
         }
 
-        PickUnitMove();
+        if (CurrentUnit.NPC) {
+            EndTurn();
+        } else {
+            PickUnitMove();
+        }
     }
 
     public void EndTurn()
@@ -89,6 +180,8 @@ public class BattleManager : MonoBehaviour
         UpdateStatus();
 
         ResetCurrentAction();
+
+        myTurn = false;
 
         NextTurn();
     }
@@ -109,116 +202,9 @@ public class BattleManager : MonoBehaviour
         SetUnitTurnNumbers();
     }
 
-    // COOKING MANAGEMENT
-    public void SetRecipe(Recipe recipeToSet)
-    {
-        // recipe = new PotatoSoupRecipe();
-        recipe = recipeToSet;
-    }
-
-    private void CheckRecipe()
-    {
-        if (recipe != null) { //exists
-            // print("yes recipe");
-            recipe.AddCookTurn();
-
-            print(recipe.cookCount);
-            if (recipe.cookCount >= recipe.cookTime) {             // <- recipe is done cooking
-                if (CheckIngredients()) {
-                    print("Recipe complete!");
-
-                    playerItems.AddItem(recipe.result.Name);
-                }
-
-                // cue taste test animation -> hand sign OK!
-
-                // print "got <item>!"
-                RecipeCleanUp();
-
-            } else { // recipe needs to cook more
-
-            }
-        } else {
-            // print("no recipe");
-        }
-
-    }
-
-    private bool CheckIngredients()
-    {
-        foreach (KeyValuePair<string, int> ingredient in recipe.ingredients) {
-            if (ingredient.Value > 0) {
-                print("Not enough ingredients");
-                return false;
-                // break
-                // recipe explodes
-                // did you forget the <which ever ingredient proc'ed this>
-            } else if (ingredient.Value < 0) {
-                print("Too many ingredients");
-                return false;
-
-                // break
-                // recipe explodes
-                // did you forget the <which ever ingredient proc'ed this>
-            } else {
-                print("right amount of this ingredient");
-            }
-        }
-
-        return true;
-    }
-
-    private void RecipeCleanUp()
-    {
-        recipe.cauldron.DestroySelf();
-        recipe = null;
-
-        // restock cauldron item
-        playerItems.AddItem("Cauldron");
-    }
-
-    // INITIALIZATION
-
-    private void InitializeItems()
-    {
-        playerItems  = new Inventory();
-
-        // start with one cauldron
-        playerItems.AddItem("Cauldron");
-    }
-
-    private void InitializeUnitLists()
-    {
-        completeList = new List<UnitStats>();
-        nextUpList   = new List<UnitStats>();
-        allyList     = new List<UnitStats>();
-        enemyList    = new List<UnitStats>();
-
-        PopulateList("Player", ref allyList);
-        PopulateList("Enemy", ref enemyList);
-    }
-
-    private void PopulateList(string tag, ref List<UnitStats> list)
-    {
-        GameObject[] objects = GameObject.FindGameObjectsWithTag(tag);
-
-        foreach (GameObject obj in objects) {
-            list.Add(obj.GetComponent<UnitStats>());
-            // also add all groups to the full list
-            completeList.Add(obj.GetComponent<UnitStats>());
-        }
-    }
-
-    private void InitializeCurrentAction()
-    {
-        CurrentAction = new Action();
-    }
-
-    // MISC
-
     private void PickUnitMove()
     {
-        if (CurrentUnit.tag == "Player") {
+        if (myTurn) {
             DisplayMoves();
         } else {
             AutoMove();
@@ -282,70 +268,159 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+
+
+
+
+    // COOKING MANAGEMENT
+    public void SetRecipe(Recipe recipeToSet)
+    {
+        // recipe = new PotatoSoupRecipe();
+        recipe = recipeToSet;
+    }
+
+    private void CheckRecipe()
+    {
+        if (recipe != null) { //exists
+            // print("yes recipe");
+
+            if (recipe.cookCount < recipe.cookTime) {
+                Debug.Log(recipe.cookTime);
+                recipe.AddCookTurn();
+
+            } else if (recipe.cookCount == recipe.cookTime) {
+
+                Debug.Log("READY");
+                if (CheckIngredients() && CheckStirring() ) {
+                    playerItems.AddItem(recipe.result.Name);
+                } else {
+                    playerItems.AddItem("Burnt Mess");
+                }
+                // Debug.Log('A');
+                RecipeCleanUp();
+                // Debug.Log('A');
+                
+
+
+            } else if (recipe.cookCount > recipe.cookTime) {
+                Debug.Log("What is this, Overcooked?");
+            }
+
+
+
+            // print(recipe.cookCount);
+            // if (recipe.cookCount >= recipe.cookTime) {             // <- recipe is done cooking
+            //     if (CheckIngredients()) {
+            //         print("Recipe complete!");
+
+            //         playerItems.AddItem(recipe.result.Name);
+            //     }
+
+            //     // cue taste test animation -> hand sign OK!
+
+            //     // print "got <item>!"
+            //     RecipeCleanUp();
+
+            // } else { // recipe needs to cook more
+
+            // }
+        } else {
+            // print("no recipe");
+        }
+    }
+
+    private bool CheckStirring()
+    {
+        if ( recipe.GetStirCount() == recipe.GetStirGoal() ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private bool CheckIngredients()
+    {
+        foreach (KeyValuePair<string, int> ingredient in recipe.ingredients) {
+            if (ingredient.Value > 0) {
+                print("Not enough ingredients");
+                return false;
+                // break
+                // recipe explodes
+                // did you forget the <which ever ingredient proc'ed this>
+            } else if (ingredient.Value < 0) {
+                print("Too many ingredients");
+                return false;
+
+                // break
+                // recipe explodes
+                // did you forget the <which ever ingredient proc'ed this>
+            } else {
+                print("right amount of this ingredient");
+            }
+        }
+
+        return true;
+    }
+
+    private void RecipeCleanUp()
+    {
+
+        // TODO handle having more than one cauldron
+        //      handle having enemy cauldrons?
+                // Debug.Log('C');
+
+        CurrentUnit = allyCookinList[0];
+                // Debug.Log('B');
+
+        allyCookinList.Remove(CurrentUnit);
+        allyList.Remove(CurrentUnit);
+        meleeAllyList.Remove(CurrentUnit);
+        completeList.Remove(CurrentUnit);
+
+        CurrentUnit.DestroySelf();
+
+        recipe = null;
+
+        // // restock cauldron item
+        playerItems.AddItem("Cauldron");
+    }
+
+
+
+
+
+    // MISC
+
     private void DisplayCurrentUnit()
     {
         print(nextUpList[0]);
     }
 
-    public void SetAction(Action action)
-    {
-        CurrentAction = action;
-        // print(action);
-    }
-
     private void SetHUD() 
     {
         HUD = GameObject.FindWithTag("HUD");
-
     }
 
-    private void DisplayMoves()
+    private UnitStats GetUnitByName(string name)
     {
-        // GameObject canvas = CurrentUnit.GetCanvasObj();
-        // GameObject canvas = GameObject.FindGameObjectsWithTag("HUD");
-
-
-
-        // Iterate this value to make position lower
-        // float yPos = 10f;
-        float yPos = 50f;
-
-
-        if (CurrentUnit.GetMoves().Count > 0) {
-            foreach (MoveButton button in CurrentUnit.GetMoves()) {
-                MoveButton instantButton = Instantiate(button, new Vector3(0, yPos, 0), Quaternion.identity);
-
-                instantButton.transform.localScale = new Vector3(1.5f,1.5f,1);
-                // instantButton.transform.position = new Vector3(20,5,0);
-
-
-                // TODO do i need to give it a parent if it lives in the HUD?
-                // second param keeps scale etc the same
-                instantButton.transform.SetParent(HUD.transform, false);
-
-                yPos -= 50f;
-
-                /*
-                OLD IMPLEMENTATION
-
-                MoveButton instantButton = Instantiate(button, new Vector3(40, yPos, 0), Quaternion.identity);
-
-                // instantButton.transform.localScale = new Vector3(0.3f,0.3f,1);
-                // instantButton.transform.position = new Vector3(20,5,0);
-
-
-                // TODO do i need to give it a parent if it lives in the HUD?
-                // second param keeps scale etc the same
-                instantButton.transform.SetParent(HUD.transform, false);
-
-                // instantButton.GetComponent<MoveButton>().SetParentUnit(CurrentUnit);
-
-                yPos -= 10f;
-                */
+        foreach (UnitStats unit in completeList) {
+            if (unit.name == name) {
+                return unit;
             }
-        } else {
-            print ("This unit has no moves");
         }
+
+        return null;
+    }
+
+
+
+
+
+    // ACTION
+
+    public void SetAction(Action action)
+    {
+        CurrentAction = action;
     }
 
     public void ResetCurrentAction()
@@ -391,7 +466,7 @@ public class BattleManager : MonoBehaviour
             //         break;
             // }
             
-            SetTargets();
+            SelectTargetsByActionType();
 
             TakeAction();
 
@@ -408,10 +483,16 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    private void SelectRandomUnitFromPossibleTargets() {
-        UnitStats selectedUnit = CurrentAction.PossibleTargets[Random.Range(0, CurrentAction.PossibleTargets.Count)];
+    private void SelectRandomUnitFromPossibleTargets()
+    {
+        if (CurrentAction.PossibleTargets.Count != 0) {
 
-        CurrentAction.AddTarget(ref selectedUnit);
+            UnitStats selectedUnit = CurrentAction.PossibleTargets[Random.Range(0, CurrentAction.PossibleTargets.Count)];
+
+            CurrentAction.AddTarget(ref selectedUnit);
+        } else { 
+            Debug.Log("NO UNIT SELECTABLE");
+        }
     }
 
     public bool CanAffordResourceCost (List<Item> resourceCost) {
@@ -436,16 +517,19 @@ public class BattleManager : MonoBehaviour
 
         if (CurrentUnit.CanAffordManaCost(action.ManaCost) && CanAffordResourceCost(action.ResourceCost)) {
             SetAction(action);
-            SetTargets();
+            SelectTargetsByActionType();
 
             switch (CurrentAction.TargetType)
                 {
-                    case "OneMeleeAlly": // TODO
-                    case "OneCoveredAlly": // TODO
-                    case "OneAlly":
-                    case "OneMeleeEnemy": // TODO
-                    case "OneCoveredEnemy": // TODO
-                    case "OneEnemy":
+                    case "Ally":
+                    case "MeleeAlly":
+                    case "CoverAlly":
+                    case "CoveredAlly": // TODO
+                    case "Enemy":
+                    case "MeleeEnemy":
+                    case "MeleeEnemyPierce":
+                    case "CoveredEnemy": // TODO
+                    case "Stir":
                     case "Ingredient":
                         DisplayTargets();
                         break;
@@ -481,6 +565,21 @@ public class BattleManager : MonoBehaviour
 
         if (CurrentAction.ManaCost != 0) {
             CurrentUnit.SpendMana(CurrentAction.ManaCost);
+        }
+
+        // TODO make it so you can't cover yourself in targeting
+        if (CurrentAction.TargetType == "CoverAlly") {
+            if (CurrentAction.Targets.Count == 1) {
+                foreach (UnitStats target in CurrentAction.Targets) {
+                    CoverUnit(target);
+                }
+            } else {
+                Debug.Log("can only cover one ally");
+            }
+        }
+
+        if (CurrentAction.TargetType == "Stir") {
+            recipe.stirCount++;
         }
 
         if (CurrentAction.ResourceCost.Count != 0) {
@@ -544,7 +643,18 @@ public class BattleManager : MonoBehaviour
         // }
 
         if (CurrentAction.Damage > 0) {
+            Debug.Log(unit.name + " receives " + CurrentAction.Damage + " raw damage");
             unit.TakeAttack(CurrentAction.Damage, CurrentUnit.speed);
+        }
+
+        if (CurrentAction.TargetType == "MeleeEnemyPierce") {
+            if (coverUnits.ContainsKey(unit.name)) {
+                Debug.Log(coverUnits[unit.name] + " receives " + CurrentAction.Damage/2 + " raw pierce damage");
+                
+                GetUnitByName(coverUnits[unit.name]).TakeAttack(CurrentAction.Damage/2, CurrentUnit.speed);
+            } else {
+                Debug.Log ("covered unit not found");
+            }
         }
 
         // old pre-speed method
@@ -576,23 +686,43 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    private void CoverUnit(UnitStats unitToCover) {
+        if (!coverUnits.ContainsKey(CurrentUnit.name)){
+            coverUnits.Add(CurrentUnit.name, unitToCover.name);
+            if (unitToCover.tag == "Player") { // TODO add functionality for NPC
+                meleeAllyList.Remove(unitToCover);
+            } else if (unitToCover.tag == "Enemy") {
+                meleeEnemyList.Remove(unitToCover);
+            }
+        } else {
+            Debug.Log("need to handle this case");
+        }
+
+    }
+
+    // TODO: REMOVE UNIT FROM COVER FUNCTION
+    //       TRIGGER THIS WHEN THE BLOCKING UNIT DIES
+
     private void SummonUnit() {
         GameObject summon = Instantiate(CurrentAction.Summon, new Vector3(-6, -3, 0), Quaternion.identity); // hardcoded location, should make dynamic
+        UnitStats summonUnit = summon.GetComponent<UnitStats>();
 
         if (CurrentUnit.tag == "Player") {
         // if (summon.tag == "Player" || summon.tag == "NPC") {
-            allyList.Add(summon.GetComponent<UnitStats>());
+            allyList.Add(summonUnit);
+            meleeAllyList.Add(summonUnit);
         } else if (CurrentUnit.tag == "Enemy") {
-            enemyList.Add(summon.GetComponent<UnitStats>());
+            enemyList.Add(summonUnit);
         } else {
             print("who is this?");
         }
 
-        completeList.Add(summon.GetComponent<UnitStats>());
+        completeList.Add(summonUnit);
 
 
         // this is where i check if its a recipe action, but i should move this higher in the work flow
-        if (summon.tag == "NPC") {
+        if (summonUnit.isCookin) {
+            AddUnitToList(ref summonUnit, ref allyCookinList);
             // will this work by ref?
             // SetRecipe();
 
@@ -601,65 +731,50 @@ public class BattleManager : MonoBehaviour
             // print("summon");
             // print(summon);
 
-            recipe.cauldron = summon.GetComponent<UnitStats>();
+            recipe.cauldron = summonUnit;
         }
     }
 
-    public void SetTargets()
+
+
+
+
+    // TARGETTING
+
+    public void AddTargetToAction(ref UnitStats unit)
     {
-        switch (CurrentAction.TargetType) 
-        {
-            case "Self":
-                SetTargetToSelf();
-                break;
-            case "OneAlly": 
-                FindTargetsByTag(CurrentUnit.tag);
-                if (CurrentUnit.tag == "Enemy") {
-                    SelectRandomUnitFromPossibleTargets();
-                }
-                break;
-            case "OneEnemy":
-                if (CurrentUnit.tag == "Enemy") {
-                    FindTargetsByTag("Player");
-                    SelectRandomUnitFromPossibleTargets();
-                } else {
-                    FindTargetsByTag("Enemy");
-                }
-                break;
-            case "AllEnemies":
-                if (CurrentUnit.tag == "Enemy") {
-                    SetTargetsToAllTagged("Player");
-                } else {
-                    SetTargetsToAllTagged("Enemy");
-                }
-                break;
-            case "Ingredient":
-                FindTargetsByTag("NPC");
-                break;
-            case "Targetless":
-                break;
-            default:
-                print("Invalid target");
-                break;
-        }
+        CurrentAction.AddTarget(ref unit);
     }
 
-    private void SetTargetToSelf() {
+    private void SetTargetToSelf()
+    {
         CurrentAction.AddTarget(ref CurrentUnit);
     }
 
-    private void FindTargetsByTag(string tag) {
-        // print("FindTargetsByTag");
-        // TODO: use bm to grab the enemy list or ally list as appropriate
-        // maybe actions should have a "targetable group" property, like enemies, allies, dead units, etc
 
-        // thinking that units should be organized in squads
-        // basically grouped into groups of 4, if you kill enough, the groups collapse into new groups
+    private void SetTargetsToAllTagged(string tag)
+    {
+        GameObject[] targetableObjects = GameObject.FindGameObjectsWithTag(tag);
 
-        // now rethinking, each unit can create a squad by 'covering' for another unit
-        // then you take all (or most, TBD) melee damage for that unit
-        // units that are being covered can't use melee attacks
-        // they can still be hit by ranged attacks and magic 
+        foreach (GameObject targetableObject in targetableObjects) {
+            UnitStats unit = targetableObject.GetComponent<UnitStats>();
+            if (!unit.isDead) {
+                CurrentAction.AddTarget(ref unit);
+            }
+        }
+    }
+
+
+    private void FindTargetsByTag(string tag)
+    {
+            // print("FindTargetsByTag");
+            // TODO: use bm to grab the enemy list or ally list as appropriate
+            // maybe actions should have a "targetable group" property, like enemies, allies, dead units, etc
+
+            // now rethinking, each unit can create a squad by 'covering' for another unit
+            // then you take all (or most, TBD) melee damage for that unit
+            // units that are being covered can't use melee attacks
+            // they can still be hit by ranged attacks and magic
 
         GameObject[] targetableObjects = GameObject.FindGameObjectsWithTag(tag);
 
@@ -671,20 +786,111 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    private void SetTargetsToAllTagged(string tag) {
-        // print("SetTargetsToAllTagged");
-        GameObject[] targetableObjects = GameObject.FindGameObjectsWithTag(tag);
+    private void FindTargetsByList(List<UnitStats> unitList)
+    {
+        CurrentAction.AddPossibleTargets(ref unitList);
+    }
 
-        foreach (GameObject targetableObject in targetableObjects) {
-            UnitStats unit = targetableObject.GetComponent<UnitStats>();
-            if (!unit.isDead) {
-                CurrentAction.AddTarget(ref unit);
-            }
+    public void SelectTargetsByActionType()
+    {
+        // TODO use FindTargetsByList instead of FindTargetsByTag when possible
+        switch (CurrentAction.TargetType) 
+        {
+            case "Self":
+                SetTargetToSelf();
+                break;
+            case "SelfOrAlly":
+                FindTargetsByTag(CurrentUnit.tag);
+                if (!myTurn) {
+                    SelectRandomUnitFromPossibleTargets();
+                }
+                break;
+            case "CoverAlly":
+            case "MeleeAlly":
+                if (!myTurn) {
+                    FindTargetsByList(meleeEnemyList);
+
+                    CurrentAction.RemovePossibleTarget(ref CurrentUnit);
+
+                    SelectRandomUnitFromPossibleTargets();
+                } else {
+                    FindTargetsByList(meleeAllyList);
+
+                    CurrentAction.RemovePossibleTarget(ref CurrentUnit);
+                }
+                break;
+            case "Ally":
+                FindTargetsByTag(CurrentUnit.tag);
+                if (!myTurn) {
+                    SelectRandomUnitFromPossibleTargets();
+                }
+                break;
+            case "MeleeEnemy":
+            case "MeleeEnemyPierce":
+                if (!myTurn) {
+                    FindTargetsByList(meleeAllyList);
+                    SelectRandomUnitFromPossibleTargets();
+                } else {
+                    FindTargetsByList(meleeEnemyList);
+                }
+                break;
+            case "AnyEnemy":
+                if (!myTurn) {
+                    FindTargetsByTag("Player");
+                    SelectRandomUnitFromPossibleTargets();
+                } else {
+                    FindTargetsByTag("Enemy");
+                }
+                break;
+            case "AllEnemies":
+                if (!myTurn) {
+                    SetTargetsToAllTagged("Player");
+                } else {
+                    SetTargetsToAllTagged("Enemy");
+                }
+                break;
+            case "Stir":
+            case "Ingredient":
+                FindTargetsByList(allyCookinList);
+                break;
+            case "Targetless":
+                break;
+            default:
+                print("Invalid target");
+                break;
         }
     }
 
-    public void AddTargetToAction(ref UnitStats unit) {
-        CurrentAction.AddTarget(ref unit);
+
+
+
+
+    // UI
+
+    private void DisplayMoves()
+    {
+        // GameObject canvas = CurrentUnit.GetCanvasObj();
+        // GameObject canvas = GameObject.FindGameObjectsWithTag("HUD");
+
+        // Iterate this value to make position lower
+        float yPos = 50f;
+
+
+        if (CurrentUnit.GetMoves().Count > 0) {
+            foreach (MoveButton button in CurrentUnit.GetMoves()) {
+                MoveButton instantButton = Instantiate(button, new Vector3(0, yPos, 0), Quaternion.identity);
+
+                instantButton.transform.localScale = new Vector3(1.5f,1.5f,1);
+                // instantButton.transform.position = new Vector3(20,5,0);
+                instantButton.transform.SetParent(HUD.transform, false);
+                // second param keeps scale etc the same
+
+
+                yPos -= 50f;
+            }
+        } else {
+            print ("This unit has no moves");
+        }
     }
 
     public void DisplayTargets() {
@@ -713,6 +919,12 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+
+
+
+
+    // GAME END
+
     private void CheckGameOver()
     {
         if (allyList.Count == 0)
@@ -739,10 +951,12 @@ public class BattleManager : MonoBehaviour
 
     private void HandleDeaths()
     {
-        completeList.RemoveAll(unit => unit.isDead == true);
-        nextUpList.RemoveAll(unit => unit.isDead == true);
-        enemyList.RemoveAll(unit => unit.isDead == true);
-        allyList.RemoveAll(unit => unit.isDead == true);
+        completeList.RemoveAll(     unit => unit.isDead == true);
+        nextUpList.RemoveAll(       unit => unit.isDead == true);
+        enemyList.RemoveAll(        unit => unit.isDead == true);
+        allyList.RemoveAll(         unit => unit.isDead == true);
+        meleeAllyList.RemoveAll(    unit => unit.isDead == true);
+        meleeEnemyList.RemoveAll(   unit => unit.isDead == true);
     }
 
     public void RemoveUnitFromAllLists(UnitStats unit) {
@@ -752,8 +966,3 @@ public class BattleManager : MonoBehaviour
         allyList.Remove(unit);
     }
 }
-
-//TODO: make speed, randomly assign turn order
-//do damage
-//stop game when dead or win
-// 

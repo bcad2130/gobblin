@@ -5,7 +5,7 @@ using UnityEngine;
 public class BasicAttackButton : MoveButton
 {
     protected override void SetUpMove() {
-        action.TargetType = "OneEnemy";
+        action.TargetType = "MeleeEnemy";
 
         action.Damage = bm.CurrentUnit.attack;
     }
