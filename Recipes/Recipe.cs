@@ -13,7 +13,8 @@ public class Recipe
 
     public Item result;
 
-    public Dictionary<string,int> ingredients;
+    // public Dictionary<string,int> ingredients;
+    public Inventory reqIngredients;
 
     // will this work by ref?
     public UnitStats cauldron;
@@ -26,16 +27,21 @@ public class Recipe
         stirCount = 0;
         stirGoal = 0;
 
-        result = new SoupItem();
+        // result = new SoupItem();
 
-        ingredients = new Dictionary<string,int>();
-        ingredients.Add("Potato", 1);
+        // ingredients = new Dictionary<string,int>();
+        // ingredients.Add("Potato", 1);
+
+        result = new CobItem();
+
+        reqIngredients = new Inventory();
+        reqIngredients.AddItem("Corn");
     }
 
     public void AddCookTurn()
     {
         cookCount++;
-        Debug.Log(cookCount);
+        // Debug.Log(cookCount);
     }
 
     public int GetStirCount() {

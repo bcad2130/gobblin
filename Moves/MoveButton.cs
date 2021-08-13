@@ -9,21 +9,12 @@ public class MoveButton : MonoBehaviour
     protected UnitStats parentUnit;
     protected Action action;
 
-    // private void Awake() {
-    //     bm = GameObject.FindObjectOfType<BattleManager>();
-    // }
-
     public void AttemptAction() {
         NewAction();
-        // action.SetParentButton();
 
         FindBattleManager();
-
-        // action = this.GetComponent<Action>();
         
         SetUpMove();
-        // action = this.GetComponent<Action>();
-        // action.ParentButtonImage = this.GetComponent<Image>();
 
         bm.AttemptAction(action);
     }
@@ -37,13 +28,11 @@ public class MoveButton : MonoBehaviour
         FindBattleManager();
         SetUpMove();
 
-        if (bm.CurrentUnit.CanAffordManaCost(action.ManaCost) && bm.CurrentUnit.CanAffordResourceCost(action.ResourceCost)) {
+        if (bm.CurrentUnit.CanAffordGutsCost(action.GutsCost) && bm.CanAffordResourceCost(action.ResourceCost)) {
             return true;
         }
 
         return false;
-
-
     }
 
     public void SetParentUnit(UnitStats unit) {
@@ -55,7 +44,6 @@ public class MoveButton : MonoBehaviour
     }
 
     private void FindBattleManager() {
-        // print('g');
         bm = GameObject.FindObjectOfType<BattleManager>();
     }
 

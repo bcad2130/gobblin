@@ -6,7 +6,8 @@ public class Action
 {
     public int Damage;
     public int Heal;
-    public int ManaCost;
+    public int GutsCost;
+    public int Sate;
     public int Speed;
 
     public string TargetType;
@@ -31,7 +32,7 @@ public class Action
     {
         Damage = 0;
         Heal = 0;
-        ManaCost = 0;
+        GutsCost = 0;
         TargetType = "";
         DestroySelf = false;
 
@@ -44,9 +45,6 @@ public class Action
     public void AddTarget(ref UnitStats targetUnit)
     {
         // print("AddTarget");
-        // if (Targets == null) {
-        //     Targets = new List<UnitStats>();
-        // }
 
         Targets.Add(targetUnit);
     }
@@ -59,9 +57,6 @@ public class Action
     public void AddPossibleTarget(ref UnitStats targetUnit)
     {
         // print("AddPossibleTarget");
-        // if (PossibleTargets == null) {
-        //     PossibleTargets = new List<UnitStats>();
-        // }
 
         PossibleTargets.Add(targetUnit);
     }
@@ -86,19 +81,11 @@ public class Action
 // // and more importantly, so status effects can stack multiple times
     public void AddStatusEffect(string statusEffect, int stacks)
     {
-        // if (StatusEffects == null) {
-        //     StatusEffects = new Dictionary<string,int>();
-        // }
-
         StatusEffects.Add(statusEffect, stacks);
     }
 
     public void UpdateStatusEffect(string statusEffect, int stacks)
     {
-        // if (StatusEffects == null) {
-        //     StatusEffects = new Dictionary<string,int>();
-        // }
-
         if (StatusEffects.ContainsKey(statusEffect)) {
             StatusEffects[statusEffect] = stacks;
         } else {
@@ -107,12 +94,7 @@ public class Action
     }
 
     public Dictionary<string,int> GetAllStatusEffects()
-    {
-        // if (StatusEffects == null) {
-        //     // return null;
-        //     StatusEffects = new Dictionary<string,int>();
-        // }
-        
+    {        
         return StatusEffects;
     }
 

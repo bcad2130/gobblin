@@ -27,10 +27,10 @@ public class DialogueManager : MonoBehaviour {
 
 
         // sentences = new Queue<string>();
-        SetBattleManager();
+        InitializeBattleManager();
     }
 
-    private void SetBattleManager() {
+    private void InitializeBattleManager() {
         bm = GameObject.FindObjectOfType<BattleManager>();
     }
 
@@ -105,7 +105,7 @@ public class DialogueManager : MonoBehaviour {
         // Debug.Log('E');
         DialogueBox.SetActive(false);
         // animator.SetBool("IsOpen", false);
-        bm.StartRound();
+        bm.StartCombat();
     }
 
 }

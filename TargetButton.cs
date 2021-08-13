@@ -12,11 +12,7 @@ public class TargetButton : MonoBehaviour
     }
 
     public void SelectTarget() {
-        // print("SelectTarget");
         bm.AddTargetToAction(ref parentUnit);
-
-        // bm.CurrentAction.AddTarget(ref parentUnit);
-        // bm.CurrentAction.ParentUnit.SpendMana(bm.CurrentAction.ManaCost);
 
         bm.TakeAction();
     }

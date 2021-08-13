@@ -19,18 +19,11 @@ public class CauldronButton : MoveButton
         resourceCost.Add(new CauldronItem());
         action.ResourceCost = resourceCost;
 
-        // print('q');
-        action.TargetType = "Targetless";
-        // targetType = "Self";
-        // targetType = "OneAlly";
-        // manaCost = COST;
+        action.TargetType = "Cook";
 
-        action.ManaCost = COST;
+
+        action.GutsCost = COST;
         action.Damage = DAMAGE;
-
-        // action.TargetedAction = true;
-
-        // action.TargetedAction = false;
 
         action.Summon = Cauldron;
 

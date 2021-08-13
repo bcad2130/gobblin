@@ -14,7 +14,8 @@ public class PotatoSoupRecipe : Recipe
 
         result = new SoupItem();
 
-        ingredients = new Dictionary<string,int>();
-        ingredients.Add("Potato", 2);
+        reqIngredients = new Inventory();
+        reqIngredients.AddItem("Potato");
+        reqIngredients.AddItem("Potato");
     }
 }

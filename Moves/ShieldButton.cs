@@ -9,13 +9,9 @@ public class ShieldButton : MoveButton
 
     protected override void SetUpMove() {
         action.TargetType = "Self";
-        // manaCost = COST;
 
-        action.ManaCost = COST;
+        action.GutsCost = COST;
         action.Damage = DAMAGE;
         action.AddStatusEffect("SHIELD", 5);
-
-        // action.TargetedAction = true;
-
     }
 }

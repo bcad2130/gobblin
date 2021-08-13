@@ -10,7 +10,7 @@ public class DodgeButton : MoveButton
     protected override void SetUpMove() {
         action.TargetType = "Self";
 
-        action.ManaCost = COST;
+        action.GutsCost = COST;
         action.Damage = DAMAGE;
 
         action.AddStatusEffect("DODGE", 1);

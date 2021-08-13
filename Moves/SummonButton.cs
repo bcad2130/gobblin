@@ -12,18 +12,10 @@ public class SummonButton : MoveButton
 
 
     protected override void SetUpMove() {
-        // print('q');
         action.TargetType = "Targetless";
-        // targetType = "Self";
-        // targetType = "OneAlly";
-        // manaCost = COST;
 
-        action.ManaCost = COST;
+        action.GutsCost = COST;
         action.Damage = DAMAGE;
-
-        // action.TargetedAction = true;
-
-        // action.TargetedAction = false;
 
         action.Summon = playerCharacter; 
     }

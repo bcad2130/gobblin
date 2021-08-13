@@ -8,12 +8,9 @@ public class HealButton : MoveButton
 
     protected override void SetUpMove() {
         action.TargetType = "OneAlly";
-        // manaCost = COST;
 
-        action.ManaCost = COST;
+        action.GutsCost = COST;
         action.Damage = 0;
         action.Heal = 5;
-
-        // action.TargetedAction = true;
     }
 }

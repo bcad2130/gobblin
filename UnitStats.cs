@@ -5,27 +5,27 @@ using UnityEngine.UI;
 
 public class UnitStats : MonoBehaviour
 {
-    public int maxHP;
-    public int maxMP;
+    public int maxHealth;
+    public int maxGuts;
     public int health;
-    public int mana;
+    public int guts;
     public int attack;
     public int defense;
-    // public int magic;
     public int speed;
-    public bool isDead;
+    public int taste;
+    public int tum;
+    public int nose;
 
+    public bool isDead;
     public bool isCookin;
     public bool NPC;
     public int cookTime;
     public string cookedItem;
-    // public Item cookedItem;
     public List<string> recipeIngredients;
 
     public int shield = 0;
     public int turnNumber = 0;
 
-    // private BattleManager bm;
     public BattleManager bm;
 
 
@@ -34,8 +34,8 @@ public class UnitStats : MonoBehaviour
     public Text healthTextPrefab;
     private Text healthText;
 
-    public Text manaTextPrefab;
-    private Text manaText;
+    public Text gutsTextPrefab;
+    private Text gutsText;
 
     public Text nameTextPrefab;
     private Text nameText;
@@ -46,43 +46,41 @@ public class UnitStats : MonoBehaviour
     public GameObject canvas;
     public List<MoveButton> moves;
 
-    // private float yPosHP = -112.98f;
-    // private float yPosMP = -152.98f;
-
     private Dictionary<string,int> StatusEffects;
 
-    // public List<Action> myActions;
 
 
     // CONSTANTS
 
-    private const string POISON = "POISON";
+    private const string STUN = "STUN";
+    private const string GROSS = "GROSS";
     private const string SHIELD = "SHIELD";
     private const string DODGE  = "DODGE";
     private const string BOIL   = "BOIL";
 
 
-    private void Awake() {
+    private void Awake()
+    {
         if (StatusEffects == null) {
             StatusEffects = new Dictionary<string,int>();
         }
 
-        SetBattleManager();
-        SetStatusEffects();
+        InitializeBattleManager();
+        InitializeStatusEffects();
 
-        nameText = Instantiate(nameTextPrefab, new Vector3(0, 15, 0), Quaternion.identity);
+        nameText = Instantiate(nameTextPrefab, new Vector3(0, 12, 0), Quaternion.identity);
         nameText.transform.SetParent(canvas.transform, false);
         nameText.text = gameObject.name;
 
-        turnText = Instantiate(turnTextPrefab, new Vector3(-20, 0, 0), Quaternion.identity);
+        turnText = Instantiate(turnTextPrefab, new Vector3(-15, 0, 0), Quaternion.identity);
         turnText.transform.SetParent(canvas.transform, false);
 
 
-        // TODO: make this a function since its repeated for mana
+        // TODO: make this a function since its repeated for guts
         healthText = Instantiate(healthTextPrefab);
 
         healthText.transform.localScale = new Vector3(0.3f,0.3f,1);
-        healthText.transform.position = new Vector3(15,5,0);
+        healthText.transform.position = new Vector3(22,4,0);
 
         // set canvas as parent to the text
         healthText.transform.SetParent(canvas.transform, false);
@@ -90,28 +88,31 @@ public class UnitStats : MonoBehaviour
         healthText.text = health.ToString();
 
 
-        manaText = Instantiate(manaTextPrefab);
+        gutsText = Instantiate(gutsTextPrefab);
 
-        manaText.transform.localScale = new Vector3(0.3f,0.3f,1);
-        manaText.transform.position = new Vector3(15,-5,0);
+        gutsText.transform.localScale = new Vector3(0.3f,0.3f,1);
+        gutsText.transform.position = new Vector3(22,-4,0);
 
         // set canvas as parent to the text
-        manaText.transform.SetParent(canvas.transform, false);
+        gutsText.transform.SetParent(canvas.transform, false);
         // Set the text element to the current textToDisplay:
-        manaText.text = mana.ToString();
+        gutsText.text = guts.ToString();
     }
 
-    private void SetBattleManager() {
+    private void InitializeBattleManager()
+    {
         bm = GameObject.FindObjectOfType<BattleManager>();
     }
 
-    private void SetStatusEffects() {
+    private void InitializeStatusEffects()
+    {
         if (StatusEffects == null) {
             StatusEffects = new Dictionary<string,int>();
         }
     }
 
-    public GameObject GetCanvasObj() {
+    public GameObject GetCanvasObj()
+    {
         return canvas;
     }
 
@@ -120,7 +121,8 @@ public class UnitStats : MonoBehaviour
         return ref moves;
     }
 
-    public MoveButton GetRandomAction() {
+    public MoveButton GetRandomAction()
+    {
         List<MoveButton> tempList = GetMoves();
 
         var randomIndex = Random.Range(0, tempList.Count);
@@ -136,7 +138,8 @@ public class UnitStats : MonoBehaviour
         return GetRandomAction();
     }
 
-    public Dictionary<string,int> GetAllStatusEffects() {
+    public Dictionary<string,int> GetAllStatusEffects()
+    {
         // if (StatusEffects == null) {
         //     StatusEffects = new Dictionary<string,int>();
         // }
@@ -144,7 +147,17 @@ public class UnitStats : MonoBehaviour
         return StatusEffects;
     }
 
-    public void UpdateStatusEffect(string statusEffect, int stacks) {
+    public int GetStatusEffectStacks(string statusEffect)
+    {
+        if (StatusEffects.ContainsKey(statusEffect)) {
+            return StatusEffects[statusEffect];
+        }
+
+        return 0;
+    }
+
+    public void AddStatusEffect(string statusEffect, int stacks)
+    {
         // if (StatusEffects == null) {
         //     StatusEffects = new Dictionary<string,int>();
         // }
@@ -156,13 +169,8 @@ public class UnitStats : MonoBehaviour
         }
     }
 
-    // private void SetMoves()
-    // {
-    //     moves = new List<Button>();
-    //     moves.Add(attackButtonPrefab);
-    // }
-
-    public void TakeAttack (int rawDamage, int attackSpeed) {
+    public void TakeAttack (int rawDamage, int attackSpeed)
+    {
         int multiplier = 1;
 
         if (attackSpeed > speed) {
@@ -175,28 +183,29 @@ public class UnitStats : MonoBehaviour
             }
         }
 
-        int damage = rawDamage - (defense / 2);
+        int netDamage = rawDamage - (defense / 2);
 
-        if (damage < 0) {
-            damage = 0;
+        // do 1 damage per hit minimum
+        if (netDamage <= 0) {
+            netDamage = 1;
         }
 
         do {
             if (!CheckDodge()) {
                 if (shield > 0) {
-                    shield -= damage;
+                    shield -= netDamage;
 
                     if (shield < 0) {
-                        damage = -shield;
+                        netDamage = -shield;
                         shield = 0;
                     } else {
-                        damage = 0;
+                        netDamage = 0;
                     }
 
                     StatusEffects[SHIELD] = shield;
                 }
 
-                health -= damage;
+                health -= netDamage;
             }
 
             multiplier--;
@@ -208,46 +217,29 @@ public class UnitStats : MonoBehaviour
         }
     }
 
-    public void TakeDamage (int rawDamage) {
-        // print("TakeDamage");
-        // if you heal when you have a shield, it adds it to the shield (NOT ANYMORE!)
-        // we need to make a heal function
-        // we also need max health and mana stats
+    // This damage is unblocked, defended, etc
+    // i.e. health - rawDamage
+    public void TakeTumDamage (int rawDamage)
+    {
+        int netDamage = rawDamage - (tum / 2);
 
-        int damage = rawDamage - (defense / 2);
-
-        if (damage < 0) {
-            damage = 0;
+        // do 1 damage minimum
+        if (netDamage <= 0) {
+            netDamage = 1;
         }
 
-        if (!CheckDodge()) {
-            if (shield > 0) {
-                shield -= damage;
-
-                if (shield < 0) {
-                    damage = -shield;
-                    shield = 0;
-                } else {
-                    damage = 0;
-                }
-
-                StatusEffects[SHIELD] = shield;
-            }
-
-            health -= damage;
-
-            // UpdateHealthText();
-            
-            if (health <= 0) {
-                health = 0;
-                isDead = true;
-            }
+        health -= netDamage;
+        
+        if (health <= 0) {
+            health = 0;
+            isDead = true;
         }
     }
 
-    private bool CheckDodge() {
+    private bool CheckDodge()
+    {
         if (StatusEffects.ContainsKey(DODGE)) {
-            UpdateStatusEffect(DODGE, -1);
+            AddStatusEffect(DODGE, -1);
 
             if (StatusEffects[DODGE] <= 0) {
                 StatusEffects.Remove(DODGE);
@@ -259,132 +251,164 @@ public class UnitStats : MonoBehaviour
         }
     }
 
-    public void HealDamage (int damage) {
-        // if you heal when you have a shield, it adds it to the shield
-        // we need to make a heal function
-        // we also need max health and mana stats
+    public void HealDamage (int rawHeal)
+    {
+        int netHeal = rawHeal + (rawHeal * taste) / 10;
 
-        health += damage;
+        health += netHeal;
+
+        if (health > maxHealth)
+        {
+            health = maxHealth;
+        }
+
         UpdateHealthText();
     }
 
-    public bool CanAffordManaCost (int manaCost) {
-        return (mana - manaCost) >= 0;
+    public void SateHunger (int rawSatiation)
+    {
+        int netGuts = rawSatiation + (rawSatiation * taste) / 10;
+
+        guts += netGuts;
+
+        if (guts > maxGuts) {
+            guts = maxGuts;
+        }
+
+        UpdateGutsText();
     }
 
-    public void SpendMana (int spentMana) {
-        mana -= spentMana;
-        UpdateManaText();
+    public bool CanAffordGutsCost (int gutsCost)
+    {
+        return (guts - gutsCost) >= 0;
     }
 
-    public bool CanAffordResourceCost (List<Item> resourceCost) {
-        // TODO: Make this work for requiring multiple of the same item
-        if (resourceCost != null) {
-            // print ("resource cost is not null");
-            foreach (Item resource in resourceCost) {
-                // if (!bm.playerItems.CheckItem(resource.Name)) {
-                if (!bm.playerItems.CheckItem(resource)) {
-                    // print("return false");
-                    return false;
-                }
-            }
-        }
-
-        return true;
+    public void SpendGuts (int spentGuts)
+    {
+        guts -= spentGuts;
+        UpdateGutsText();
     }
 
-    public void SpendResource (List<Item> resourceCost) {
-        if (resourceCost != null) {
-            foreach (Item resource in resourceCost) {
-                bm.playerItems.RemoveItem(resource);
-            }
-        }
+    // public bool CanAffordResourceCost (List<Item> resourceCost)
+    // {
+    //     // TODO: Make this work for requiring multiple of the same item
+    //     if (resourceCost != null) {
+    //         // print ("resource cost is not null");
+    //         foreach (Item resource in resourceCost) {
+    //             switch(bm.CurrentAction.TargetType) {
+    //                 case "Cook":
+    //                     if (!bm.playerEquipment.CheckItem(resource)) {
+    //                         return false;
+    //                     }
+    //                     break;
+    //                 case "Ingredient":
+    //                     if (!bm.playerIngredients.CheckItem(resource)) {
+    //                         return false;
+    //                     }
+    //                     break;
+    //                 case "Eat":
+    //                     if (!bm.playerFood.CheckItem(resource)) {
+    //                         return false;
+    //                     }
+    //                     break;
+    //                 default:
+    //                     print("Invalid target type for action with resourceCost");
+    //                     break;
+    //             }
+    //         }
+    //     }
 
-        // print ("we made it this far");
-    }
+    //     return true;
+    // }
 
-    public void Effect () {
-        if (!bm) {
-            SetBattleManager();
-            SetStatusEffects();
-            // print(bm.CurrentAction);
-        }
+    // public void SpendResource (List<Item> resourceCost)
+    // {
+    //     if (resourceCost != null) {
+    //         foreach (Item resource in resourceCost) {
+    //             switch(bm.CurrentAction.TargetType) {
+    //                 case "Cook":
+    //                     bm.playerEquipment.RemoveItem(resource.Name);
+    //                     break;
+    //                 case "Ingredient":
+    //                     bm.playerIngredients.RemoveItem(resource.Name);
+    //                     break;
+    //                 case "Eat":
+    //                 case "Self":
+    //                     bm.playerFood.RemoveItem(resource.Name);
+    //                     break;
+    //                 default:
+    //                     print("Invalid target type for action with resourceCost");
+    //                     break;
+    //             }
+    //         }
+    //     }
 
-        print("action:");
-        // print(bm.CurrentAction.Damage);
-        // print(bm.CurrentAction);
-        // print(bm.GetCurrentAction().Self());
-        // print("effect begins...");
-        // health -= bm.CurrentAction.Damage;
-        if (bm.CurrentAction.Damage > 0) {
-            print("wtf");
-            TakeDamage(bm.CurrentAction.Damage);
-        }
+    //     // print ("we made it this far");
+    // }
 
-        if (bm.CurrentAction.Heal > 0) {
-            HealDamage(bm.CurrentAction.Heal);
-        }
+    // deprecated?
+    // public void Effect ()
+    // {
+    //     if (!bm) {
+    //         InitializeBattleManager();
+    //         InitializeStatusEffects();
+    //         // print(bm.CurrentAction);
+    //     }
 
-        // TODO: i should just use the status effect instead of having a local shield stat
-        ApplySingleEffectStatus(bm.CurrentAction.GetAllStatusEffects());
+    //     print("action:");
+    //     // print(bm.CurrentAction.Damage);
+    //     // print(bm.CurrentAction);
+    //     // print(bm.GetCurrentAction().Self());
+    //     // print("effect begins...");
+    //     // health -= bm.CurrentAction.Damage;
+    //     if (bm.CurrentAction.Damage > 0) {
+    //         print("wtf");
+    //         TakeAttack(bm.CurrentAction.Damage);
+    //     }
 
-        foreach(KeyValuePair<string, int> effect in bm.CurrentAction.GetAllStatusEffects())
-        {
-            // do something with effect.Value or effect.Key
+    //     if (bm.CurrentAction.Heal > 0) {
+    //         HealDamage(bm.CurrentAction.Heal);
+    //     }
 
-            UpdateStatusEffect(effect.Key, effect.Value);
-        }
+    //     // TODO: i should just use the status effect instead of having a local shield stat
+    //     ApplySingleEffectStatus(bm.CurrentAction.GetAllStatusEffects());
+
+    //     foreach(KeyValuePair<string, int> effect in bm.CurrentAction.GetAllStatusEffects())
+    //     {
+    //         // do something with effect.Value or effect.Key
+
+    //         AddStatusEffect(effect.Key, effect.Value);
+    //     }
 
 
-        // print(bm.CurrentAction.DestroySelf);
-        if (bm.CurrentAction.DestroySelf) {
-            // print('h');
-            Destroy(this.gameObject);
+    //     // print(bm.CurrentAction.DestroySelf);
+    //     if (bm.CurrentAction.DestroySelf) {
+    //         // print('h');
+    //         Destroy(this.gameObject);
 
-            // TODO: must clear from unit lists etc
-            // on this note, will i have revival? should i even keep dead units around?
-            // if not, i should have a more effective way of clearing units, since i might want to move them around, or have them transform, or get "used up" like the cauldron
-        }
-    }
+    //         // TODO: must clear from unit lists etc
+    //         // on this note, will i have revival? should i even keep dead units around?
+    //         // if not, i should have a more effective way of clearing units, since i might want to move them around, or have them transform, or get "used up" like the cauldron
+    //     }
+    // }
 
-    public void DestroySelf() {
+    public void DestroySelf()
+    {
         bm.RemoveUnitFromAllLists(this);
         Destroy(this.gameObject);
     }
 
-    public void ApplySingleEffectStatus(Dictionary<string,int> effects) {
+    public void ApplySingleEffectStatus(Dictionary<string,int> effects)
+    {
         if (effects.ContainsKey(SHIELD)) {
             shield += effects[SHIELD];
         }
     }
 
-    // public void TickStatusEffects () {
-    //     List<string> effects = new List<string>();
-
-    //     foreach (string statusEffect in StatusEffects.Keys) {
-    //         effects.Add(statusEffect);
-    //     }
-    //     // foreach (KeyValuePair<string, int> effect in StatusEffects.ToList())
-    //     foreach (string effect in effects)
-    //     {
-    //         // do something with effect.Value or effect.Key
-    //         switch (effect) 
-    //         {
-    //           case "POISON": 
-    //             PoisonTicker();
-    //             break;
-    //           case "SHIELD":
-    //             break;
-    //           default:
-    //             print("Invalid Status Effect");
-    //             break;
-    //         }
-    //     }
-    // }
-
-    public void UpdateText () {
+    public void UpdateText ()
+    {
         UpdateHealthText();
-        UpdateManaText();
+        UpdateGutsText();
         UpdateTurnText();
     }
 
@@ -397,11 +421,16 @@ public class UnitStats : MonoBehaviour
         if (shield > 0) {
             healthText.text += "+[" + shield.ToString() + "]";
         }
+
+        healthText.text += " / " + maxHealth.ToString();
     }
 
-    private void UpdateManaText()
+    private void UpdateGutsText()
     {
-        manaText.text = mana.ToString();
+        gutsText.text = guts.ToString();
+
+        gutsText.text += " / " + maxGuts.ToString();
+
     }
 
     private void UpdateTurnText()
@@ -413,32 +442,37 @@ public class UnitStats : MonoBehaviour
         }
     }
 
-    public void CheckIfDead() {
+    public void CheckIfDead()
+    {
         if (health <= 0) {
             health = 0;
             isDead = true;
             turnNumber = -1;
             turnText.text = "Dead";
+
+            // bm.HandleDeaths();
         }
     }
 
-    public void CheckPoison() {
-        if (StatusEffects.ContainsKey(POISON)) {
-            PoisonTicker();
+    public void CheckGross()
+    {
+        if (StatusEffects.ContainsKey(GROSS)) {
+            GrossTicker();
         }
     }
 
-    private void PoisonTicker() {
-                // print(StatusEffects[POISON]);
+    private void GrossTicker()
+    {
+        // print(StatusEffects[GROSS]);
 
-                TakeDamage(StatusEffects[POISON]);
+        TakeTumDamage(StatusEffects[GROSS]);
 
-                UpdateStatusEffect(POISON, -1);
-                // print(StatusEffects[POISON]);
+        AddStatusEffect(GROSS, -1);
+        // print(StatusEffects[GROSS]);
 
-                if (StatusEffects[POISON] <= 0) {
-                    StatusEffects.Remove(POISON);
-                }
+        if (StatusEffects[GROSS] <= 0) {
+            StatusEffects.Remove(GROSS);
+        }
     }
 
     // public bool CheckRecipe() {

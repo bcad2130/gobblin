@@ -7,12 +7,10 @@ public class ActionButton : ScriptableObject
 {
     public int Damage;
     public int Heal;
-    public int ManaCost;
+    public int GutsCost;
     public string TargetType;
     public bool DestroySelf;
     
-    // public bool TargetedAction { get; set; }
-    // public List<string> StatusEffects { get; set; }
     public List<UnitStats> Targets;
     public List<UnitStats> PossibleTargets;
     public UnitStats ParentUnit;
@@ -26,62 +24,34 @@ public class ActionButton : ScriptableObject
 
     protected Action action;
 
-    // public StatusEffects Status { get; set; }
-
-
-    private void Awake() {
+    private void Awake()
+    {
         NewAction();
-        SetBattleManager();
-
-        // SetBattleManager();
-        // Targets = new List<UnitStats>();
-        // PossibleTargets = new List<UnitStats>();
-        // StatusEffects = new Dictionary<string,int>();
-        // ResourceCost = new List<Item>();
+        InitializeBattleManager();
     }
 
-    private void NewAction() {
+    private void NewAction()
+    {
         action = new Action();
     }
 
-    public void SetBattleManager() {
-        // print('g');
+    public void InitializeBattleManager()
+    {
         bm = GameObject.FindObjectOfType<BattleManager>();
     }
 
-    public void AddTarget(ref UnitStats targetUnit) {
-        // print("AddTarget");
-        // if (Targets == null) {
-        //     Targets = new List<UnitStats>();
-        // }
-
+    public void AddTarget(ref UnitStats targetUnit)
+    {
         Targets.Add(targetUnit);
     }
 
-    public void AddPossibleTarget(ref UnitStats targetUnit) {
-        // print("AddPossibleTarget");
-        // if (PossibleTargets == null) {
-        //     PossibleTargets = new List<UnitStats>();
-        // }
-
+    public void AddPossibleTarget(ref UnitStats targetUnit)
+    {
         PossibleTargets.Add(targetUnit);
     }    
 
-// // status effects should be a hash table so that all status effects are predefined
-// // and more importantly, so status effects can stack multiple times
-    public void AddStatusEffect(string statusEffect, int stacks) {
-        // if (StatusEffects == null) {
-        //     StatusEffects = new Dictionary<string,int>();
-        // }
-
-        StatusEffects.Add(statusEffect, stacks);
-    }
-
-    public void UpdateStatusEffect(string statusEffect, int stacks) {
-        // if (StatusEffects == null) {
-        //     StatusEffects = new Dictionary<string,int>();
-        // }
-
+    public void AddStatusEffect(string statusEffect, int stacks)
+    {
         if (StatusEffects.ContainsKey(statusEffect)) {
             StatusEffects[statusEffect] = stacks;
         } else {
@@ -89,12 +59,19 @@ public class ActionButton : ScriptableObject
         }
     }
 
+    // public void UpdateStatusEffect(string statusEffect, int stacks) {
+    //     // if (StatusEffects == null) {
+    //     //     StatusEffects = new Dictionary<string,int>();
+    //     // }
+
+    //     if (StatusEffects.ContainsKey(statusEffect)) {
+    //         StatusEffects[statusEffect] = stacks;
+    //     } else {
+    //         StatusEffects.Add(statusEffect, stacks);
+    //     }
+    // }
+
     public Dictionary<string,int> GetAllStatusEffects() {
-        // if (StatusEffects == null) {
-        //     // return null;
-        //     StatusEffects = new Dictionary<string,int>();
-        // }
-        
         return StatusEffects;
     }
 
@@ -102,7 +79,7 @@ public class ActionButton : ScriptableObject
     public void Clear() {
         Damage      = 0;
         Heal        = 0;
-        ManaCost    = 0;
+        GutsCost    = 0;
         TargetType  = null;
         DestroySelf = false;
 
@@ -113,33 +90,10 @@ public class ActionButton : ScriptableObject
         PossibleTargets = new List<UnitStats>();
         StatusEffects = new Dictionary<string,int>();
         ResourceCost = new List<Item>();
-
-        // if (Targets.Count > 0 && Targets != null) {
-        //     // print(Targets);
-        //     Targets.Clear();
-        // }
-
-        // if (PossibleTargets.Count > 0 || PossibleTargets != null) {
-        //     PossibleTargets.Clear();
-        // }
-        // Debug.Log (StatusEffects);
-
-        // if (StatusEffects.Count > 0 || StatusEffects != null) {
-        // if (StatusEffects != null) {
-        //     StatusEffects.Clear();
-        // }
     }
 
     public void AttemptAction() {
 
-        // bm.CurrentAction = this;
-        
-        // SetUpMove();
-        // bm.CurrentAction = this.GetComponent<Action>();
-        // bm.CurrentAction.ParentButtonImage = this.GetComponent<Image>();
-        // bm.SetAction(this);
-
-        // bm.AttemptAction();
     }
 
     public virtual void SetUpMove() {
@@ -147,10 +101,7 @@ public class ActionButton : ScriptableObject
     }
 
     public void AISetUpMove() {
-        SetBattleManager();
+        InitializeBattleManager();
         SetUpMove();
     }
-    // public Action Self() {
-    //     return this;
-    // }
 }

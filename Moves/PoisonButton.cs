@@ -8,15 +8,10 @@ public class PoisonButton : MoveButton
     protected const int DAMAGE = 0;
 
     protected override void SetUpMove() {
-        action.TargetType = "AllEnemies";
+        action.TargetType = "Enemy";
         
-        // manaCost = COST;
-
-        action.ManaCost = COST;
+        action.GutsCost = COST;
         action.Damage = DAMAGE;
-        action.AddStatusEffect("POISON", 3);
-
-        // action.TargetedAction = true;
-
+        action.AddStatusEffect("GROSS", 3);
     }
 }

@@ -15,22 +15,16 @@ public class ForageButton : MoveButton
 
 
     protected override void SetUpMove() {
-        // print('q');
-        action.TargetType = "Targetless";
-        // targetType = "Self";
-        // targetType = "OneAlly";
-        // manaCost = COST;
+        action.TargetType = "Forage";
 
-        action.ManaCost = COST;
+        action.GutsCost = COST;
         action.Damage = DAMAGE;
 
-        // action.TargetedAction = true;
+        // List<Item> localIngredients = new List<Item>();
 
-        // action.TargetedAction = false;
+        // localIngredients.Add
+        // NewItem = new PotatoItem();
 
-        // action.Summon = playerCharacter;
-        NewItem = new PotatoItem();
-
-        action.GiveItem = NewItem;
+        // action.GiveItem = NewItem;
     }
 }
