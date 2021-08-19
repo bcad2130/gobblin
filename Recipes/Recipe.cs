@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Recipe
 {
+    private string recipeName;
 
     public int cookCount;
     public int cookTime;
@@ -21,6 +22,10 @@ public class Recipe
 
     public Recipe ()
     {
+        // Debug.Log("Error : Recipe : Don't use the default recipe constructor");
+
+        recipeName = "Default";
+
         cookCount = 0;
         cookTime  = 1;
 
@@ -32,7 +37,7 @@ public class Recipe
         // ingredients = new Dictionary<string,int>();
         // ingredients.Add("Potato", 1);
 
-        result = new CobItem();
+        result = new CornCobItem();
 
         reqIngredients = new Inventory();
         reqIngredients.AddItem("Corn");
@@ -44,13 +49,23 @@ public class Recipe
         // Debug.Log(cookCount);
     }
 
-    public int GetStirCount() {
+    public int GetStirCount()
+    {
         return stirCount;
     }
 
-    public int GetStirGoal() {
+    public int GetStirGoal()
+    {
         return stirGoal;
     }
 
-    // public 
+    public string GetName()
+    {
+        return recipeName;
+    }
+
+    public void SetName(string name)
+    {
+        recipeName = name;
+    }
 }

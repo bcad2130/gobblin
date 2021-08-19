@@ -8,53 +8,141 @@ public class MoveButton : MonoBehaviour
     protected BattleManager bm;
     protected UnitStats parentUnit;
     protected Action action;
+    protected Action altAction;
+    protected Recipe recipe;
+    protected int gutsCost;
+    protected List<Item> resourceCost = null;
+    protected string ingredientCost = null;
 
-    public void AttemptAction() {
-        NewAction();
+    // public void Awake()
+    // {
+    //     Debug.Log('C');
+    //     SetUpButtonAction();
+    // }
 
-        FindBattleManager();
-        
-        SetUpMove();
+    public void AttemptAction()
+    {
+        // SetUpButtonAction();
 
-        bm.AttemptAction(action);
+        // TODO add a checkAfford here, then we dont need to check in the bm
+
+        // or move everything to bm
+        SetUpButtonAction();
+
+        bm.TryAction(action);
+
+        // if (bm.CheckAfford(action)) {
+        //     bm.RouteAction(action);
+        // } else {
+        //     Debug.Log("Cannot do Move");
+        // }
     }
 
-    protected virtual void SetUpMove() {
+//  maybe this is isn't overridden, instead we just set up with any of the vars that the variants override
+    protected virtual void SetUpMove()
+    {
         print("should you have overridden this?");
     }
 
-    public bool CheckAfford() {
-        NewAction();
-        FindBattleManager();
-        SetUpMove();
+    // public bool CheckAfford() {
+    //     if (bm.CanAffordGutsCost(action) && bm.CanAffordResourceCost(action)) {
+    //         return true;
+    //     }
 
-        if (bm.CurrentUnit.CanAffordGutsCost(action.GutsCost) && bm.CanAffordResourceCost(action.ResourceCost)) {
-            return true;
-        }
+    //     return false;
+    // }
 
-        return false;
-    }
-
-    public void SetParentUnit(UnitStats unit) {
+    public void SetParentUnit(UnitStats unit)
+    {
         parentUnit = unit;
     }
 
-    private void NewAction() {
+    private void NewAction()
+    {
         action = new Action();
     }
 
-    private void FindBattleManager() {
+    private void NewAltAction()
+    {
+        altAction = new Action();
+    }
+
+    private void FindBattleManager()
+    {
         bm = GameObject.FindObjectOfType<BattleManager>();
     }
 
-    public Image GetImage() {
+    public Image GetImage()
+    {
         return this.GetComponent<Image>();
     }
 
-    public Action GetAction() {
+    public void SetUpButtonAction()
+    {
         NewAction();
         FindBattleManager();
         SetUpMove();
+    }
+
+    public Action GetAction()
+    {
         return action;
+    }
+
+    public void SetRecipe(Recipe recipeToSet)
+    {
+        recipe = new Recipe();
+        recipe = recipeToSet;
+    }
+
+    public Recipe GetRecipe()
+    {
+        return recipe;
+    }
+
+    public void SetIngredient(string ingredient)
+    {
+        ingredientCost = ingredient;
+    }
+
+    public string GetIngredient()
+    {
+        return ingredientCost;
+    }
+
+    public void SetResourceCost(List<Item> itemList)
+    {
+        if (resourceCost == null) {
+            resourceCost = new List<Item>();
+        }
+        resourceCost = itemList;
+    }
+
+    public List<Item> GetResourceCost()
+    {
+        return resourceCost;
+    }
+
+    public void AddResourceCost(Item item)
+    {
+        if (resourceCost == null) {
+            resourceCost = new List<Item>();
+        }
+        resourceCost.Add(item);
+    }
+
+    public string GetName()
+    {
+        return gameObject.name;
+    }
+
+    public int GetGutsCost()
+    {
+        return gutsCost;
+    }
+
+    public void SetGutsCost(int actionGutsCost)
+    {
+        gutsCost = actionGutsCost;
     }
 }
