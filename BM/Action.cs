@@ -39,16 +39,19 @@ public class Action
 
     public Action ()
     {
-        Damage = 0;
-        Speed = 0;
-        Heal = 0;
-        GutsCost = 0;
-        TargetType = "";
-        DestroySelf = false;
-        isRecipe = false;
-        isSummon = false;
-        isBasicAttack = false;
-        checkIfCookin = false;
+        Damage          = 0;
+        Speed           = 0;
+        Heal            = 0;
+        GutsCost        = 0;
+
+        ingredientCost  = "";
+        TargetType      = "";
+        
+        DestroySelf     = false;
+        isRecipe        = false;
+        isSummon        = false;
+        isBasicAttack   = false;
+        checkIfCookin   = false;
 
         Targets         = new List<UnitStats>();
         PossibleTargets = new List<UnitStats>();

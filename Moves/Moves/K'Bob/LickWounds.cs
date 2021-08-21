@@ -10,8 +10,8 @@ public class LickWounds : MoveButton
         action.TargetType = "AllyOrMeleeEnemy";
 
         action.GutsCost = COST;
-        action.Damage = 0;
         action.Heal = 25;
+        
         action.AddStatusEffect("GROSS", 5);
     }
 }

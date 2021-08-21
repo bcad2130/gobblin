@@ -13,6 +13,9 @@ public class BattleManager : MonoBehaviour
 
     public GameObject targetButton;
     public GameObject eatButton;
+    public GameObject serveDrinkButton;
+    public GameObject serveFoodButton;
+    public GameObject serveMealButton;
     public GameObject recipeButton;
     public GameObject ingredientButton;
     public GameObject HUD;
@@ -47,7 +50,7 @@ public class BattleManager : MonoBehaviour
     public Inventory localIngredients;
 
     private List<Recipe> playerRecipes;
-    private List<Item> playerFoodItems;
+    private List<Item> playerMealItems;
 
 
 
@@ -99,23 +102,37 @@ public class BattleManager : MonoBehaviour
         playerFood          = new Inventory();
         localIngredients    = new Inventory();
 
-        playerFoodItems     = new List<Item>();
+        playerMealItems     = new List<Item>();
 
-        // start with one cauldron
+        // start with this equipment
         playerEquipment.AddItem("Cauldron");
 
-        // start with food (for testing)
-        // playerFood.AddItem("Cob");
-        // playerFoodItems.Add(new CornCobItem());
+        // start with pre-made food (for testing)
+        playerMealItems.Add(new CornCobItem());
+        playerMealItems.Add(new GritsItem());
+        playerMealItems.Add(new PopCornItem());
+        playerMealItems.Add(new PopCornItem());
+        playerMealItems.Add(new BurntMessItem());
+
+        // start with ingredients (for testing)
+        playerIngredients.AddItem("Bottle");
+        playerIngredients.AddItem("Bottle");
+        playerIngredients.AddItem("Bottle");
 
         // populate local ingredients for forage (note that this system results in limited quantities of ingredients)
+        localIngredients.AddItem("Bottle");
+        localIngredients.AddItem("Bottle");
+        localIngredients.AddItem("Bottle");
+        localIngredients.AddItem("Bottle");
         localIngredients.AddItem("Water");
+        localIngredients.AddItem("Water");
+        localIngredients.AddItem("Grease");
         localIngredients.AddItem("Grease");
         localIngredients.AddItem("Corn");
         localIngredients.AddItem("Corn");
         localIngredients.AddItem("Corn");
-        localIngredients.AddItem("Water");
-        localIngredients.AddItem("Grease");
+        localIngredients.AddItem("Corn");
+        localIngredients.AddItem("Corn");
         localIngredients.AddItem("Corn");
         localIngredients.AddItem("Corn");
         localIngredients.AddItem("Corn");
@@ -369,9 +386,24 @@ public class BattleManager : MonoBehaviour
 
     // EATING MANAGEMENT
 
-    private void PickMeal()
+    private void PickMealToEat()
     {
-        DisplayMeals();
+        DisplayMealsToEat();
+    }
+
+    private void PickDrinkToServe()
+    {
+        DisplayMealsToServe("Drink");
+    }
+
+    private void PickFoodToServe()
+    {
+        DisplayMealsToServe("Food");
+    }
+
+    private void PickMealToServe()
+    {
+        DisplayMealsToServe("Meal");
     }
 
     public void SetMealPicked(bool pick)
@@ -437,10 +469,10 @@ public class BattleManager : MonoBehaviour
 
                 // Debug.Log("READY");
                 if (CheckIngredients() && CheckStirring() ) {
-                    playerFoodItems.Add(CurrentRecipe.result);
+                    playerMealItems.Add(CurrentRecipe.result);
                     Debug.Log("You made " + CurrentRecipe.result.Name);
                 } else {
-                    playerFoodItems.Add(new BurntMessItem());
+                    playerMealItems.Add(new BurntMessItem());
                     Debug.Log("You made a Burnt Mess. Better luck next time!");
                 }
                 // Debug.Log('A');
@@ -742,10 +774,19 @@ public class BattleManager : MonoBehaviour
         return (CurrentUnit.GetCurrentGuts() - action.GetGutsCost()) >= 0;
     }
 
-    public bool CanAffordResourceCost (Action action) {
+    public bool CanAffordResourceCost (Action action)
+    {
+        if (action.GetIngredientCost() != "") {
+            if (!playerIngredients.CheckItem(action.GetIngredientCost())) {
+                Debug.Log("You do not have the required ingredient.");
+                return false;
+            }
+        }
+
         // TODO: Make this work for requiring multiple of the same item
         if (action.ResourceCost != null) {
             // print ("resource cost is not null");
+
             foreach (Item resource in action.ResourceCost) {
                 // print(action.TargetType);
                 switch(action.TargetType) {
@@ -755,13 +796,11 @@ public class BattleManager : MonoBehaviour
                             return false;
                         }
                         break;
-                    case "Ingredient":
-                        if (!playerIngredients.CheckItem(resource.Name)) {
-                            return false;
-                        }
-                        break;
                     case "Eat":
-                        if (!playerFoodItems.Contains(resource)) {
+                    case "ServeDrink":
+                    case "ServeFood":
+                    case "ServeMeal":
+                        if (!playerMealItems.Contains(resource)) {
                             return false;
                         }
                         break;
@@ -786,7 +825,10 @@ public class BattleManager : MonoBehaviour
                         playerEquipment.RemoveItem(resource.Name);
                         break;
                     case "Eat":
-                        playerFoodItems.Remove(resource);
+                    case "ServeDrink":
+                    case "ServeFood":
+                    case "ServeMeal":
+                        playerMealItems.Remove(resource);
                         break;
                     default:
                         print("Invalid target type for action with resourceCost");
@@ -810,6 +852,8 @@ public class BattleManager : MonoBehaviour
         return true;
     }
 
+
+    // TODO maybe I should have a target type and a move type instead of having Stir alongside Ally and such
     public void RouteAction(Action action)
     {
         // Debug.Log(action.TargetType);
@@ -824,7 +868,6 @@ public class BattleManager : MonoBehaviour
             case "Ally":
             case "MeleeAlly":
             case "CoverAlly":
-            case "CoveredAlly": // TODO
             case "Enemy":
             case "MeleeEnemy":
             case "MeleeEnemyPierce":
@@ -833,6 +876,9 @@ public class BattleManager : MonoBehaviour
             case "Stir":
             case "AddIngredient":
             case "Eat":
+            case "ServeDrink":
+            case "ServeFood":
+            case "ServeMeal":
                 // FindTargets();
                 DisplayTargets();
                 break;
@@ -851,8 +897,17 @@ public class BattleManager : MonoBehaviour
             case "PickIngredient":
                 PickIngredient();
                 break;
-            case "PickMeal":
-                PickMeal();
+            case "PickMealToEat":
+                PickMealToEat();
+                break;
+            case "PickDrinkToServe":
+                PickDrinkToServe();
+                break;
+            case "PickFoodToServe":
+                PickFoodToServe();
+                break;
+            case "PickMealToServe":
+                PickMealToServe();
                 break;
             default:
                 print("Invalid target");
@@ -869,7 +924,7 @@ public class BattleManager : MonoBehaviour
             CurrentUnit.SpendGuts(CurrentAction.GutsCost);
         }
 
-        // TODO make it so you can't cover yourself in targeting
+        // TODO: fix covering-chains, where you can cover a melee ally whose already covering someone
         if (CurrentAction.TargetType == "CoverAlly") {
             if (CurrentAction.Targets.Count == 1) {
                 foreach (UnitStats target in CurrentAction.Targets) {
@@ -892,35 +947,42 @@ public class BattleManager : MonoBehaviour
             CurrentRecipe.stirCount++;
         }
 
-        if (CurrentAction.TargetType == "AddIngredient") {
+        // new method to check ingredient cost
+        if (CurrentAction.GetIngredientCost() != "") {
             if (CanAffordIngredient(CurrentAction.GetIngredientCost())) {
                 SpendIngredient(CurrentAction.GetIngredientCost());
-                CurrentRecipe.reqIngredients.RemoveItem(CurrentAction.GetIngredientCost());
+                if (CurrentAction.TargetType == "AddIngredient") {
+                    CurrentRecipe.reqIngredients.RemoveItem(CurrentAction.GetIngredientCost());
+                }
             } else {
                 canAct = false;
             }
-
-            // foreach (Item ingredient in CurrentAction.ResourceCost) {
-            //     Debug.Log(ingredient.Name);
-            //     CurrentRecipe.reqIngredients.RemoveItem(ingredient.Name);
-            // }
-
-        } else if (CurrentAction.TargetType == "Eat") {
+        }
+        
+        if (CurrentAction.TargetType == "Eat") {
             if (CurrentAction.ResourceCost.Count == 1) {
                 SetCurrentMeal(CurrentAction.ResourceCost[0]);
 
                 PrepMeal();
-                if(CurrentAction.Heal > 0) {
-                    Debug.Log("You ate: " + CurrentMeal.Name + "... Delicious!!");
-                } else {
-                    Debug.Log("You ate: " + CurrentMeal.Name + "... Gross!!");
-                }
+
+                Debug.Log("You ate: " + CurrentMeal.Name + "... Delicious!!");
+
+                SpendResource(CurrentAction.ResourceCost);
+            } else {
+                Debug.Log("Error: TakeAction: You should only serve one meal at a time");
+            }
+        } else if (CurrentAction.TargetType == "ServeDrink" || CurrentAction.TargetType == "ServeFood" || CurrentAction.TargetType == "ServeMeal") {
+            if (CurrentAction.ResourceCost.Count == 1) {
+                SetCurrentMeal(CurrentAction.ResourceCost[0]);
+
+                PrepMeal();
+
+                Debug.Log("You served: " + CurrentMeal.Name + "... Gross!!");
 
                 SpendResource(CurrentAction.ResourceCost);
             } else {
                 Debug.Log("Error: TakeAction: You should only consume one meal at a time");
             }
-
         } else if (CurrentAction.ResourceCost.Count != 0) {
             SpendResource(CurrentAction.ResourceCost);
         }
@@ -1052,23 +1114,55 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    private void CoverUnit(UnitStats unitToCover)
+    private void CoverUnit(UnitStats unit)
     {
-        if (!coverUnits.ContainsKey(CurrentUnit.name)){
-            coverUnits.Add(CurrentUnit.name, unitToCover.name);
-            if (unitToCover.tag == "Player") { // TODO add functionality for NPC
-                meleeAllyList.Remove(unitToCover);
-            } else if (unitToCover.tag == "Enemy") {
-                meleeEnemyList.Remove(unitToCover);
-            }
-        } else {
-            Debug.Log("need to handle this case");
-        }
 
+
+        coverUnits.Add(CurrentUnit.name, unit.name);
+        if (unit.tag == "Player") {
+            meleeAllyList.Remove(unit);
+        } else if (unit.tag == "Enemy") {
+            meleeEnemyList.Remove(unit);
+        }
     }
 
-    // TODO: REMOVE UNIT FROM COVER FUNCTION
-    //       TRIGGER THIS WHEN THE BLOCKING UNIT DIES
+    private bool IsCovered(UnitStats unit)
+    {
+        if (coverUnits.ContainsValue(unit.name)){
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool IsCovering(UnitStats unit)
+    {
+        if (coverUnits.ContainsKey(unit.name)){
+            return true;
+        }
+
+        return false;
+    }
+
+    // TODO:
+    //       TRIGGER Uncover WHEN either CurrentUnit or UNIT DIES
+    private void Uncover(UnitStats unit) {
+        if (IsCovering(CurrentUnit)) {
+            coverUnits.Remove(CurrentUnit.name);
+        }
+
+        if (IsCovering(unit)) {
+            coverUnits.Remove(unit.name);
+        }
+
+        if (IsCovered(CurrentUnit)) {
+            coverUnits.Remove(coverUnits[CurrentUnit.name]);
+        }
+
+        if (IsCovered(unit)) {
+            coverUnits.Remove(coverUnits[unit.name]);
+        }
+    }
 
     private void SummonUnit()
     {
@@ -1188,7 +1282,6 @@ public class BattleManager : MonoBehaviour
                     SelectRandomUnitFromPossibleTargets();
                 }
                 break;
-            case "CoverAlly":
             case "MeleeAlly":
                 if (myTurn) {
                     FindTargetsByList(meleeAllyList);
@@ -1202,6 +1295,7 @@ public class BattleManager : MonoBehaviour
                 }
                 break;
             case "Ally":
+            case "CoverAlly":
                 if (myTurn) {
                     FindTargetsByList(allyList);
                     RemoveSelfFromPossibleTargets();
@@ -1214,6 +1308,8 @@ public class BattleManager : MonoBehaviour
                 break;
             case "MeleeEnemy":
             case "MeleeEnemyPierce":
+            case "ServeFood":
+            case "ServeMeal":
                 if (myTurn) {
                     FindTargetsByList(meleeEnemyList);
                 } else {
@@ -1222,6 +1318,7 @@ public class BattleManager : MonoBehaviour
                 }
                 break;
             case "Enemy":
+            case "ServeDrink":
                 if (myTurn) {
                     FindTargetsByList(enemyList);
                 } else {
@@ -1268,7 +1365,10 @@ public class BattleManager : MonoBehaviour
             case "Cook":
             case "Recipe":
             case "PickIngredient":
-            case "PickMeal":
+            case "PickMealToEat":
+            case "PickDrinkToServe":
+            case "PickFoodToServe":
+            case "PickMealToServe":
                 break;
             default:
                 print("Invalid target");
@@ -1477,33 +1577,128 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    private void DisplayMeals()
+    private void DisplayMealsToEat()
     {
         RemoveAllButtons();
 
         // Iterate this value to make position lower
         float yPos = 0f;
+        bool atLeastOneTreat = false;
 
 
-        if (playerFoodItems.Count > 0) {
-            foreach (Item meal in playerFoodItems) {
-                GameObject instantButton = Instantiate(eatButton, new Vector3(0, yPos, 0), Quaternion.identity);
+        if (playerMealItems.Count > 0) {
+            foreach (Item meal in playerMealItems) {
+                if (meal.Meal && meal.Treat) {
+                    atLeastOneTreat = true;
 
-                instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
-                // instantButton.transform.position = new Vector3(20,5,0);
-                instantButton.transform.SetParent(HUD.transform, false);
-                // second param keeps scale etc the same
+                    GameObject instantButton = Instantiate(eatButton, new Vector3(0, yPos, 0), Quaternion.identity);
 
-                instantButton.GetComponentInChildren<Text>().text = meal.Name;
+                    instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
+                    // instantButton.transform.position = new Vector3(20,5,0);
+                    instantButton.transform.SetParent(HUD.transform, false);
+                    // second param keeps scale etc the same
 
-                Eat buttonMove = instantButton.GetComponent<Eat>();
+                    instantButton.GetComponentInChildren<Text>().text = meal.Name;
 
-                buttonMove.AddResourceCost(meal);
+                    Eat buttonMove = instantButton.GetComponent<Eat>();
 
-                yPos -= 30f;
+                    buttonMove.AddResourceCost(meal);
+
+                    yPos -= 30f;
+                }
             }
-        } else {
-            print ("You have no meals");
+        }
+
+        if (!atLeastOneTreat) {
+            print ("You have no good treats to eat.");
+            
+            ResetTurn();
+        }
+    }
+
+    private void DisplayMealsToServe(string mealType)
+    {
+        RemoveAllButtons();
+
+        // Iterate this value to make position lower
+        float yPos = 0f;
+        bool atLeastOneTrick = false;
+
+
+        if (playerMealItems.Count > 0) {
+            foreach (Item meal in playerMealItems) {
+                switch(mealType) {
+                    case "Drink":
+                        if (meal.Meal && meal.Trick && meal.Drink) {
+
+                            atLeastOneTrick = true;
+
+                            GameObject instantButton = Instantiate(serveDrinkButton, new Vector3(0, yPos, 0), Quaternion.identity);
+
+                            instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
+                            // instantButton.transform.position = new Vector3(20,5,0);
+                            instantButton.transform.SetParent(HUD.transform, false);
+                            // second param keeps scale etc the same
+
+                            instantButton.GetComponentInChildren<Text>().text = meal.Name;
+
+                            ServeDrink buttonMove = instantButton.GetComponent<ServeDrink>();
+
+                            buttonMove.AddResourceCost(meal);
+
+                            yPos -= 30f;
+                        }
+                        break;
+                    case "Food":
+                        if (meal.Meal && meal.Trick && meal.Food) {
+
+                            atLeastOneTrick = true;
+
+                            GameObject instantButton = Instantiate(serveFoodButton, new Vector3(0, yPos, 0), Quaternion.identity);
+
+                            instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
+                            // instantButton.transform.position = new Vector3(20,5,0);
+                            instantButton.transform.SetParent(HUD.transform, false);
+                            // second param keeps scale etc the same
+
+                            instantButton.GetComponentInChildren<Text>().text = meal.Name;
+
+                            ServeFood buttonMove = instantButton.GetComponent<ServeFood>();
+
+                            buttonMove.AddResourceCost(meal);
+
+                            yPos -= 30f;
+                        }
+                        break;
+                    case "Meal":
+                        if (meal.Meal && meal.Trick) {
+
+                            atLeastOneTrick = true;
+
+                            GameObject instantButton = Instantiate(serveMealButton, new Vector3(0, yPos, 0), Quaternion.identity);
+
+                            instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
+                            // instantButton.transform.position = new Vector3(20,5,0);
+                            instantButton.transform.SetParent(HUD.transform, false);
+                            // second param keeps scale etc the same
+
+                            instantButton.GetComponentInChildren<Text>().text = meal.Name;
+
+                            ServeMeal buttonMove = instantButton.GetComponent<ServeMeal>();
+
+                            buttonMove.AddResourceCost(meal);
+
+                            yPos -= 30f;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        if (!atLeastOneTrick) {
+            print ("You have no good tricks to serve.");
             
             ResetTurn();
         }
