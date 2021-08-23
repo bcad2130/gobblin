@@ -104,9 +104,6 @@ public class BattleManager : MonoBehaviour
             StartCombat();
         }
         // FindObjectOfType<DialogueTrigger>().TriggerDialogue();
-
-
-        // StartRound();
     }
 
     private void InitializeItems()
