@@ -86,43 +86,10 @@ public class UnitStats : MonoBehaviour
 
     private void Awake()
     {
-        if (StatusEffects == null) {
-            StatusEffects = new Dictionary<string,int>();
-        }
-
         InitializeBattleManager();
         InitializeStatusEffects();
         InitializeStatChanges();
-
-        nameText = Instantiate(nameTextPrefab, new Vector3(0, 12, 0), Quaternion.identity);
-        nameText.transform.SetParent(canvas.transform, false);
-        nameText.text = gameObject.name;
-
-        turnText = Instantiate(turnTextPrefab, new Vector3(-15, 0, 0), Quaternion.identity);
-        turnText.transform.SetParent(canvas.transform, false);
-
-
-        // TODO: make this a function since its repeated for guts
-        healthText = Instantiate(healthTextPrefab);
-
-        healthText.transform.localScale = new Vector3(0.2f,0.2f,1);
-        healthText.transform.position = new Vector3(17,3,0);
-
-        // set canvas as parent to the text
-        healthText.transform.SetParent(canvas.transform, false);
-        // Set the text element to the current textToDisplay:
-        healthText.text = health.ToString();
-
-
-        gutsText = Instantiate(gutsTextPrefab);
-
-        gutsText.transform.localScale = new Vector3(0.2f,0.2f,1);
-        gutsText.transform.position = new Vector3(17,-3,0);
-
-        // set canvas as parent to the text
-        gutsText.transform.SetParent(canvas.transform, false);
-        // Set the text element to the current textToDisplay:
-        gutsText.text = guts.ToString();
+        InitializeUnitText();
     }
 
     private void InitializeBattleManager()
@@ -142,7 +109,35 @@ public class UnitStats : MonoBehaviour
         if (StatChanges == null) {
             StatChanges = new Dictionary<string,int>();
         }
-    }    
+    }
+
+    private void InitializeUnitText()
+    {
+        nameText = Instantiate(nameTextPrefab, new Vector3(0, 12, 0), Quaternion.identity);
+        nameText.transform.localScale = new Vector3(0.2f,0.2f,1);
+        nameText.transform.SetParent(canvas.transform, false);
+        nameText.text = gameObject.name;
+
+        turnText = Instantiate(turnTextPrefab, new Vector3(-12, 0, 0), Quaternion.identity);
+        turnText.transform.localScale = new Vector3(0.2f,0.2f,1);
+        turnText.transform.SetParent(canvas.transform, false);
+
+        // TODO: make this a function since its repeated for guts
+        healthText = Instantiate(healthTextPrefab);
+        healthText.transform.localScale = new Vector3(0.2f,0.2f,1);
+        healthText.transform.position = new Vector3(17,2.5f,0);
+        // set canvas as parent to the text
+        healthText.transform.SetParent(canvas.transform, false);
+
+
+        gutsText = Instantiate(gutsTextPrefab);
+        gutsText.transform.localScale = new Vector3(0.2f,0.2f,1);
+        gutsText.transform.position = new Vector3(17,-3,0);
+        // set canvas as parent to the text
+        gutsText.transform.SetParent(canvas.transform, false);
+
+        UpdateText();
+    }
 
     public GameObject GetCanvasObj()
     {
@@ -276,27 +271,14 @@ public class UnitStats : MonoBehaviour
     {
         int netHeal = rawHeal + (rawHeal * GetNetTum()) / 10;
 
-        health += netHeal;
-
-        if (health > maxHealth)
-        {
-            health = maxHealth;
-        }
-
-        UpdateHealthText();
+        GainHealth(netHeal);
     }
 
     public void SateHunger (int rawSatiation)
     {
         int netGuts = rawSatiation + (rawSatiation * GetNetTaste()) / 10;
 
-        guts += netGuts;
-
-        if (guts > maxGuts) {
-            guts = maxGuts;
-        }
-
-        UpdateGutsText();
+        GainGuts(netGuts);
     }
 
     // TODO should this have a multiplier? 
@@ -304,18 +286,7 @@ public class UnitStats : MonoBehaviour
     {
         int netGuts = rawTantalization;
 
-        SpendGuts(netGuts);
-    }
-
-    public void SpendGuts (int spentGuts)
-    {
-        guts -= spentGuts;
-
-        if (guts < 0) {
-            guts = 0;
-        }
-
-        UpdateGutsText();
+        LoseGuts(netGuts);
     }
 
 
@@ -330,11 +301,32 @@ public class UnitStats : MonoBehaviour
     public void SetCurrentHealth(int healthToSet)
     {
         health = healthToSet;
+
+        UpdateHealthText();
     }
 
-    public void LoseHealth(int lostHealth)
+    public void GainHealth(int healthGained)
     {
-        health -= lostHealth;
+        health += healthGained;
+
+        if (health > maxHealth)
+        {
+            health = maxHealth;
+        }
+
+        UpdateHealthText();
+    }
+
+    public void LoseHealth(int healthLost)
+    {
+        health -= healthLost;
+
+        if (health < 0)
+        {
+            health = 0;
+        }
+
+        UpdateHealthText();
     }
 
     public int GetCurrentGuts()
@@ -345,11 +337,30 @@ public class UnitStats : MonoBehaviour
     public void SetCurrentGuts(int gutsToSet)
     {
         guts = gutsToSet;
+
+        UpdateGutsText();
     }
 
-    public void LoseGuts(int lostGuts)
+    public void GainGuts(int gutsGained)
     {
-        guts -= lostGuts;
+        guts += gutsGained;
+
+        if (guts > maxGuts) {
+            guts = maxGuts;
+        }
+
+        UpdateGutsText();
+    }
+
+    public void LoseGuts(int gutsLost)
+    {
+        guts -= gutsLost;
+
+        if (guts < 0) {
+            guts = 0;
+        }
+
+        UpdateGutsText();
     }
 
     public int GetNetStrength()
@@ -393,23 +404,19 @@ public class UnitStats : MonoBehaviour
 
     private void UpdateHealthText()
     {
-        // print(healthText);
+        // print(GetCurrentHealth().ToString() + " /" + maxHealth.ToString());
 
-        healthText.text = health.ToString();
+        healthText.text = GetCurrentHealth().ToString() + " / " + maxHealth.ToString();
 
+        // TODO Show shield as status, not as part of health
         if (shield > 0) {
-            healthText.text += "+[" + shield.ToString() + "]";
+            healthText.text += " + [" + shield.ToString() + "]";
         }
-
-        healthText.text += " / " + maxHealth.ToString();
     }
 
     private void UpdateGutsText()
     {
-        gutsText.text = guts.ToString();
-
-        gutsText.text += " / " + maxGuts.ToString();
-
+        gutsText.text = GetCurrentGuts().ToString() + " / " + maxGuts.ToString();
     }
 
     private void UpdateTurnText()

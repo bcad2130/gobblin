@@ -104,6 +104,9 @@ public class BattleManager : MonoBehaviour
             StartCombat();
         }
         // FindObjectOfType<DialogueTrigger>().TriggerDialogue();
+
+
+        // StartRound();
     }
 
     private void InitializeItems()
@@ -244,12 +247,12 @@ public class BattleManager : MonoBehaviour
         // Debug.Log("StartRoundUpdates");
         GutCheck();
 
-        foreach (UnitStats unit in completeList) {
-            unit.UpdateText();
-            CheckIfDead(unit);
-        }
+        // foreach (UnitStats unit in completeList) {
+        //     unit.UpdateText();
+        //     CheckIfDead(unit);
+        // }
 
-        HandleDeaths();
+        // HandleDeaths();
     }
 
     private void StartTurn()
@@ -277,8 +280,10 @@ public class BattleManager : MonoBehaviour
     {
         CheckGross(CurrentUnit);
 
-        CurrentUnit.UpdateText();
-        CheckIfDead(CurrentUnit);
+        // CurrentUnit.UpdateText();
+        // CheckIfDead(CurrentUnit);
+        // HandleDeaths();
+
     }
 
     private void PickUnitMove()
@@ -314,12 +319,12 @@ public class BattleManager : MonoBehaviour
         // UI UPDATES
         RemoveAllButtons();
 
-        foreach (UnitStats unit in completeList) {
-            unit.UpdateText();
-            CheckIfDead(unit);
-        }
+        // foreach (UnitStats unit in completeList) {
+        //     unit.UpdateText();
+        //     CheckIfDead(unit);
+        // }
 
-        HandleDeaths();
+        // HandleDeaths();
     }
 
     private void NextTurn()
@@ -351,12 +356,12 @@ public class BattleManager : MonoBehaviour
 
         Metabolism();
 
-        foreach (UnitStats unit in completeList) {
-            unit.UpdateText();
-            CheckIfDead(unit);
-        }
+        // foreach (UnitStats unit in completeList) {
+        //     unit.UpdateText();
+        //     CheckIfDead(unit);
+        // }
 
-        HandleDeaths();
+        // HandleDeaths();
     }
 
     private void RemoveCurrentUnitFromNextUpList()
@@ -742,79 +747,6 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    private void AutoMove()
-    {
-        // print("AutoMove");
-        // GameObject canvas = CurrentUnit.GetCanvasObj();
-        // GameObject canvas = GameObject.FindGameObjectsWithTag("HUD");
-
-
-        // List<MoveButton> currentUnitMoves = CurrentUnit.GetMoves();
-
-        if (CurrentUnit.GetMovesCount() > 0) {
-
-            MoveButton tryMove = null;
-
-            do {
-                tryMove = CurrentUnit.GetRandomAction();
-
-                tryMove.SetUpButtonAction();
-            } while (!CheckAfford(tryMove.GetAction()));
-
-            CurrentAction = tryMove.GetAction();
-
-            // CurrentAction = CurrentUnit.GetRandomAction();
-
-            // PickRandomMove();
-
-            // print(currentMove);
-
-            // USE THESE IF YOU WANT THE MOVE AND TARGET TO BE PICKED AUTOMAGICALLY (not working yet)
-            // switch (CurrentAction.TargetType)
-            // {
-            //     case "OneAlly": 
-            //     case "OneEnemy":
-            //         TakeAction();
-            //         break;
-            //     case "Self":
-            //     case "AllEnemies":
-            //     case "Targetless":
-            //         TakeAction();
-            //         break;
-            //     default:
-            //         print("Invalid target type");
-            //         break;
-            // }
-            
-            SelectPossibleTargetsByActionType();
-
-            TakeAction();
-
-            // USE THESE IF YOU WANT THE BUTTON TO SHOW (working)
-            // for some reason the bm.action isn't set in effect
-
-            // var randomIndex = Random.Range(0, currentUnitMoves.Count);
-            // Button selectedMove = currentUnitMoves[randomIndex];
-
-            // Button instantButton = Instantiate(selectedMove, new Vector3(40, 0, 0), Quaternion.identity);
-            // instantButton.transform.SetParent(canvas.transform, false);
-        } else {
-            print ("This unit has no moves");
-        }
-    }
-
-    private void SelectRandomUnitFromPossibleTargets()
-    {
-        if (CurrentAction.PossibleTargets.Count != 0) {
-
-            UnitStats selectedUnit = CurrentAction.PossibleTargets[Random.Range(0, CurrentAction.PossibleTargets.Count)];
-
-            CurrentAction.AddTarget(ref selectedUnit);
-        } else { 
-            Debug.Log("NO UNIT SELECTABLE");
-        }
-    }
-
     public bool CheckAfford(Action action) {
         if (CanAffordGutsCost(action) && CanAffordResourceCost(action) && CanAffordMisc(action)) {
             return true;
@@ -976,7 +908,7 @@ public class BattleManager : MonoBehaviour
         // print(CurrentAction);
 
         if (CurrentAction.GutsCost != 0) {
-            CurrentUnit.SpendGuts(CurrentAction.GutsCost);
+            CurrentUnit.LoseGuts(CurrentAction.GutsCost);
         }
 
         // TODO: fix covering-chains, where you can cover a melee ally whose already covering someone
@@ -1279,10 +1211,12 @@ public class BattleManager : MonoBehaviour
         CurrentAction.AddTargets(ref unitList);
     }
 
-    //TODO this should all be find targets, not set targets
-    // should make another method for that and a conditional in RouteAction
+
     public void SelectPossibleTargetsByActionType()
     {
+        // TODO this should all be find targets, not set targets
+        // should make another method for that and a conditional in RouteAction
+
         // TODO use FindTargetsByList instead of FindTargetsByTag when possible
         switch (CurrentAction.TargetType) 
         {
@@ -1418,8 +1352,6 @@ public class BattleManager : MonoBehaviour
 
     private void TakeStrengthDamage(UnitStats targetUnit, int rawDamage)
     {
-        // should i be adding the stat changes in here? should the params determine the attacking unit and def unit?
-
         int attackDamage = rawDamage;
         int attackSpeed = CurrentAction.Speed;
 
@@ -1476,7 +1408,8 @@ public class BattleManager : MonoBehaviour
             multiplier--;
         } while (multiplier > 0);
 
-        CheckIfDead(targetUnit);
+        // CheckIfDead(targetUnit);
+        PostDamageUpdates(targetUnit);
     }
 
     private void TakeTumDamage (UnitStats targetUnit, int rawDamage)
@@ -1490,29 +1423,28 @@ public class BattleManager : MonoBehaviour
 
         targetUnit.LoseHealth(netDamage);
         
+        // CheckIfDead(targetUnit);
+        PostDamageUpdates(targetUnit);
 
-        CheckIfDead(targetUnit);
     }
 
     private void TakeTrueDamage (UnitStats targetUnit, int rawDamage)
     {
         int netDamage = rawDamage;
 
-        targetUnit.LoseHealth(netDamage);
+        if (netDamage <= 0) {
+            targetUnit.LoseHealth(netDamage);
 
-        CheckIfDead(targetUnit);
+            // CheckIfDead(targetUnit);
+            PostDamageUpdates(targetUnit);
+        }
     }
 
     // TODO: there are many references to this, but it should only be used when a unit takes damage/ loses hp
     private void CheckIfDead(UnitStats unit)
     {
         if (unit.GetCurrentHealth() <= 0) {
-            unit.SetCurrentHealth(0);
-            unit.isDead = true;
-            unit.turnNumber = -1;
-            unit.SetTurnText("Dead");
-
-            UncoverUnit(unit);
+            HandleDeath(unit);
         }
     }
 
@@ -1527,6 +1459,7 @@ public class BattleManager : MonoBehaviour
     {
         TakeTumDamage(unit, unit.GetStatusEffectStacks("GROSS"));
 
+        // QA this might not work if gross kills the unit and it self destructs
         unit.SubtractStatusEffect("GROSS", 1);
     }
 
@@ -1850,6 +1783,25 @@ public class BattleManager : MonoBehaviour
         print("Game Over");
     }
 
+    public void HandleDeath(UnitStats unit)
+    {
+        unit.SetCurrentHealth(0);
+        unit.isDead = true;
+        unit.turnNumber = -1;
+        unit.SetTurnText("Dead");
+
+        UncoverUnit(unit);
+
+        RemoveUnitFromList(unit, ref completeList);
+        RemoveUnitFromList(unit, ref nextUpList);
+        RemoveUnitFromList(unit, ref allyList);
+        RemoveUnitFromList(unit, ref enemyList);
+        RemoveUnitFromList(unit, ref meleeAllyList);
+        RemoveUnitFromList(unit, ref meleeEnemyList);
+
+        CheckGameOver();
+    }
+
     public void HandleDeaths()
     {
         completeList.RemoveAll(     unit => unit.isDead == true);
@@ -1868,6 +1820,42 @@ public class BattleManager : MonoBehaviour
         nextUpList.Remove(unit);
         enemyList.Remove(unit);
         allyList.Remove(unit);
+    }
+
+    // AI
+
+    private void AutoMove()
+    {
+        if (CurrentUnit.GetMovesCount() > 0) {
+
+            MoveButton tryMove = null;
+
+            do {
+                tryMove = CurrentUnit.GetRandomAction();
+
+                tryMove.SetUpButtonAction();
+            } while (!CheckAfford(tryMove.GetAction()));
+
+            CurrentAction = tryMove.GetAction();
+            
+            SelectPossibleTargetsByActionType();
+
+            TakeAction();
+        } else {
+            print ("This unit has no moves");
+        }
+    }
+
+    private void SelectRandomUnitFromPossibleTargets()
+    {
+        if (CurrentAction.PossibleTargets.Count != 0) {
+
+            UnitStats selectedUnit = CurrentAction.PossibleTargets[Random.Range(0, CurrentAction.PossibleTargets.Count)];
+
+            CurrentAction.AddTarget(ref selectedUnit);
+        } else { 
+            Debug.Log("NO UNIT SELECTABLE");
+        }
     }
 
     // MISC
@@ -1891,5 +1879,11 @@ public class BattleManager : MonoBehaviour
         }
 
         return null;
+    }
+
+    private void PostDamageUpdates(UnitStats unit)
+    {
+        // unit.UpdateText();
+        CheckIfDead(unit);
     }
 }
