@@ -25,7 +25,6 @@ public class BurntMessItem : Item
         action.Damage = 5;
         action.Sate = 0;
 
-        // Debug.Log('h');
         return action;
     }
 }

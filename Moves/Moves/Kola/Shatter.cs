@@ -12,7 +12,7 @@ public class Shatter : MoveButton
         action.TargetType = "AllMeleeEnemies";
 
         action.GutsCost = COST;
-        action.Damage = bm.CurrentUnit.attack + bm.CurrentUnit.GetStatChangeStacks("STRENGTH") + DAMAGE;
+        action.Damage = bm.CurrentUnit.GetNetStrength() + DAMAGE;
 
         action.AddIngredientCost("Bottle");
 

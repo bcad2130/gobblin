@@ -7,8 +7,8 @@ public class BasicAttack : MoveButton
     protected override void SetUpMove() {
         action.TargetType = "MeleeEnemy";
 
-        action.Damage = bm.CurrentUnit.attack + bm.CurrentUnit.GetStatChangeStacks("STRENGTH");
-        action.Speed = bm.CurrentUnit.speed  + bm.CurrentUnit.GetStatChangeStacks("SPEED");
+        action.Damage   = bm.CurrentUnit.GetNetStrength();
+        action.Speed    = bm.CurrentUnit.GetNetSpeed();
 
         action.isBasicAttack = true;
     }

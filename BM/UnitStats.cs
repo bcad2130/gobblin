@@ -5,6 +5,13 @@ using UnityEngine.UI;
 
 public class UnitStats : MonoBehaviour
 {
+    // ***************
+    // ***VARIABLES***
+    // ***************
+
+
+    // STATS
+
     public int maxHealth;
     public int maxGuts;
     public int health;
@@ -23,11 +30,16 @@ public class UnitStats : MonoBehaviour
     public int shield = 0;
     public int turnNumber = 0;
 
+    public Dictionary<string,int> StatusEffects;
+    public Dictionary<string,int> StatChanges;
+
+    public List<MoveButton> moves;
+
     public BattleManager bm;
 
 
+    // UI
 
-    //new stuff
     public Text healthTextPrefab;
     private Text healthText;
 
@@ -41,22 +53,36 @@ public class UnitStats : MonoBehaviour
     private Text turnText;
 
     public GameObject canvas;
-    public List<MoveButton> moves;
-
-    public Dictionary<string,int> StatusEffects;
-    public Dictionary<string,int> StatChanges;
 
 
+    // CONSTANTS: STATS
 
-    // CONSTANTS
+    private const string STRENGTH   = "STRENGTH";
+    private const string DEFENSE    = "DEFENSE";
+    private const string SPEED      = "SPEED";
+    private const string TUM        = "TUM";
+    private const string TASTE      = "TASTE";
+    private const string NOSE       = "NOSE";
 
-    private const string STUN   = "STUN";
-    private const string GROSS  = "GROSS";
-    // private const string SHIELD = "SHIELD";
-    private const string DODGE  = "DODGE";
-    private const string DEFEND = "DEFEND";
-    private const string BOIL   = "BOIL";
 
+    // CONSTANTS: STATUSES
+
+    private const string STUN       = "STUN";
+    private const string GROSS      = "GROSS";
+    private const string DODGE      = "DODGE";
+    private const string DEFEND     = "DEFEND";
+    private const string BOIL       = "BOIL";
+
+
+
+
+    // ***************
+    // ***FUNCTIONS***
+    // ***************
+
+
+
+    // INITIALIZATION
 
     private void Awake()
     {
@@ -123,38 +149,6 @@ public class UnitStats : MonoBehaviour
         return canvas;
     }
 
-    public ref List<MoveButton> GetMoves()
-    {
-        return ref moves;
-    }
-
-    public int GetMovesCount()
-    {
-        return moves.Count;
-    }    
-
-    // TODO move to bm
-    public MoveButton GetRandomAction()
-    {
-        List<MoveButton> tempList = GetMoves();
-
-        var randomIndex = Random.Range(0, tempList.Count);
-
-        MoveButton tempActionButton = tempList[randomIndex];
-
-        return tempActionButton;
-        // print(tempActionButton);
-
-        // shouldn't i check this from the bm method, not the button?
-        // 8/18 yes
-
-        // if (tempActionButton.CheckAfford()) {
-        //     return tempActionButton;
-        // }
-
-        // since this is recursive, make sure all units have a free action or we stack overflow
-        // return GetRandomAction();
-    }
 
 
     // STATUS EFFECTS
@@ -217,11 +211,8 @@ public class UnitStats : MonoBehaviour
     }
 
 
-    // STAT CHANGES
-    //
-    // or in GOBBLIN :
 
-    // MALADIES
+    // STAT CHANGES
 
     public Dictionary<string,int> GetAllStatChanges()
     {
@@ -276,98 +267,14 @@ public class UnitStats : MonoBehaviour
         }
     }
 
-// // TODO MOVE TO BM
-//     public void TakeAttack (int rawDamage, int attackSpeed)
-//     {
-//         int multiplier = 1;
 
-//         if (attackSpeed > speed) {
-//             int speedDiff = attackSpeed - speed;
 
-//             if (speedDiff >= 20) {
-//                 multiplier = 3;
-//             } else if (speedDiff >= 10) {
-//                 multiplier = 2;
-//             }
-//         }
-
-//         int netDamage = 0;
-
-//         if (GetStatusEffectStatus(DEFEND)) {
-//             netDamage = rawDamage - defense;
-//             SubtractStatusEffect(DEFEND, 1); // or you ccould lose one at EoT
-//         } else  {
-//             netDamage = rawDamage - (defense / 2);
-//         }
-//         // do 1 damage per hit minimum
-//         if (netDamage <= 0) {
-//             netDamage = 1;
-//         }
-
-//         do {
-//             if (!CheckDodge()) {
-//                 if (shield > 0) {
-//                     shield -= netDamage;
-
-//                     if (shield < 0) {
-//                         netDamage = -shield;
-//                         shield = 0;
-//                     } else {
-//                         netDamage = 0;
-//                     }
-
-//                     // StatusEffects[SHIELD] = shield;
-//                 }
-
-//                 health -= netDamage;
-//             }
-
-//             multiplier--;
-//         } while (multiplier > 0);
-
-//         if (health <= 0) {
-//             health = 0;
-//             isDead = true;
-//         }
-//     }
-
-    // This damage is unblocked, defended, etc
-    // i.e. health - rawDamage
-    public void TakeTumDamage (int rawDamage)
-    {
-        int netDamage = rawDamage - (tum / 2);
-
-        // do 1 damage minimum
-        if (netDamage <= 0) {
-            netDamage = 1;
-        }
-
-        health -= netDamage;
-        
-        if (health <= 0) {
-            health = 0;
-            isDead = true;
-        }
-    }
-
-    // private bool CheckDodge()
-    // {
-    //     if (StatusEffects.ContainsKey(DODGE)) {
-    //         AddStatusEffect(DODGE, -1);
-
-    //         if (StatusEffects[DODGE] <= 0) {
-    //             StatusEffects.Remove(DODGE);
-    //         }
-
-    //         return true;
-    //     } else {
-    //         return false;
-    //     }
-    // }
+    // ACTION APPLICATION 
+    // TODO: (move to bm)
 
     public void HealDamage (int rawHeal)
     {
-        int netHeal = rawHeal + (rawHeal * taste) / 10;
+        int netHeal = rawHeal + (rawHeal * GetNetTum()) / 10;
 
         health += netHeal;
 
@@ -381,7 +288,7 @@ public class UnitStats : MonoBehaviour
 
     public void SateHunger (int rawSatiation)
     {
-        int netGuts = rawSatiation + (rawSatiation * taste) / 10;
+        int netGuts = rawSatiation + (rawSatiation * GetNetTaste()) / 10;
 
         guts += netGuts;
 
@@ -392,11 +299,17 @@ public class UnitStats : MonoBehaviour
         UpdateGutsText();
     }
 
+    // TODO should this have a multiplier? 
     public void TantalizeHunger (int rawTantalization)
     {
         int netGuts = rawTantalization;
 
-        guts -= rawTantalization;
+        SpendGuts(netGuts);
+    }
+
+    public void SpendGuts (int spentGuts)
+    {
+        guts -= spentGuts;
 
         if (guts < 0) {
             guts = 0;
@@ -405,137 +318,71 @@ public class UnitStats : MonoBehaviour
         UpdateGutsText();
     }
 
-    // public bool CanAffordGutsCost (Action action)
-    // {
-    //     return (guts - action.GutsCost) >= 0;
-    // }
+
+
+    // GETS AND SETS
+
+    public int GetCurrentHealth()
+    {
+        return health;
+    }
+
+    public void SetCurrentHealth(int healthToSet)
+    {
+        health = healthToSet;
+    }
+
+    public void LoseHealth(int lostHealth)
+    {
+        health -= lostHealth;
+    }
 
     public int GetCurrentGuts()
     {
         return guts;
     }
 
-    public void SpendGuts (int spentGuts)
+    public void SetCurrentGuts(int gutsToSet)
     {
-        guts -= spentGuts;
-        UpdateGutsText();
+        guts = gutsToSet;
     }
 
-    // public bool CanAffordResourceCost (List<Item> resourceCost)
-    // {
-    //     // TODO: Make this work for requiring multiple of the same item
-    //     if (resourceCost != null) {
-    //         // print ("resource cost is not null");
-    //         foreach (Item resource in resourceCost) {
-    //             switch(bm.CurrentAction.TargetType) {
-    //                 case "Cook":
-    //                     if (!bm.playerEquipment.CheckItem(resource)) {
-    //                         return false;
-    //                     }
-    //                     break;
-    //                 case "Ingredient":
-    //                     if (!bm.playerIngredients.CheckItem(resource)) {
-    //                         return false;
-    //                     }
-    //                     break;
-    //                 case "Eat":
-    //                     if (!bm.playerFood.CheckItem(resource)) {
-    //                         return false;
-    //                     }
-    //                     break;
-    //                 default:
-    //                     print("Invalid target type for action with resourceCost");
-    //                     break;
-    //             }
-    //         }
-    //     }
-
-    //     return true;
-    // }
-
-    // public void SpendResource (List<Item> resourceCost)
-    // {
-    //     if (resourceCost != null) {
-    //         foreach (Item resource in resourceCost) {
-    //             switch(bm.CurrentAction.TargetType) {
-    //                 case "Cook":
-    //                     bm.playerEquipment.RemoveItem(resource.Name);
-    //                     break;
-    //                 case "Ingredient":
-    //                     bm.playerIngredients.RemoveItem(resource.Name);
-    //                     break;
-    //                 case "Eat":
-    //                 case "Self":
-    //                     bm.playerFood.RemoveItem(resource.Name);
-    //                     break;
-    //                 default:
-    //                     print("Invalid target type for action with resourceCost");
-    //                     break;
-    //             }
-    //         }
-    //     }
-
-    //     // print ("we made it this far");
-    // }
-
-    // deprecated?
-    // public void Effect ()
-    // {
-    //     if (!bm) {
-    //         InitializeBattleManager();
-    //         InitializeStatusEffects();
-    //         // print(bm.CurrentAction);
-    //     }
-
-    //     print("action:");
-    //     // print(bm.CurrentAction.Damage);
-    //     // print(bm.CurrentAction);
-    //     // print(bm.GetCurrentAction().Self());
-    //     // print("effect begins...");
-    //     // health -= bm.CurrentAction.Damage;
-    //     if (bm.CurrentAction.Damage > 0) {
-    //         print("wtf");
-    //         TakeAttack(bm.CurrentAction.Damage);
-    //     }
-
-    //     if (bm.CurrentAction.Heal > 0) {
-    //         HealDamage(bm.CurrentAction.Heal);
-    //     }
-
-    //     // TODO: i should just use the status effect instead of having a local shield stat
-    //     ApplySingleEffectStatus(bm.CurrentAction.GetAllStatusEffects());
-
-    //     foreach(KeyValuePair<string, int> effect in bm.CurrentAction.GetAllStatusEffects())
-    //     {
-    //         // do something with effect.Value or effect.Key
-
-    //         AddStatusEffect(effect.Key, effect.Value);
-    //     }
-
-
-    //     // print(bm.CurrentAction.DestroySelf);
-    //     if (bm.CurrentAction.DestroySelf) {
-    //         // print('h');
-    //         Destroy(this.gameObject);
-
-    //         // TODO: must clear from unit lists etc
-    //         // on this note, will i have revival? should i even keep dead units around?
-    //         // if not, i should have a more effective way of clearing units, since i might want to move them around, or have them transform, or get "used up" like the cauldron
-    //     }
-    // }
-
-    public void DestroySelf()
+    public void LoseGuts(int lostGuts)
     {
-        bm.RemoveUnitFromAllLists(this);
-        Destroy(this.gameObject);
+        guts -= lostGuts;
     }
 
-    // public void ApplySingleEffectStatus(Dictionary<string,int> effects)
-    // {
-    //     if (effects.ContainsKey(SHIELD)) {
-    //         shield += effects[SHIELD];
-    //     }
-    // }
+    public int GetNetStrength()
+    {
+        return attack + GetStatChangeStacks(STRENGTH);
+    }
+
+    public int GetNetDefense()
+    {
+        return defense + GetStatChangeStacks(DEFENSE);
+    }
+
+    public int GetNetSpeed()
+    {
+        return speed + GetStatChangeStacks(SPEED);
+    }
+
+    public int GetNetTaste()
+    {
+        return taste + GetStatChangeStacks(TASTE);
+    }
+
+    public int GetNetTum()
+    {
+        return tum + GetStatChangeStacks(TUM);
+    }
+
+    public int GetNetNose()
+    {
+        return nose + GetStatChangeStacks(NOSE);
+    }
+
+    // UI
 
     public void UpdateText ()
     {
@@ -574,39 +421,87 @@ public class UnitStats : MonoBehaviour
         }
     }
 
-    public void CheckIfDead()
+    public void SetTurnText(string text)
     {
-        if (health <= 0) {
-            health = 0;
-            isDead = true;
-            turnNumber = -1;
-            turnText.text = "Dead";
-
-            // bm.HandleDeaths();
-        }
+        turnText.text = text;
     }
 
-    public void CheckGross()
+
+
+    // MISC
+
+    public void DestroySelf()
     {
-        if (StatusEffects.ContainsKey(GROSS)) {
-            GrossTicker();
-        }
+        bm.RemoveUnitFromAllLists(this);
+        Destroy(this.gameObject);
     }
 
-    // move to bm
-    private void GrossTicker()
+    public ref List<MoveButton> GetMoves()
     {
-        // print(StatusEffects[GROSS]);
-
-        TakeTumDamage(StatusEffects[GROSS]);
-
-        AddStatusEffect(GROSS, -1);
-        // print(StatusEffects[GROSS]);
-
-        if (StatusEffects[GROSS] <= 0) {
-            StatusEffects.Remove(GROSS);
-        }
+        return ref moves;
     }
+
+    public int GetMovesCount()
+    {
+        return moves.Count;
+    }    
+
+    // TODO move to bm
+    public MoveButton GetRandomAction()
+    {
+        List<MoveButton> tempList = GetMoves();
+
+        var randomIndex = Random.Range(0, tempList.Count);
+
+        MoveButton tempActionButton = tempList[randomIndex];
+
+        return tempActionButton;
+        // print(tempActionButton);
+
+        // shouldn't i check this from the bm method, not the button?
+        // 8/18 yes
+
+        // if (tempActionButton.CheckAfford()) {
+        //     return tempActionButton;
+        // }
+
+        // since this is recursive, make sure all units have a free action or we stack overflow
+        // return GetRandomAction();
+    }
+
+    // public void CheckIfDead()
+    // {
+    //     if (health <= 0) {
+    //         health = 0;
+    //         isDead = true;
+    //         turnNumber = -1;
+    //         turnText.text = "Dead";
+
+    //         // bm.HandleDeaths();
+    //     }
+    // }
+
+    // public void CheckGross()
+    // {
+    //     if (StatusEffects.ContainsKey(GROSS)) {
+    //         GrossTicker();
+    //     }
+    // }
+
+    // // move to bm
+    // private void GrossTicker()
+    // {
+    //     // print(StatusEffects[GROSS]);
+
+    //     TakeTumDamage(StatusEffects[GROSS]);
+
+    //     AddStatusEffect(GROSS, -1);
+    //     // print(StatusEffects[GROSS]);
+
+    //     if (StatusEffects[GROSS] <= 0) {
+    //         StatusEffects.Remove(GROSS);
+    //     }
+    // }
 }
 
 // gonna have lots of status effects, if you have like 5 heat then catch fire effect

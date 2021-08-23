@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CornCobItem : Item
 {
-    public override string Name     { get { return "Corn Cob"; } }
+    public override string Name     { get { return "Corn Cob" + GetQualityString(); } }
 
     public override bool Equipment  { get { return false; } }
 

@@ -9,10 +9,13 @@ public class PopCornRecipe : Recipe
         SetName("Popcorn");
 
         cookCount = 0;
-        cookTime  = 3;
+        cookTime  = 2;
 
         stirCount = 0;
         stirGoal = 1;
+
+        SetFlavorGoal(10);
+        SetFlavorGoalBonus(5);
 
         result = new PopCornItem();
 

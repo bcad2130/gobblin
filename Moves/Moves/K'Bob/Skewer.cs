@@ -12,6 +12,6 @@ public class Skewer : MoveButton
         action.TargetType = "MeleeEnemyPierce";
 
         action.GutsCost = COST;
-        action.Damage = bm.CurrentUnit.attack + bm.CurrentUnit.GetStatChangeStacks("STRENGTH") + DAMAGE;
+        action.Damage = bm.CurrentUnit.GetNetStrength() + DAMAGE;
     }
 }

@@ -14,6 +14,9 @@ public class CornCobRecipe : Recipe
         stirCount = 0;
         stirGoal = 0;
 
+        SetFlavorGoal(7);
+        SetFlavorGoalBonus(3);
+
         result = new CornCobItem();
 
         reqIngredients = new Inventory();

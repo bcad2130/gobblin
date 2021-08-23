@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class GritsItem : Item
 {
-    public override string Name     { get { return "Grits"; } }
+    public override string Name     { get { return "Grits" + GetQualityString(); } }
 
     public override bool Equipment  { get { return false; } }
 
@@ -24,8 +24,7 @@ public class GritsItem : Item
         
         action.Heal = 30;
         action.Sate = 5;
-
-        // Debug.Log('h');
+        
         return action;
     }
 }
