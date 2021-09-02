@@ -27,7 +27,6 @@ public class UnitStats : MonoBehaviour
     public bool isCookin;
     public bool NPC;
 
-    public int shield = 0;
     public int turnNumber = 0;
 
     public Dictionary<string,int> StatusEffects;
@@ -67,6 +66,7 @@ public class UnitStats : MonoBehaviour
 
     // CONSTANTS: STATUSES
 
+    private const string ARMOR      = "ARMOR";
     private const string STUN       = "STUN";
     private const string GROSS      = "GROSS";
     private const string DODGE      = "DODGE";
@@ -116,11 +116,12 @@ public class UnitStats : MonoBehaviour
         nameText = Instantiate(nameTextPrefab, new Vector3(0, 12, 0), Quaternion.identity);
         nameText.transform.localScale = new Vector3(0.2f,0.2f,1);
         nameText.transform.SetParent(canvas.transform, false);
-        nameText.text = gameObject.name;
+        nameText.text = GetName();
 
-        turnText = Instantiate(turnTextPrefab, new Vector3(-12, 0, 0), Quaternion.identity);
+        turnText = Instantiate(turnTextPrefab, new Vector3(-14, 0, 0), Quaternion.identity);
         turnText.transform.localScale = new Vector3(0.2f,0.2f,1);
         turnText.transform.SetParent(canvas.transform, false);
+        turnText.color = Color.blue;
 
         // TODO: make this a function since its repeated for guts
         healthText = Instantiate(healthTextPrefab);
@@ -293,6 +294,11 @@ public class UnitStats : MonoBehaviour
 
     // GETS AND SETS
 
+    public string GetName()
+    {
+        return gameObject.name;
+    }
+
     public int GetCurrentHealth()
     {
         return health;
@@ -408,9 +414,9 @@ public class UnitStats : MonoBehaviour
 
         healthText.text = GetCurrentHealth().ToString() + " / " + maxHealth.ToString();
 
-        // TODO Show shield as status, not as part of health
-        if (shield > 0) {
-            healthText.text += " + [" + shield.ToString() + "]";
+        // TODO Show armor as status, not as part of health
+        if (GetStatusEffectStatus(ARMOR)) {
+            healthText.text += " + [" + GetStatusEffectStacks(ARMOR).ToString() + "]";
         }
     }
 
@@ -421,16 +427,38 @@ public class UnitStats : MonoBehaviour
 
     private void UpdateTurnText()
     {
-        if (turnNumber == 0) {
-            turnText.text = "Turn\nDone";
+        if (turnNumber == -1) {
+            SetTurnText("Dead");
+            ChangeTurnTextColor(Color.black);
+        } else if (turnNumber == 0) {
+            SetTurnText("Turn\nDone");
+            ChangeTurnTextColor(Color.gray);
+        } else if (turnNumber == 1) {
+            SetTurnText("My\nTurn!");
+            ChangeTurnTextColor(Color.white);
+        } else if (turnNumber == 2) {
+            SetTurnText("Next\nTurn!");
+            ChangeTurnTextColor(Color.cyan);
         } else {
-            turnText.text = "Turn\n#" + turnNumber.ToString();
+            SetTurnText("Turn\n#" + turnNumber.ToString());
+            ChangeTurnTextColor(Color.blue);
         }
     }
 
-    public void SetTurnText(string text)
+    private void SetTurnText(string text)
     {
         turnText.text = text;
+    }
+
+    public void SetTurnNumber(int number)
+    {
+        turnNumber = number;
+        UpdateTurnText();
+    }
+
+    public void ChangeTurnTextColor(Color newColor)
+    {
+        turnText.color = newColor;
     }
 
 

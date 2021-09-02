@@ -22,7 +22,7 @@ public class BurntMessItem : Item
     {
         Action action = new Action();
         
-        action.Damage = 5;
+        action.TumDamage = 5;
         action.Sate = 0;
 
         return action;

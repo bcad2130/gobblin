@@ -12,7 +12,7 @@ public class KO : MoveButton
         action.TargetType = "MeleeEnemy";
 
         action.GutsCost = COST;
-        action.Damage = bm.CurrentUnit.GetNetStrength() +  DAMAGE;
+        action.StrengthDamage = bm.CurrentUnit.GetNetStrength() + DAMAGE;
 
         action.AddStatusEffect("STUN", 1);
     }

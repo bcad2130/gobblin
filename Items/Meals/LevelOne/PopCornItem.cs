@@ -22,11 +22,9 @@ public class PopCornItem : Item
     {
         Action action = new Action();
         
-        action.Damage = 25;
+        action.TumDamage = 25;
         action.Sate = 3;
 
-        // Debug.Log('h');
         return action;
     }
-
 }

@@ -5,6 +5,7 @@ using UnityEngine;
 public class PickFoodToServe : MoveButton
 {
     protected override void SetUpMove() {
-        action.TargetType = "PickFoodToServe";
+        action.TargetType = "Pick";
+        action.SetSkillType("PickFoodToServe");
     }
 }

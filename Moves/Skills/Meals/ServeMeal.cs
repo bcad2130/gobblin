@@ -9,7 +9,9 @@ public class ServeMeal : MoveButton
 
     protected override void SetUpMove()
     {
-        action.TargetType = "ServeMeal";
+        action.TargetType = "MeleeEnemy";
+
+        action.SetSkillType("Serve");
 
         // action.GutsCost = COST;
 

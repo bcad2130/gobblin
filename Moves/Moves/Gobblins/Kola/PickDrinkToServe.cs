@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PickRecipe : MoveButton
+public class PickDrinkToServe : MoveButton
 {
     protected override void SetUpMove() {
         action.TargetType = "Pick";
-        action.SetSkillType("PickRecipe");
+        action.SetSkillType("PickDrinkToServe");
+        // action.TargetType = "PickDrinkToServe";
     }
 }

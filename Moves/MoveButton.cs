@@ -8,7 +8,6 @@ public class MoveButton : MonoBehaviour
     protected BattleManager bm;
     protected UnitStats parentUnit;
     protected Action action;
-    protected Action altAction;
     protected Recipe recipe;
     protected int gutsCost;
     protected List<Item> resourceCost = null;
@@ -39,6 +38,7 @@ public class MoveButton : MonoBehaviour
     }
 
 //  maybe this is isn't overridden, instead we just set up with any of the vars that the variants override
+    // TODO SET up with everypossible action feature, and don't perform if they aren't set in the moves
     protected virtual void SetUpMove()
     {
         print("should you have overridden this?");
@@ -62,9 +62,11 @@ public class MoveButton : MonoBehaviour
         action = new Action();
     }
 
-    private void NewAltAction()
+    private void NewSelfAction()
     {
-        altAction = new Action();
+        if (action != null) {
+            action.selfAction = new Action();
+        }
     }
 
     private void FindBattleManager()

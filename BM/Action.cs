@@ -4,15 +4,17 @@ using UnityEngine;
 
 public class Action
 {
-    public int Damage;
+    public int StrengthDamage;
+    public int TumDamage;
+    public int TrueDamage;
     public int Heal;
     public int GutsCost;
     public int Sate;
     public int Speed;
     public int Tantalize;
 
+    protected string skillType = null; // TODO
     public string TargetType;
-    public bool DestroySelf;
 
     public Dictionary<string,int> StatusEffects;
     public Dictionary<string,int> StatChanges;
@@ -33,18 +35,23 @@ public class Action
     public bool isSummon;
     public GameObject Summon;
     public Item GiveItem;
+    public bool DestroySelf;
+
+    public Action selfAction;
 
 
     // CONSTRUCTOR
 
     public Action ()
     {
-        Damage          = 0;
+        StrengthDamage  = 0;
+        TumDamage       = 0;
         Speed           = 0;
         Heal            = 0;
         GutsCost        = 0;
 
         ingredientCost  = "";
+        // skillType       = "";
         TargetType      = "";
         
         DestroySelf     = false;
@@ -58,8 +65,21 @@ public class Action
         StatusEffects   = new Dictionary<string,int>();
         StatChanges     = new Dictionary<string,int>();
         ResourceCost    = new List<Item>();
+
+        // selfAction = new Action();
     }
 
+    // GETTERS
+
+    public string GetSkillType()
+    {
+        return skillType;
+    }
+
+    public void SetSkillType(string type)
+    {
+        skillType = type;
+    }
 
     // SELECTED TARGETS
 
@@ -120,7 +140,7 @@ public class Action
     // }
 
     public Dictionary<string,int> GetAllStatusEffects()
-    {        
+    {
         return StatusEffects;
     }
 
@@ -141,7 +161,7 @@ public class Action
     // }
 
     public Dictionary<string,int> GetAllStatChanges()
-    {        
+    {
         return StatChanges;
     }    
 
@@ -167,6 +187,17 @@ public class Action
     public int GetGutsCost()
     {
         return GutsCost;
+    }
+
+    public Action GetSelfAction()
+    {
+        return selfAction;
+    }
+
+    public void SetSelfAction(Action action)
+    {
+        // selfAction = new Action();
+        selfAction = action;
     }
 
     // public void AISetUpMove()
