@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CauldronItem : Item
+public class Pot : Item
 {
-    public override string Name     { get { return "Cauldron"; } }
+    public override string Name     { get { return "Pot"; } }
 
     public override bool Equipment  { get { return true; } }
 

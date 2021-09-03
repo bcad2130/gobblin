@@ -7,9 +7,11 @@ public class CookPopCorn : MoveButton
     public GameObject Cauldron;
 
     protected override void SetUpMove() {
+        Debug.Log("Is this used?");
+
         action.TargetType = "Recipe";
 
-        AddResourceCost(new CauldronItem());
+        AddResourceCost(new Pot());
         action.ResourceCost = resourceCost;
 
         action.isSummon = true;
