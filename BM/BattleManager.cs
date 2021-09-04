@@ -46,7 +46,6 @@ public class BattleManager : MonoBehaviour
         public Item         CurrentMeal;
 
     // INVENTORIES AND ITEMS
-        // public Inventory playerEquipment;
         public Inventory playerIngredients;
         public Inventory playerFood;
         public Inventory localIngredients;
@@ -111,7 +110,6 @@ public class BattleManager : MonoBehaviour
 
         private void InitializeItems()
         {
-            // playerEquipment     = new Inventory();
             playerIngredients   = new Inventory();
             playerFood          = new Inventory();
             localIngredients    = new Inventory();
@@ -120,9 +118,6 @@ public class BattleManager : MonoBehaviour
             playerEquipmentItems= new List<Item>();
 
             // start with this equipment
-            // playerEquipment.AddItem("Cauldron");
-
-            // start with this equipment (refactored equip)
             Pot startingPot = new Pot();
             playerEquipmentItems.Add(startingPot);
 
@@ -809,8 +804,6 @@ public class BattleManager : MonoBehaviour
             SetRecipePicked(false);
 
             // restock cauldron item
-            // playerEquipment.AddItem("Cauldron");
-
             Pot startingPot = new Pot();
             playerEquipmentItems.Add(startingPot);
         }
@@ -1017,7 +1010,6 @@ public class BattleManager : MonoBehaviour
                 foreach (Item resource in resourceCost) {
                     switch(CurrentAction.GetSkillType()) {
                         case "CookRecipe":
-                            // playerEquipment.RemoveItem(resource.Name);
                             playerEquipmentItems.Remove(new Pot());
                             break;
                         case "Serve":
