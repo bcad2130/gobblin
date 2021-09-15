@@ -13,7 +13,7 @@ public class Action
     public int Speed;
     public int Tantalize;
 
-    protected string skillType = null; // TODO
+    protected string skillType = null;
     public string TargetType;
 
     public Dictionary<string,int> StatusEffects;

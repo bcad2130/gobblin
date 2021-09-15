@@ -9,8 +9,8 @@ public class DialogueManager : MonoBehaviour {
     public Text nameText;
     public Text dialogueText;
     public Button NextTextButton;
-    // public GameObject HUD;
     public GameObject DialogueBox;
+    public Canvas canvas;
 
     private BattleManager bm;
 
@@ -20,24 +20,22 @@ public class DialogueManager : MonoBehaviour {
     private Queue<string> names;
     private Queue<string> sentences;
 
-
-    // Use this for initialization
     void Awake () {
-        // Debug.Log("DDD");
-
-
-        // sentences = new Queue<string>();
         InitializeBattleManager();
+        InitializeCamera();
     }
 
     private void InitializeBattleManager() {
         bm = GameObject.FindObjectOfType<BattleManager>();
     }
 
+    private void InitializeCamera()
+    {
+        canvas.worldCamera = GameObject.FindObjectOfType<Camera>();
+    }
+
     public void StartDialogue (Dialogue dialogue)
     {
-
-        // Debug.Log("DDD");
         DialogueBox.SetActive(true);
 
         // animator.SetBool("IsOpen", true);
@@ -50,16 +48,11 @@ public class DialogueManager : MonoBehaviour {
         names = new Queue<string>();
         sentences.Clear();
 
-// Debug.Log(dialogue.sentences.Count());
         for  (int i = 0; i < dialogue.sentences.Count(); i++) {
             // Debug.Log(i);
             sentences.Enqueue(dialogue.sentences[i]);
             names.Enqueue(dialogue.names[i]);
         }
-
-        // foreach (string sentence in dialogue.sentences)
-        // {
-        // }
 
         DisplayNextSentence();
     }
@@ -69,7 +62,7 @@ public class DialogueManager : MonoBehaviour {
         // Debug.Log(sentences.Count);
         if (sentences.Count == 0)
         {
-         // Debug.Log("TESTY");
+        //  Debug.Log("TESTY");
 
             EndDialogue();
             return;
@@ -79,7 +72,7 @@ public class DialogueManager : MonoBehaviour {
         string name = names.Dequeue();
         StopAllCoroutines();
         StartCoroutine(TypeSentence(sentence, name));
-        Debug.Log(sentences.Count);
+        // Debug.Log(sentences.Count);
     }
 
     private IEnumerator TypeSentence (string sentence, string name)
@@ -91,13 +84,33 @@ public class DialogueManager : MonoBehaviour {
         foreach (char letter in sentence.ToCharArray())
         {
             dialogueText.text += letter;
+
+            // 24 frames
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
             yield return null;
         }
-
-        // Button instantButton = Instantiate(NextTextButton, new Vector3(0, -50, 0), Quaternion.identity);
-        // instantButton.transform.SetParent(HUD.transform, false);
-        // instantButton.onClick.AddListener(DisplayNextSentence);
-        // instantButton.clicked += () => Debug.Log("Clicked!");
     }
 
     private void EndDialogue()

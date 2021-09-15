@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class Inventory
 {
     private Dictionary<string,int> itemList = new Dictionary<string,int>();
+    // private List<Item> items = new List<Item>(); // TODO
 
 
     public void AddItem(string itemName)

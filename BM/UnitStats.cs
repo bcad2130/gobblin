@@ -11,6 +11,9 @@ public class UnitStats : MonoBehaviour
 
 
     // STATS
+    public Sprite icon;
+    public Image figure;
+    public GameObject UnitBox;
 
     public int maxHealth;
     public int maxGuts;
@@ -25,8 +28,9 @@ public class UnitStats : MonoBehaviour
 
     public bool isDead;
     public bool isCookin;
+    public bool isGutless;
     public bool NPC;
-
+    
     public int turnNumber = 0;
 
     public Dictionary<string,int> StatusEffects;
@@ -34,7 +38,9 @@ public class UnitStats : MonoBehaviour
 
     public List<MoveButton> moves;
 
-    public BattleManager bm;
+    public List<Action> actions = new List<Action>();
+
+    private BattleManager bm;
 
 
     // UI
@@ -51,7 +57,7 @@ public class UnitStats : MonoBehaviour
     public Text turnTextPrefab;
     private Text turnText;
 
-    public GameObject canvas;
+    public Canvas canvas;
 
 
     // CONSTANTS: STATS
@@ -71,7 +77,6 @@ public class UnitStats : MonoBehaviour
     private const string GROSS      = "GROSS";
     private const string DODGE      = "DODGE";
     private const string DEFEND     = "DEFEND";
-    private const string BOIL       = "BOIL";
 
 
 
@@ -90,6 +95,8 @@ public class UnitStats : MonoBehaviour
         InitializeStatusEffects();
         InitializeStatChanges();
         InitializeUnitText();
+        InitializeUnitFigure();
+        InitializeCamera();
     }
 
     private void InitializeBattleManager()
@@ -113,36 +120,47 @@ public class UnitStats : MonoBehaviour
 
     private void InitializeUnitText()
     {
-        nameText = Instantiate(nameTextPrefab, new Vector3(0, 12, 0), Quaternion.identity);
-        nameText.transform.localScale = new Vector3(0.2f,0.2f,1);
-        nameText.transform.SetParent(canvas.transform, false);
+        // print(GetName());
+
+        nameText = Instantiate(nameTextPrefab);
+        nameText.transform.SetParent(UnitBox.transform, false);
+
+        // nameText.transform.localScale = new Vector3(0.2f,0.2f,1);
+        // nameText.transform.position = new Vector3(0,100f,0);
         nameText.text = GetName();
 
-        turnText = Instantiate(turnTextPrefab, new Vector3(-14, 0, 0), Quaternion.identity);
-        turnText.transform.localScale = new Vector3(0.2f,0.2f,1);
-        turnText.transform.SetParent(canvas.transform, false);
-        turnText.color = Color.blue;
+        // turnText = Instantiate(turnTextPrefab, new Vector3(-14, 0, 0), Quaternion.identity);
+        // turnText.transform.localScale = new Vector3(0.2f,0.2f,1);
+        // turnText.transform.SetParent(UnitBox.transform, false);
+        // turnText.color = Color.blue;
 
         // TODO: make this a function since its repeated for guts
         healthText = Instantiate(healthTextPrefab);
-        healthText.transform.localScale = new Vector3(0.2f,0.2f,1);
-        healthText.transform.position = new Vector3(17,2.5f,0);
+        healthText.transform.SetParent(UnitBox.transform, false);
+
+        // healthText.transform.localScale = new Vector3(0.2f,0.2f,1);
+        // healthText.transform.position = new Vector3(-50f,50f,0);
         // set canvas as parent to the text
-        healthText.transform.SetParent(canvas.transform, false);
 
 
         gutsText = Instantiate(gutsTextPrefab);
-        gutsText.transform.localScale = new Vector3(0.2f,0.2f,1);
-        gutsText.transform.position = new Vector3(17,-3,0);
+        gutsText.transform.SetParent(UnitBox.transform, false);
+
+        // gutsText.transform.localScale = new Vector3(0.2f,0.2f,1);
+        // gutsText.transform.position = new Vector3(50f,50f,0);
         // set canvas as parent to the text
-        gutsText.transform.SetParent(canvas.transform, false);
 
         UpdateText();
     }
 
-    public GameObject GetCanvasObj()
+    public void InitializeUnitFigure()
     {
-        return canvas;
+        figure.gameObject.SetActive(true);
+    }
+
+    private void InitializeCamera()
+    {
+        canvas.worldCamera = GameObject.FindObjectOfType<Camera>();
     }
 
 
@@ -265,38 +283,26 @@ public class UnitStats : MonoBehaviour
 
 
 
-    // ACTION APPLICATION 
-    // TODO: (move to bm)
-
-    public void HealDamage (int rawHeal)
-    {
-        int netHeal = rawHeal + (rawHeal * GetNetTum()) / 10;
-
-        GainHealth(netHeal);
-    }
-
-    public void SateHunger (int rawSatiation)
-    {
-        int netGuts = rawSatiation + (rawSatiation * GetNetTaste()) / 10;
-
-        GainGuts(netGuts);
-    }
-
-    // TODO should this have a multiplier? 
-    public void TantalizeHunger (int rawTantalization)
-    {
-        int netGuts = rawTantalization;
-
-        LoseGuts(netGuts);
-    }
-
-
-
     // GETS AND SETS
+
+    public GameObject GetUnitBox()
+    {
+        return UnitBox;
+    }
 
     public string GetName()
     {
         return gameObject.name;
+    }
+
+    public Sprite GetIcon()
+    {
+        return icon;
+    }
+
+    public int GetMaxHealth()
+    {
+        return maxHealth;
     }
 
     public int GetCurrentHealth()
@@ -335,6 +341,11 @@ public class UnitStats : MonoBehaviour
         UpdateHealthText();
     }
 
+    public int GetMaxGuts()
+    {
+        return maxGuts;
+    }
+
     public int GetCurrentGuts()
     {
         return guts;
@@ -369,9 +380,29 @@ public class UnitStats : MonoBehaviour
         UpdateGutsText();
     }
 
+    public int GetBaseStrength()
+    {
+        return attack;
+    }
+
+    public int GetBonusStrength()
+    {
+        return GetStatChangeStacks(STRENGTH);
+    }
+
     public int GetNetStrength()
     {
         return attack + GetStatChangeStacks(STRENGTH);
+    }
+
+    public int GetBaseDefense()
+    {
+        return defense;
+    }
+
+    public int GetBonusDefense()
+    {
+        return GetStatChangeStacks(DEFENSE);
     }
 
     public int GetNetDefense()
@@ -379,19 +410,59 @@ public class UnitStats : MonoBehaviour
         return defense + GetStatChangeStacks(DEFENSE);
     }
 
+    public int GetBaseSpeed()
+    {
+        return speed;
+    }
+
+    public int GetBonusSpeed()
+    {
+        return GetStatChangeStacks(SPEED);
+    }    
+
     public int GetNetSpeed()
     {
         return speed + GetStatChangeStacks(SPEED);
     }
+
+    public int GetBaseTaste()
+    {
+        return taste;
+    }
+
+    public int GetBonusTaste()
+    {
+        return GetStatChangeStacks(TASTE);
+    }    
 
     public int GetNetTaste()
     {
         return taste + GetStatChangeStacks(TASTE);
     }
 
+    public int GetBaseTum()
+    {
+        return tum;
+    }
+
+    public int GetBonusTum()
+    {
+        return GetStatChangeStacks(TUM);
+    }
+
     public int GetNetTum()
     {
         return tum + GetStatChangeStacks(TUM);
+    }
+
+    public int GetBaseNose()
+    {
+        return nose;
+    }
+
+    public int GetBonusNose()
+    {
+        return GetStatChangeStacks(NOSE);
     }
 
     public int GetNetNose()
@@ -405,7 +476,7 @@ public class UnitStats : MonoBehaviour
     {
         UpdateHealthText();
         UpdateGutsText();
-        UpdateTurnText();
+        // UpdateTurnText();
     }
 
     private void UpdateHealthText()
@@ -425,41 +496,41 @@ public class UnitStats : MonoBehaviour
         gutsText.text = GetCurrentGuts().ToString() + " / " + maxGuts.ToString();
     }
 
-    private void UpdateTurnText()
-    {
-        if (turnNumber == -1) {
-            SetTurnText("Dead");
-            ChangeTurnTextColor(Color.black);
-        } else if (turnNumber == 0) {
-            SetTurnText("Turn\nDone");
-            ChangeTurnTextColor(Color.gray);
-        } else if (turnNumber == 1) {
-            SetTurnText("My\nTurn!");
-            ChangeTurnTextColor(Color.white);
-        } else if (turnNumber == 2) {
-            SetTurnText("Next\nTurn!");
-            ChangeTurnTextColor(Color.cyan);
-        } else {
-            SetTurnText("Turn\n#" + turnNumber.ToString());
-            ChangeTurnTextColor(Color.blue);
-        }
-    }
+    // private void UpdateTurnText()
+    // {
+    //     if (turnNumber == -1) {
+    //         SetTurnText("Dead");
+    //         ChangeTurnTextColor(Color.black);
+    //     } else if (turnNumber == 0) {
+    //         SetTurnText("Turn\nDone");
+    //         ChangeTurnTextColor(Color.gray);
+    //     } else if (turnNumber == 1) {
+    //         SetTurnText("My\nTurn!");
+    //         ChangeTurnTextColor(Color.white);
+    //     } else if (turnNumber == 2) {
+    //         SetTurnText("Next\nTurn!");
+    //         ChangeTurnTextColor(Color.cyan);
+    //     } else {
+    //         SetTurnText("Turn\n#" + turnNumber.ToString());
+    //         ChangeTurnTextColor(Color.blue);
+    //     }
+    // }
 
-    private void SetTurnText(string text)
-    {
-        turnText.text = text;
-    }
+    // private void SetTurnText(string text)
+    // {
+    //     turnText.text = text;
+    // }
 
     public void SetTurnNumber(int number)
     {
         turnNumber = number;
-        UpdateTurnText();
+        // UpdateTurnText();
     }
 
-    public void ChangeTurnTextColor(Color newColor)
-    {
-        turnText.color = newColor;
-    }
+    // public void ChangeTurnTextColor(Color newColor)
+    // {
+    //     turnText.color = newColor;
+    // }
 
 
 
@@ -503,40 +574,6 @@ public class UnitStats : MonoBehaviour
         // since this is recursive, make sure all units have a free action or we stack overflow
         // return GetRandomAction();
     }
-
-    // public void CheckIfDead()
-    // {
-    //     if (health <= 0) {
-    //         health = 0;
-    //         isDead = true;
-    //         turnNumber = -1;
-    //         turnText.text = "Dead";
-
-    //         // bm.HandleDeaths();
-    //     }
-    // }
-
-    // public void CheckGross()
-    // {
-    //     if (StatusEffects.ContainsKey(GROSS)) {
-    //         GrossTicker();
-    //     }
-    // }
-
-    // // move to bm
-    // private void GrossTicker()
-    // {
-    //     // print(StatusEffects[GROSS]);
-
-    //     TakeTumDamage(StatusEffects[GROSS]);
-
-    //     AddStatusEffect(GROSS, -1);
-    //     // print(StatusEffects[GROSS]);
-
-    //     if (StatusEffects[GROSS] <= 0) {
-    //         StatusEffects.Remove(GROSS);
-    //     }
-    // }
 }
 
 // gonna have lots of status effects, if you have like 5 heat then catch fire effect

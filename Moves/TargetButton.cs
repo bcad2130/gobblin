@@ -16,7 +16,7 @@ public class TargetButton : MonoBehaviour
     public void SelectTarget() {
         bm.AddTargetToAction(ref parentUnit);
 
-        bm.TakeAction();
+        bm.ReadyAction();
     }
 
     public void SetParentUnit(ref UnitStats unit) {

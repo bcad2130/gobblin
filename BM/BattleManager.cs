@@ -7,9 +7,11 @@ using System.Linq;
 
 public class BattleManager : MonoBehaviour
 {
+//
 // ***************
 // ***VARIABLES***
 // ***************
+//
 
     // PREFABS
         public GameObject targetButton;
@@ -19,7 +21,10 @@ public class BattleManager : MonoBehaviour
         public GameObject serveMealButton;
         public GameObject cookRecipeButton;
         public GameObject ingredientButton;
-        public GameObject HUD;
+
+    // UI
+        // public GameObject MoveBox;
+        // private GameObject StazBox;
 
     // TARGET LISTS
         private List<UnitStats> completeList;
@@ -47,7 +52,6 @@ public class BattleManager : MonoBehaviour
 
     // INVENTORIES AND ITEMS
         public Inventory playerIngredients;
-        public Inventory playerFood;
         public Inventory localIngredients;
         private List<Recipe> playerRecipes;
         private List<Item> playerMealItems;
@@ -69,15 +73,14 @@ public class BattleManager : MonoBehaviour
         private const string GROSS      = "GROSS";
         private const string DODGE      = "DODGE";
         private const string DEFEND     = "DEFEND";
-        private const string BOIL       = "BOIL";
 
 
 
-
+//
 // ***************
 // ***FUNCTIONS***
 // ***************
-
+//
 
     // INITIALIZATION
 
@@ -93,25 +96,22 @@ public class BattleManager : MonoBehaviour
             InitializeCurrentAction();
             InitializeRecipes();
 
-            SetHUD();
-            // SortTurnList();
-            // SetUnitTurnNumbers();
+            InitializeUI();
+            // InitializeDialogue();
 
-
-            // TODO: put this at start of round, check DT's round number (must add round number to DT)
             DialogueTrigger dt = FindObjectOfType<DialogueTrigger>();
+
             if (dt != null) {
                 dt.TriggerDialogue();
             } else {
                 StartCombat();
             }
-            // FindObjectOfType<DialogueTrigger>().TriggerDialogue();
         }
 
         private void InitializeItems()
         {
             playerIngredients   = new Inventory();
-            playerFood          = new Inventory();
+
             localIngredients    = new Inventory();
 
             playerMealItems     = new List<Item>();
@@ -199,6 +199,14 @@ public class BattleManager : MonoBehaviour
             playerRecipes.Add(new PopCornRecipe());
         }
 
+        private void InitializeUI()
+        {
+            // ActivateMoveBox(true);
+        }
+
+        private void InitializeDialogue()
+        {
+        }
 
     // LISTS
 
@@ -253,69 +261,67 @@ public class BattleManager : MonoBehaviour
 
         public void StartCombat()
         {
+            CombatLog("Combat begins!");
+
+            // UI
+            // NextTurnButton.GetComponentInChildren<Text>().text = "Start\nCombat";
+            ActivateMoveBox(true);
+
             StartRound();
         }
 
         private void StartRound()
         {
-            Debug.Log("Start Round");
-
             BuildTurnList();
 
             StartRoundUpdates();
 
-            NextTurn();
+            ActivateNextTurnButton(true);
         }
 
         private void StartRoundUpdates()
         {
-            // Debug.Log("StartRoundUpdates");
             GutCheck();
-
-            // foreach (UnitStats unit in completeList) {
-            //     unit.UpdateText();
-            //     CheckIfDead(unit);
-            // }
-
-            // HandleDeaths();
         }
 
         private void StartTurn()
         {
-            // print("Turn Start");
+            ClearCombatLog();
+
             CurrentUnit = WhoseTurn();
             if (CurrentUnit.tag == "Player") {
                 myTurn = true;
             }
 
-            print("Turn Start for: " + CurrentUnit.name);
             StartTurnUpdates();
 
-            if (CurrentUnit.GetStatusEffectStacks("STUN") > 0 || CurrentUnit.NPC) {
-                // Debug.Log(CurrentUnit.name + " is stunned due to hunger (or is food)");
-                EndTurn();
-            } else {
-                // print("Turn for: " + CurrentUnit.name);
-
-                PickUnitMove();
-            }
+            StartAction();
         }
 
         private void StartTurnUpdates()
         {
+            // UI
+            ClearCombatLog();
+            CombatLog(CurrentUnit.GetName() + "'s turn!");
+
+            // TODO: what if this kills unit? they can still act
             CheckGross(CurrentUnit);
 
-            // CurrentUnit.UpdateText();
-            // CheckIfDead(CurrentUnit);
-            // HandleDeaths();
+            // UI
+            DisplayStaz(CurrentUnit);
         }
 
-        private void PickUnitMove()
+        private void StartAction()
         {
-            if (myTurn) {
-                DisplayMoves();
+            if (CurrentUnit.GetStatusEffectStacks("STUN") > 0 || CurrentUnit.NPC) {
+                // Debug.Log(CurrentUnit.GetName() + " is stunned due to hunger (or is food)");
+                EndTurn();
             } else {
-                AutoMove();
+                if (myTurn) {
+                    PickUnitMove();
+                } else {
+                    AutoMove();
+                }
             }
         }
 
@@ -323,7 +329,11 @@ public class BattleManager : MonoBehaviour
         {
             EndTurnUpdates();
 
-            NextTurn();
+            if (nextUpList.Count == 0) {
+                NextTurn();
+            } else {
+                ActivateNextTurnButton(true);
+            }
         }
 
         private void EndTurnUpdates()
@@ -340,24 +350,22 @@ public class BattleManager : MonoBehaviour
 
 
             CurrentUnit.SetTurnNumber(0);
-            CurrentUnit.ChangeTurnTextColor(Color.gray);
+            // CurrentUnit.ChangeTurnTextColor(Color.gray);
 
             SetUnitTurnNumbers();
             ResetCurrentAction();
 
             // UI UPDATES
-            RemoveAllButtons();
-
-            // foreach (UnitStats unit in completeList) {
-            //     unit.UpdateText();
-            //     CheckIfDead(unit);
-            // }
-
-            // HandleDeaths();
+            CleanUpButtons();
+            DisplayNextTurns(nextUpList);
+            DisplayStaz(CurrentUnit);
+            SetNextTurnButtonText("Next\nTurn");
         }
 
-        private void NextTurn()
+        public void NextTurn()
         {
+            ActivateNextTurnButton(false);
+
             if (!gameOver) {
                 if (nextUpList.Count != 0){
                     StartTurn();
@@ -369,12 +377,9 @@ public class BattleManager : MonoBehaviour
 
         private void EndRound()
         {
-            // foreach (KeyValuePair<string,UnitStats> coverLink in coverUnits) {
-            //     Debug.Log("Unit " + coverLink.Key + " is covering " + coverLink.Value.name);
-            // }
-
             EndRoundUpdates();
-            // Debug.Log("Round Over");
+
+            SetNextTurnButtonText("Next\nRound");
 
             StartRound();
         }
@@ -384,29 +389,19 @@ public class BattleManager : MonoBehaviour
             CheckRecipe();
 
             Metabolism();
-
-            // foreach (UnitStats unit in completeList) {
-            //     unit.UpdateText();
-            //     CheckIfDead(unit);
-            // }
-
-            // HandleDeaths();
         }
 
         private void RemoveCurrentUnitFromNextUpList()
         {
-            if (nextUpList.Count != 0) {
+            if (nextUpList.Count > 0) {
                 nextUpList[0].turnNumber = 0;
                 nextUpList.RemoveAt(0);
+                // DisplayNextTurns(nextUpList);
             }
         }
 
         private UnitStats WhoseTurn()
         {
-            // if (nextUpList.Count == 0) {
-            //     EndRound();
-            // }
-
             return nextUpList[0];
         }
 
@@ -564,6 +559,7 @@ public class BattleManager : MonoBehaviour
             AddUnitListToList(listToRandomizeAndAdd, nextUpList);
 
             SetUnitTurnNumbers();
+            DisplayNextTurns(nextUpList);
         }
 
         // private void BuildTurnList()
@@ -586,11 +582,11 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        private void ResetTurn()
+        public void ResetTurn()
         {
             ResetCurrentAction();
-
-            // RemoveAllButtons();
+            
+            DisplayStaz(CurrentUnit);
 
             PickUnitMove();
         }
@@ -609,28 +605,28 @@ public class BattleManager : MonoBehaviour
 
                 // SpendResource(CurrentAction.ResourceCost);
             } else {
-                Debug.Log("Error: TakeAction: You should only consume one meal at a time");
+                Debug.Log("Error: Meal: You should only consume one meal at a time");
             }
         }
 
         private void PickMealToEat()
         {
-            DisplayMealsToEat();
+            DisplayMealsToEat(playerMealItems);
         }
 
         private void PickDrinkToServe()
         {
-            DisplayMealsToServe("Drink");
+            DisplayMealsToServe(playerMealItems, "Drink");
         }
 
         private void PickFoodToServe()
         {
-            DisplayMealsToServe("Food");
+            DisplayMealsToServe(playerMealItems, "Food");
         }
 
         private void PickMealToServe()
         {
-            DisplayMealsToServe("Meal");
+            DisplayMealsToServe(playerMealItems, "Meal");
         }
 
         public void SetMealPicked(bool pick)
@@ -680,8 +676,7 @@ public class BattleManager : MonoBehaviour
     // COOKING MANAGEMENT
         private void PickRecipe()
         {
-            print('a');
-            DisplayRecipes();
+            DisplayRecipes(playerRecipes);
         }
 
         public void SetRecipePicked(bool pick)
@@ -700,7 +695,7 @@ public class BattleManager : MonoBehaviour
 
             SetRecipePicked(true);
 
-            Debug.Log("You're cooking " + CurrentRecipe.GetName() + ". It will take " + CurrentRecipe.GetCookTime() + " round(s).");
+            // Debug.Log("You're cooking " + CurrentRecipe.GetName() + ". It will take " + CurrentRecipe.GetCookTime() + " round(s).");
         }
 
         private void CheckRecipe()
@@ -731,6 +726,8 @@ public class BattleManager : MonoBehaviour
         private void CookRecipe()
         {
             SetRecipe(CurrentAction.Recipe);
+
+            CombatLog(CurrentUnit.GetName() + " started cooking " + CurrentRecipe.GetName());
         }
 
         private void Stir()
@@ -738,6 +735,8 @@ public class BattleManager : MonoBehaviour
             CurrentRecipe.AddStir();
 
             CurrentRecipe.AddFlavor(CurrentUnit.GetNetNose());
+
+            CombatLog(CurrentUnit.GetName() + " stirred the pot, adding " + CurrentUnit.GetNetNose() + " flavor");
         }
 
         private bool CheckStirring()
@@ -751,9 +750,11 @@ public class BattleManager : MonoBehaviour
 
         private void Season()
         {
-            print(CurrentUnit.GetNetTaste());
+            // print(CurrentUnit.GetNetTaste());
 
             CurrentRecipe.AddFlavor(CurrentUnit.GetNetTaste());
+
+            CombatLog(CurrentUnit.GetName() + " seasoned the pot, adding " + CurrentUnit.GetNetTaste() + " flavor");
         }
 
         private void CreateMeal()
@@ -814,7 +815,7 @@ public class BattleManager : MonoBehaviour
         private void Metabolism()
         {
             foreach (UnitStats unit in completeList) {
-                if (!unit.isCookin) { // && !unit.isDead) {
+                if (!unit.isCookin && !unit.isGutless) { // && !unit.isDead) {
                     unit.LoseGuts(1);
                 }
             }
@@ -823,16 +824,18 @@ public class BattleManager : MonoBehaviour
         private void GutCheck()
         {
             foreach (UnitStats unit in completeList) {
-                // Debug.Log("Gut Check " + unit.name);
-                if (unit.GetCurrentGuts() == 0 && !unit.isCookin) {
-                    Starve(unit);
+                // Debug.Log("Gut Check " + unit.GetName());
+                if (!unit.isCookin && !unit.isGutless) {
+                    if (unit.GetCurrentGuts() == 0) {
+                        Starve(unit);
+                    }
                 }
             }
         }
 
         private void Starve(UnitStats unit)
         {
-            Debug.Log(unit.name + " is starving");
+            Debug.Log(unit.GetName() + " is starving");
 
             unit.AddStatusEffect("STUN", 1);
             TakeTumDamage(unit, 10);
@@ -862,20 +865,20 @@ public class BattleManager : MonoBehaviour
 
                     forageCount--;
 
-                    Debug.Log("You found: " + foragedIngredient);
+                    CombatLog(CurrentUnit.GetName() + " found: " + foragedIngredient);
 
                     // TODO Kola should get a 50% chance to grab a bottle too (maybe nose multiplier?`)
                 }
             } else {
 
-                Debug.Log("No ingredients left to forage!");
+                CombatLog("No ingredients left to forage!");
                 canAct = false;
             }
         }
 
         private void PickIngredient()
         {
-            DisplayIngredients();
+            DisplayIngredients(playerIngredients);
         }
 
         private bool CanAffordIngredient(string ingredient)
@@ -918,20 +921,8 @@ public class BattleManager : MonoBehaviour
             return true;
         }
 
+    // ACTION CHECKS
 
-    // ACTION
-
-        public void SetCurrentAction(Action action)
-        {
-            ResetCurrentAction();
-
-            CurrentAction = action;
-        }
-
-        public void ResetCurrentAction()
-        {
-            CurrentAction = null;
-        }
 
         public void TryAction(Action action)
         {
@@ -972,12 +963,8 @@ public class BattleManager : MonoBehaviour
 
             // TODO: Make this work for requiring multiple of the same item
             if (action.ResourceCost != null) {
-                // print ("resource cost is not null");
-
                 foreach (Item resource in action.ResourceCost) {
-                    // print(action.TargetType);
                     switch(action.GetSkillType()) {
-                        // case "PickRecipe":
                         case "CookRecipe":
                             if (!playerEquipmentItems.Exists(x => x.Name == resource.Name)) {
                                 return false;
@@ -988,7 +975,6 @@ public class BattleManager : MonoBehaviour
                         case "ServeDrink":
                         case "ServeFood":
                         case "ServeMeal":
-                            // if (!playerMealItems.Contains(resource)) {
                             if (!playerMealItems.Exists(x => x.Name == resource.Name)) {
                                 return false;
                             }
@@ -1048,6 +1034,26 @@ public class BattleManager : MonoBehaviour
             return true;
         }
 
+    // ACTION
+
+
+        private void PickUnitMove()
+        {
+            DisplayMoves(CurrentUnit);
+        }
+
+        public void SetCurrentAction(Action action)
+        {
+            ResetCurrentAction();
+
+            CurrentAction = action;
+        }
+
+        public void ResetCurrentAction()
+        {
+            CurrentAction = null;
+        }
+
         public void RouteAction()
         {
             SelectPossibleTargetsByActionType();
@@ -1071,14 +1077,14 @@ public class BattleManager : MonoBehaviour
                 // case "ServeFood":
                 // case "ServeMeal":
                     // FindTargets();
-                    DisplayTargets();
+                    DisplayTargets(CurrentAction.PossibleTargets);
                     break;
                 case "Self":
                 case "AllMeleeEnemies":
                 case "AllCoveredEnemies": // TODO
                 case "AllEnemies":
                 case "Targetless": // or "Untargeted"
-                    TakeAction();
+                    ReadyAction();
                     break;
                 case "Pick":
                     RouteSkill();
@@ -1089,68 +1095,15 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        // // TODO maybe I should have a target type and a move type instead of having Stir alongside Ally and such
-        // public void RouteAction(Action action)
-        // {
-        //     // Debug.Log(action.TargetType);
-        //         // movePicked = true;
-        //     SetCurrentAction(action);
+        public void ReadyAction()
+        {
+            CleanUpButtons();
 
-        //     // TODO this is no good, find targets and set targets separately with conditionals
-        //     SelectPossibleTargetsByActionType();
+            ActivateCancelButton(true);
+            ActivateConfirmButton(true);
 
-        //     switch (CurrentAction.TargetType) {
-        //         case "SelfOrAlly":
-        //         case "Ally":
-        //         case "MeleeAlly":
-        //         case "CoverAlly":
-        //         case "Enemy":
-        //         case "MeleeEnemy":
-        //         case "MeleeEnemyPierce":
-        //         case "CoveredEnemy": // TODO
-        //         case "SelfOrAllyOrMeleeEnemy": // TODO THIS DOESN'T TRIGGER UNCOVER IN
-        //         case "Stir":
-        //         case "Season":
-        //         case "AddIngredient":
-        //         case "Eat":
-        //         case "ServeDrink":
-        //         case "ServeFood":
-        //         case "ServeMeal":
-        //             // FindTargets();
-        //             DisplayTargets();
-        //             break;
-        //         case "Self":
-        //         case "AllMeleeEnemies":
-        //         case "AllCoveredEnemies": // TODO
-        //         case "AllEnemies":
-        //         case "Targetless": // or "Untargeted"
-        //         case "Recipe":
-        //         case "Forage":
-        //             TakeAction();
-        //             break;
-        //         case "Cook":
-        //             PickRecipe();
-        //             break;
-        //         case "PickIngredient":
-        //             PickIngredient();
-        //             break;
-        //         case "PickMealToEat":
-        //             PickMealToEat();
-        //             break;
-        //         case "PickDrinkToServe":
-        //             PickDrinkToServe();
-        //             break;
-        //         case "PickFoodToServe":
-        //             PickFoodToServe();
-        //             break;
-        //         case "PickMealToServe":
-        //             PickMealToServe();
-        //             break;
-        //         default:
-        //             print("Invalid target");
-        //             break;
-        //     }
-        // }
+            StazMessage("Action Details Here");
+        }
 
         public void TakeAction()
         {
@@ -1255,14 +1208,16 @@ public class BattleManager : MonoBehaviour
         public void PerformTargetedAction(UnitStats unit)
         {
             if (CurrentAction.StrengthDamage > 0) {
-                // Debug.Log(unit.name + " receives " + CurrentAction.StrengthDamage + " raw damage");
+                // Debug.Log(unit.GetName() + " receives " + CurrentAction.StrengthDamage + " raw damage");
 
                 // TODO THIS DOESN'T TRIGGER UNCOVER FOR "SelfOrAllyOrMeleeEnemy"
                 switch (CurrentAction.TargetType) {
                     case "MeleeEnemy":
                     case "MeleeEnemyPierce":
                     case "AllMeleeEnemies":
-                        UncoverUnit(CurrentUnit);
+                        if (IsCovered(CurrentUnit)) {
+                            UncoverUnit(CurrentUnit);
+                        }
                         break;
                     default:
                         break;
@@ -1272,35 +1227,37 @@ public class BattleManager : MonoBehaviour
             }
 
             if (CurrentAction.TargetType == "MeleeEnemyPierce") {
-                if (coverUnits.ContainsKey(unit.name)) {
-                    Debug.Log(coverUnits[unit.name].name + " receives " + CurrentAction.StrengthDamage/2 + " raw pierce damage");
+                if (coverUnits.ContainsKey(unit.GetName())) {
+                    // Debug.Log(coverUnits[unit.GetName()].name + " receives " + CurrentAction.StrengthDamage/2 + " raw pierce damage");
 
-                    TakeStrengthDamage(GetUnitByName(coverUnits[unit.name].name), CurrentAction.StrengthDamage/2);
+                    TakeStrengthDamage(GetUnitByName(coverUnits[unit.GetName()].name), CurrentAction.StrengthDamage/2);
                 } else {
                     Debug.Log ("covered unit not found");
                 }
             }
 
             if (CurrentAction.Heal > 0) {
-                unit.HealDamage(CurrentAction.Heal);
+                HealDamage(unit, CurrentAction.Heal);
             }
 
             if (CurrentAction.Sate > 0) {
-                unit.SateHunger(CurrentAction.Sate);
+                SateHunger(unit, CurrentAction.Sate);
             }
 
             if (CurrentAction.Tantalize > 0) {
-                unit.TantalizeHunger(CurrentAction.Tantalize);
+                TantalizeHunger(unit, CurrentAction.Tantalize);
             }
 
             foreach(KeyValuePair<string, int> effect in CurrentAction.GetAllStatusEffects())
             {
-                unit.AddStatusEffect(effect.Key, effect.Value);
+                ApplyEffect(unit, effect.Key, effect.Value);
+                // unit.AddStatusEffect(effect.Key, effect.Value);
             }
 
             foreach(KeyValuePair<string, int> effect in CurrentAction.GetAllStatChanges())
             {
-                unit.AddStatChange(effect.Key, effect.Value);
+                ApplyStatChange(unit, effect.Key, effect.Value);
+                // unit.AddStatChange(effect.Key, effect.Value);
             }
 
             // do this better
@@ -1328,25 +1285,25 @@ public class BattleManager : MonoBehaviour
             }
 
             if (selfAction.Heal > 0) {
-                CurrentUnit.HealDamage(selfAction.Heal);
+                HealDamage(CurrentUnit, selfAction.Heal);
             }
 
             if (selfAction.Sate > 0) {
-                CurrentUnit.SateHunger(selfAction.Sate);
+                SateHunger(CurrentUnit, selfAction.Sate);
             }
 
             if (selfAction.Tantalize > 0) {
-                CurrentUnit.TantalizeHunger(selfAction.Tantalize);
+                TantalizeHunger(CurrentUnit, selfAction.Tantalize);
             }
 
             foreach(KeyValuePair<string, int> effect in selfAction.GetAllStatusEffects())
             {
-                CurrentUnit.AddStatusEffect(effect.Key, effect.Value);
+                ApplyEffect(CurrentUnit, effect.Key, effect.Value);
             }
 
             foreach(KeyValuePair<string, int> effect in selfAction.GetAllStatChanges())
             {
-                CurrentUnit.AddStatChange(effect.Key, effect.Value);
+                ApplyStatChange(CurrentUnit, effect.Key, effect.Value);
             }
 
             // do this better
@@ -1364,15 +1321,12 @@ public class BattleManager : MonoBehaviour
         public void RouteSkill()
         {
             switch (CurrentAction.GetSkillType()) {
-                // case "SelfOrAlly":
-                // case "Ally":
-                // case "MeleeAlly":
-                // case "CoverAlly":
-                // case "Enemy":
-                // case "MeleeEnemy":
-                // case "MeleeEnemyPierce":
-                // case "CoveredEnemy": // TODO
-                // case "SelfOrAllyOrMeleeEnemy": // TODO THIS DOESN'T TRIGGER UNCOVER IN
+                case "Cover":
+                    Cover();
+                    break;
+                case "Forage":
+                    Forage();
+                    break;
                 case "CookRecipe":
                     CookRecipe();
                     break;
@@ -1382,25 +1336,12 @@ public class BattleManager : MonoBehaviour
                 case "Season":
                     Season();
                     break;
-                // case "AddIngredient":
                 case "Serve":
                 case "Eat":
                 case "ServeDrink":
                 case "ServeFood":
                 case "ServeMeal":
                     Meal();
-                    break;
-                //     // FindTargets();
-                //     DisplayTargets();
-                //     break;
-                // case "Self":
-                // case "AllMeleeEnemies":
-                // case "AllCoveredEnemies": // TODO
-                // case "AllEnemies":
-                // case "Targetless": // or "Untargeted"
-                // case "Recipe":
-                case "Forage":
-                    Forage();
                     break;
                 case "PickRecipe":
                     PickRecipe();
@@ -1423,11 +1364,46 @@ public class BattleManager : MonoBehaviour
             }
         }
 
+        private void ApplyEffect(UnitStats unit, string effectType, int stacks)
+        {
+            switch(effectType) {
+                case ARMOR:
+                case STUN:
+                case GROSS:
+                case DODGE:
+                case DEFEND:
+                    unit.AddStatusEffect(effectType, stacks);
+                    CombatLog(unit.GetName() + " got " + stacks + " stacks of " + effectType);
+                    break;
+                default:
+                    Debug.Log("Non-existent effect type");
+                    break;
+            }
+        }
+
+        private void ApplyStatChange(UnitStats unit, string statType, int stacks)
+        {
+            switch(statType) {
+                case STRENGTH:
+                case DEFENSE:
+                case SPEED:
+                case TASTE:
+                case TUM:
+                case NOSE:
+                    unit.AddStatChange(statType, stacks);
+                    CombatLog(unit.GetName() + " got " + stacks + " stacks of " + statType);
+                    break;
+                default:
+                    Debug.Log("Non-existent stat type");
+                    break;
+            }
+        }
 
     // COVERING
 
         private void Cover()
         {
+            Debug.Log("Cover");
             if (CurrentAction.Targets.Count == 1) {
                 foreach (UnitStats target in CurrentAction.Targets) {
                     CoverUnit(target);
@@ -1442,13 +1418,46 @@ public class BattleManager : MonoBehaviour
             UncoverUnit(CurrentUnit);
             UncoverUnit(unit);
 
-            coverUnits.Add(CurrentUnit.name, unit);
+            coverUnits.Add(CurrentUnit.GetName(), unit);
 
             if (myTurn) {
                 RemoveUnitFromList(unit, meleeAllyList);
             } else {
                 RemoveUnitFromList(unit, meleeEnemyList);
             }
+        }
+
+        private void UncoverUnit(UnitStats unit)
+        {
+
+            if (IsCovering(unit)) {
+                if (!unit.isDead) {
+                    if (myTurn) {
+                        AddUnitToList(coverUnits[unit.GetName()], meleeAllyList);
+                    } else {
+                        AddUnitToList(coverUnits[unit.GetName()], meleeEnemyList);
+                    }
+                }
+
+                coverUnits.Remove(unit.GetName());
+            }
+
+            if (IsCovered(unit)) {
+                if (!unit.isDead) {
+                    if (myTurn) {
+                        AddUnitToList(unit, meleeAllyList);
+                    } else {
+                        AddUnitToList(unit, meleeEnemyList);
+                    }
+                }
+
+                coverUnits.Remove(GetCoveringUnitName(unit));
+            }
+        }
+
+        private string GetCoveringUnitName(UnitStats unit)
+        {
+            return (coverUnits.First(coverPair => coverPair.Value == unit)).Key;
         }
 
         private bool IsCovered(UnitStats unit)
@@ -1462,40 +1471,28 @@ public class BattleManager : MonoBehaviour
 
         private bool IsCovering(UnitStats unit)
         {
-            if (coverUnits.ContainsKey(unit.name)){
+            if (coverUnits.ContainsKey(unit.GetName())){
                 return true;
             }
 
             return false;
         }
 
-        private void UncoverUnit(UnitStats unit)
+        public string CoverStaz(UnitStats unit)
         {
-
-            if (IsCovering(unit)) {
-                if (!unit.isDead) {
-                    if (myTurn) {
-                        AddUnitToList(coverUnits[unit.name], meleeAllyList);
-                    } else {
-                        AddUnitToList(coverUnits[unit.name], meleeEnemyList);
-                    }
-                }
-
-                coverUnits.Remove(unit.name);
+            if (coverUnits.ContainsValue(unit) && coverUnits.ContainsKey(unit.GetName())){
+                Debug.Log("ERROR: unit can't cover and be covered.");
             }
 
-            if (IsCovered(unit)) {
-                if (!unit.isDead) {
-                    if (myTurn) {
-                        AddUnitToList(unit, meleeAllyList);
-                    } else {
-                        AddUnitToList(unit, meleeEnemyList);
-                    }
-                }
-
-                var entryToRemove = coverUnits.First(kvp => kvp.Value == unit);
-                coverUnits.Remove(entryToRemove.Key);
+            if (coverUnits.ContainsKey(unit.GetName())){
+                return "Covering " + coverUnits[unit.GetName()] + "\n";
             }
+
+            if (coverUnits.ContainsValue(unit)){
+                return "Covered by " + GetCoveringUnitName(unit)  + "\n";
+            }
+
+            return "";
         }
 
 
@@ -1618,14 +1615,14 @@ public class BattleManager : MonoBehaviour
                         RemoveSelfFromPossibleTargets();
 
                         if (IsCovering(CurrentUnit)) {
-                            RemoveUnitFromPossibleTargets(coverUnits[CurrentUnit.name]);
+                            RemoveUnitFromPossibleTargets(coverUnits[CurrentUnit.GetName()]);
                         }
                     } else {
                         FindTargetsByList(enemyList);
                         RemoveSelfFromPossibleTargets();
 
                         if (IsCovering(CurrentUnit)) {
-                            RemoveUnitFromPossibleTargets(coverUnits[CurrentUnit.name]);
+                            RemoveUnitFromPossibleTargets(coverUnits[CurrentUnit.GetName()]);
                         }
 
                         SelectRandomUnitFromPossibleTargets();
@@ -1704,7 +1701,7 @@ public class BattleManager : MonoBehaviour
         }
 
 
-    // ATTACK CALCULATOR
+    // ACTION CALCULATOR
 
         private void TakeStrengthDamage(UnitStats targetUnit, int rawDamage)
         {
@@ -1747,10 +1744,11 @@ public class BattleManager : MonoBehaviour
                 int hitDamage = netDamage;
 
                 if (!targetUnit.GetStatusEffectStatus(DODGE)) {
-                    Debug.Log(CurrentUnit + " attacks for " + hitDamage);
+                    CombatLog(CurrentUnit.GetName() + " hits " + targetUnit.GetName() + " for " + hitDamage + " STR damage");
+
                     if (targetUnit.GetStatusEffectStatus(ARMOR)) {
-                        Debug.Log(targetUnit.GetStatusEffectStacks(ARMOR));
-                        // int shieldDamage = hitDamage - targetUnit.GetStatusEffectStacks(ARMOR);
+                        // Debug.Log(targetUnit.GetStatusEffectStacks(ARMOR));
+                        int shieldDamage = hitDamage - targetUnit.GetStatusEffectStacks(ARMOR);
                         // targetUnit
                         // targetUnit.shield -= hitDamage;
 
@@ -1765,7 +1763,7 @@ public class BattleManager : MonoBehaviour
 
                             targetUnit.SubtractStatusEffect(ARMOR, targetUnit.GetStatusEffectStacks(ARMOR));
                         }
-                        Debug.Log(targetUnit.GetStatusEffectStacks(ARMOR));
+                        // Debug.Log(targetUnit.GetStatusEffectStacks(ARMOR));
 
                     }
 
@@ -1777,7 +1775,6 @@ public class BattleManager : MonoBehaviour
                 multiplier--;
             } while (multiplier > 0);
 
-            // CheckIfDead(targetUnit);
             PostDamageUpdates(targetUnit);
         }
 
@@ -1792,7 +1789,8 @@ public class BattleManager : MonoBehaviour
 
             targetUnit.LoseHealth(netDamage);
 
-            // CheckIfDead(targetUnit);
+            CombatLog(targetUnit.GetName() + " takes " + netDamage + " TUM damage");
+
             PostDamageUpdates(targetUnit);
 
         }
@@ -1804,11 +1802,45 @@ public class BattleManager : MonoBehaviour
             if (netDamage <= 0) {
                 targetUnit.LoseHealth(netDamage);
 
-                // CheckIfDead(targetUnit);
+                CombatLog(CurrentUnit.GetName() + " hits " + targetUnit.GetName() + " for " + netDamage + " TRUE damage");
+
                 PostDamageUpdates(targetUnit);
             } else {
                 Debug.Log("Error : TakeTrueDamage : why is this zero?");
             }
+        }
+
+        private void HealDamage (UnitStats targetUnit, int rawHeal)
+        {
+            int netHeal = rawHeal + (rawHeal * targetUnit.GetNetTum()) / 10;
+
+            targetUnit.GainHealth(netHeal);
+
+            CombatLog(targetUnit.GetName() + " recovered " + netHeal + " health");
+        }
+
+        public void SateHunger (UnitStats targetUnit, int rawSatiation)
+        {
+            int netGuts = rawSatiation + (rawSatiation * targetUnit.GetNetTaste()) / 10;
+
+            targetUnit.GainGuts(netGuts);
+
+            CombatLog(targetUnit.GetName() + " recovered " + netGuts + " guts");
+        }
+
+        public void TantalizeHunger (UnitStats targetUnit, int rawTantalization)
+        {
+            int netGuts = rawTantalization;
+
+            targetUnit.LoseGuts(netGuts);
+
+            CombatLog(targetUnit.GetName() + " lost " + netGuts + " guts");
+        }
+
+        private void PostDamageUpdates(UnitStats unit)
+        {
+            // unit.UpdateText();
+            CheckIfDead(unit);
         }
 
         // TODO: there are many references to this, but it should only be used when a unit takes damage/ loses hp
@@ -1828,305 +1860,102 @@ public class BattleManager : MonoBehaviour
 
         private void GrossTicker(UnitStats unit)
         {
+            CombatLog(unit.GetName() + " has GROSS");
             TakeTumDamage(unit, unit.GetStatusEffectStacks("GROSS"));
 
             // QA this might not work if gross kills the unit and it self destructs
             unit.SubtractStatusEffect("GROSS", 1);
+
+            // DisplayStaz(CurrentUnit);
         }
 
 
     // UI
 
-        private void DisplayMoves()
+        private void ActivateMoveBox(bool active)
         {
-
-            // Debug.Log("fdasdf");
-            RemoveAllButtons();
-
-            // GameObject canvas = CurrentUnit.GetCanvasObj();
-            // GameObject canvas = GameObject.FindGameObjectsWithTag("HUD");
-
-            // Iterate this value to make position lower
-            float yPos = 50f;
-
-
-            if (CurrentUnit.GetMoves().Count > 0) {
-                foreach (MoveButton button in CurrentUnit.GetMoves()) {
-                    MoveButton instantButton = Instantiate(button, new Vector3(0, yPos, 0), Quaternion.identity);
-
-                    // Debug.Log(button.GetGutsCost());
-
-                    instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
-                    // instantButton.transform.position = new Vector3(20,5,0);
-                    instantButton.transform.SetParent(HUD.transform, false);
-                    // second param keeps scale etc the same
-
-                    button.SetUpButtonAction();
-
-                    string moveText = button.GetName() + " : " + button.GetAction().GetGutsCost().ToString();
-
-                    instantButton.GetComponentInChildren<Text>().text = moveText;
-
-
-
-                    yPos -= 30f;
-                }
-            } else {
-                print ("This unit has no moves");
-                EndTurn();
-            }
+            FindObjectOfType<MoveManager>().ActivateMoveBox(active);
         }
 
-        private void DisplayRecipes()
+        private void ActivateNextTurnButton(bool active)
         {
-            RemoveAllButtons();
-
-            // Iterate this value to make position lower
-            float yPos = 0f;
-
-
-            if (playerRecipes.Count > 0) {
-                print('s');
-                foreach (Recipe recipe in playerRecipes) {
-                    Debug.Log(recipe.GetName());
-                    Debug.Log(recipe);
-
-                    GameObject instantButton = Instantiate(cookRecipeButton, new Vector3(0, yPos, 0), Quaternion.identity);
-
-                    instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
-                    // instantButton.transform.position = new Vector3(20,5,0);
-                    instantButton.transform.SetParent(HUD.transform, false);
-                    // second param keeps scale etc the same
-                    // Debug.Log(recipe);
-
-                    instantButton.GetComponentInChildren<Text>().text = recipe.GetName();
-
-                    CookRecipe buttonMove = instantButton.GetComponent<CookRecipe>();
-
-                    // Debug.Log(recipe);
-                    // PickRecipe tempRecipe = new PickRecipe();
-                    // Debug.Log(tempRecipe);
-
-                    // tempRecipe = recipe;
-                    // Debug.Log(tempRecipe);
-
-                    // Debug.Log(buttonMove);
-
-                    // Debug.Log(recipe);
-                    buttonMove.SetRecipe(recipe);
-                    // Debug.Log("done");
-
-
-
-                    // PickRecipe buttonMove = instantButton.GetComponent<PickRecipe>(); //.SetRecipe(recipe);
-                    // tempMove.SetRecipe(recipe);
-
-                    yPos -= 30f;
-                }
-            } else {
-                print ("You have no recipes");
-
-                ResetTurn();
-            }
+            FindObjectOfType<MoveManager>().ActivateNextTurnButton(active);
         }
 
-        private void DisplayIngredients()
+        private void ActivateConfirmButton(bool active)
         {
-            RemoveAllButtons();
-
-            // Iterate this value to make position lower
-            float yPos = 0f;
-
-
-            if (playerIngredients.CountItems() > 0) {
-                foreach (KeyValuePair<string,int> ingredient in playerIngredients.GetInventoryAsDictionary()) {
-                    GameObject instantButton = Instantiate(ingredientButton, new Vector3(0, yPos, 0), Quaternion.identity);
-
-                    instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
-                    // instantButton.transform.position = new Vector3(20,5,0);
-                    instantButton.transform.SetParent(HUD.transform, false);
-                    // second param keeps scale etc the same
-
-                    instantButton.GetComponentInChildren<Text>().text = ingredient.Key;
-
-                    AddIngredient buttonMove = instantButton.GetComponent<AddIngredient>();
-
-                    buttonMove.SetIngredient(ingredient.Key);
-
-                    yPos -= 30f;
-                }
-            } else {
-                print ("You have no ingredients");
-
-                ResetTurn();
-            }
+            FindObjectOfType<MoveManager>().ActivateConfirmButton(active);
         }
 
-        private void DisplayMealsToEat()
+        private void ActivateCancelButton(bool active)
         {
-            RemoveAllButtons();
-
-            // Iterate this value to make position lower
-            float yPos = 0f;
-            bool atLeastOneTreat = false;
-
-
-            if (playerMealItems.Count > 0) {
-                foreach (Item meal in playerMealItems) {
-                    if (meal.Meal && meal.Treat) {
-                        atLeastOneTreat = true;
-
-                        GameObject instantButton = Instantiate(eatButton, new Vector3(0, yPos, 0), Quaternion.identity);
-
-                        instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
-                        // instantButton.transform.position = new Vector3(20,5,0);
-                        instantButton.transform.SetParent(HUD.transform, false);
-                        // second param keeps scale etc the same
-
-                        instantButton.GetComponentInChildren<Text>().text = meal.Name;
-
-                        Eat buttonMove = instantButton.GetComponent<Eat>();
-
-                        buttonMove.AddResourceCost(meal);
-
-                        yPos -= 30f;
-                    }
-                }
-            }
-
-            if (!atLeastOneTreat) {
-                print ("You have no good treats to eat.");
-
-                ResetTurn();
-            }
+            FindObjectOfType<MoveManager>().ActivateCancelButton(active);
         }
 
-        private void DisplayMealsToServe(string mealType)
+        private void SetNextTurnButtonText(string text)
         {
-            RemoveAllButtons();
-
-            // Iterate this value to make position lower
-            float yPos = 0f;
-            bool atLeastOneTrick = false;
-
-
-            if (playerMealItems.Count > 0) {
-                foreach (Item meal in playerMealItems) {
-                    switch(mealType) {
-                        case "Drink":
-                            if (meal.Meal && meal.Trick && meal.Drink) {
-
-                                atLeastOneTrick = true;
-
-                                GameObject instantButton = Instantiate(serveDrinkButton, new Vector3(0, yPos, 0), Quaternion.identity);
-
-                                instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
-                                // instantButton.transform.position = new Vector3(20,5,0);
-                                instantButton.transform.SetParent(HUD.transform, false);
-                                // second param keeps scale etc the same
-
-                                instantButton.GetComponentInChildren<Text>().text = meal.Name;
-
-                                ServeDrink buttonMove = instantButton.GetComponent<ServeDrink>();
-
-                                buttonMove.AddResourceCost(meal);
-
-                                yPos -= 30f;
-                            }
-                            break;
-                        case "Food":
-                            if (meal.Meal && meal.Trick && meal.Food) {
-
-                                atLeastOneTrick = true;
-
-                                GameObject instantButton = Instantiate(serveFoodButton, new Vector3(0, yPos, 0), Quaternion.identity);
-
-                                instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
-                                // instantButton.transform.position = new Vector3(20,5,0);
-                                instantButton.transform.SetParent(HUD.transform, false);
-                                // second param keeps scale etc the same
-
-                                instantButton.GetComponentInChildren<Text>().text = meal.Name;
-
-                                ServeFood buttonMove = instantButton.GetComponent<ServeFood>();
-
-                                buttonMove.AddResourceCost(meal);
-
-                                yPos -= 30f;
-                            }
-                            break;
-                        case "Meal":
-                            if (meal.Meal && meal.Trick) {
-
-                                atLeastOneTrick = true;
-
-                                GameObject instantButton = Instantiate(serveMealButton, new Vector3(0, yPos, 0), Quaternion.identity);
-
-                                instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
-                                // instantButton.transform.position = new Vector3(20,5,0);
-                                instantButton.transform.SetParent(HUD.transform, false);
-                                // second param keeps scale etc the same
-
-                                // instantButton.GetComponentInChildren<Text>().text = meal.Name;
-                                instantButton.GetComponentInChildren<Text>().text = meal.Name;
-
-
-                                ServeMeal buttonMove = instantButton.GetComponent<ServeMeal>();
-
-                                buttonMove.AddResourceCost(meal);
-
-                                yPos -= 30f;
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-
-            if (!atLeastOneTrick) {
-                print ("You have no good tricks to serve.");
-
-                ResetTurn();
-            }
+            FindObjectOfType<MoveManager>().SetNextTurnButtonText(text);
         }
 
-        public void DisplayTargets()
+        private void CleanUpButtons()
         {
-            // print("DisplayTargets");
-            RemoveAllButtons();
-
-            if (CurrentAction.PossibleTargets.Count != 0) {
-                foreach (UnitStats targetableUnit in CurrentAction.PossibleTargets) {
-                    GameObject canvas = targetableUnit.GetCanvasObj();
-                    GameObject instantButton = Instantiate(targetButton, new Vector3(0, 0, 0), Quaternion.identity);
-
-                    instantButton.transform.SetParent(canvas.transform, false);
-                    instantButton.transform.localScale = new Vector3(.2f,.2f,1);
-
-                    UnitStats tempTargetUnit = targetableUnit;
-
-                    // TODO find better way than setting parents
-                    instantButton.GetComponent<TargetButton>().SetParentUnit(ref tempTargetUnit);
-                }
-                } else {
-                    Debug.Log("No PossibleTargets");
-
-                    ResetTurn();
-                }
+            FindObjectOfType<MoveManager>().CleanUpButtons();
         }
 
-        public void RemoveAllButtons()
+        private void DisplayMoves(UnitStats unit)
         {
-            GameObject[] allButtons;
-            allButtons = GameObject.FindGameObjectsWithTag("Button");
-
-            foreach (GameObject button in allButtons) {
-                Destroy(button);
-            }
+            FindObjectOfType<MoveManager>().DisplayMoves(unit);
         }
 
+        private void DisplayRecipes(List<Recipe> recipes)
+        {
+            FindObjectOfType<MoveManager>().DisplayRecipes(recipes);
+        }
 
+        private void DisplayIngredients(Inventory ingredients)
+        {
+            FindObjectOfType<MoveManager>().DisplayIngredients(ingredients);
+        }
+
+        private void DisplayMealsToEat(List<Item> meals)
+        {
+            FindObjectOfType<MoveManager>().DisplayMealsToEat(meals);
+        }
+
+        private void DisplayMealsToServe(List<Item> meals, string mealType)
+        {
+            FindObjectOfType<MoveManager>().DisplayMealsToServe(meals, mealType);
+        }
+
+        private void DisplayTargets(List<UnitStats> targets)
+        {
+            FindObjectOfType<MoveManager>().DisplayTargets(targets);
+        }
+
+        private void DisplayNextTurns(List<UnitStats> turnList)
+        {
+            FindObjectOfType<TurnManager>().DisplayNextTurns(turnList);
+        }
+
+        private void DisplayStaz(UnitStats unit)
+        {
+            FindObjectOfType<StazManager>().ShowStaz(unit);
+        }
+
+        private void StazMessage(string message)
+        {
+            FindObjectOfType<StazManager>().ShowMessage(message);
+        }
+
+        private void CombatLog(string text)
+        {
+            FindObjectOfType<CombatLogManager>().PrintToLog(text);
+        }
+
+        private void ClearCombatLog()
+        {
+            FindObjectOfType<CombatLogManager>().ClearLog();
+        }
     // GAME END
 
         private void CheckGameOver()
@@ -2238,26 +2067,15 @@ public class BattleManager : MonoBehaviour
             print(nextUpList[0]);
         }
 
-        private void SetHUD()
-        {
-            HUD = GameObject.FindWithTag("HUD");
-        }
-
         private UnitStats GetUnitByName(string name)
         {
             foreach (UnitStats unit in completeList) {
-                if (unit.name == name) {
+                if (unit.GetName() == name) {
                     return unit;
                 }
             }
 
             return null;
-        }
-
-        private void PostDamageUpdates(UnitStats unit)
-        {
-            // unit.UpdateText();
-            CheckIfDead(unit);
         }
 
         private void Shuffle (List<UnitStats> list)
