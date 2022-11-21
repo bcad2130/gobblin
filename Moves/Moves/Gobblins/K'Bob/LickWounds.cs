@@ -13,5 +13,6 @@ public class LickWounds : MoveButton
         action.Heal = 25;
         
         action.AddStatusEffect("GROSS", 5);
+        SetIsMove(true);
     }
 }

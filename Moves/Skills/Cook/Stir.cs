@@ -7,5 +7,6 @@ public class Stir : MoveButton
     protected override void SetUpMove() {
         action.TargetType = "AllyPot";
         action.SetSkillType("Stir");
+        SetIsSkill(true);
     }
 }

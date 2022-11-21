@@ -16,6 +16,7 @@ public class Shatter : MoveButton
 
         action.AddIngredientCost("Bottle");
 
-        action.AddStatusEffect("BROKENBOTTLE", 1);
+        // action.AddStatusEffect("BROKENBOTTLE", 1);
+        SetIsMove(true);
     }
 }

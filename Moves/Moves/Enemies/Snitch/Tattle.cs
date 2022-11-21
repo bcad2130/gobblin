@@ -15,5 +15,7 @@ public class Tattle : MoveButton
         action.GutsCost = COST;
 
         action.AddStatChange(STATCHANGE_TYPE, STATCHANGE_STACKS);
+        SetIsMove(true);
+        SetIsSkill(true);
     }
 }

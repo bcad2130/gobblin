@@ -12,5 +12,6 @@ public class Swish : MoveButton
         action.GutsCost = COST;
 
         action.AddStatusEffect("DODGE", 1);
+        SetIsMove(true);
     }
 }

@@ -15,5 +15,6 @@ public class KO : MoveButton
         action.StrengthDamage = bm.CurrentUnit.GetNetStrength() + DAMAGE;
 
         action.AddStatusEffect("STUN", 1);
+        SetIsMove(true);
     }
 }

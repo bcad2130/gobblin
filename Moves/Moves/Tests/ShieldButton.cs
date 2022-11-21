@@ -12,5 +12,7 @@ public class ShieldButton : MoveButton
         action.GutsCost = COST;
 
         action.AddStatusEffect("ARMOR", 5);
+        
+        SetIsMove(true);
     }
 }

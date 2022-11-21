@@ -10,11 +10,16 @@ public class Action
     public int Heal;
     public int GutsCost;
     public int Sate;
+    public int Famish;
     public int Speed;
-    public int Tantalize;
+    public int BonusHits;
+    public int BonusDamage;
 
     protected string skillType = null;
     public string TargetType;
+
+    protected bool isMove = false;
+    protected bool isSkill = false;
 
     public Dictionary<string,int> StatusEffects;
     public Dictionary<string,int> StatChanges;
@@ -79,6 +84,22 @@ public class Action
     public void SetSkillType(string type)
     {
         skillType = type;
+    }
+
+    public bool GetIsMove() {
+        return isMove;
+    }
+
+    public void SetIsMove(bool moveIs) {
+        isMove = moveIs;
+    }
+
+    public bool GetIsSkill() {
+        return isSkill;
+    }
+
+    public void SetIsSkill(bool skillIs) {
+        isSkill = skillIs;
     }
 
     // SELECTED TARGETS

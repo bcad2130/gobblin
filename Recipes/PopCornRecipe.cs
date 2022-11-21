@@ -12,7 +12,7 @@ public class PopCornRecipe : Recipe
         cookTime  = 2;
 
         stirCount = 0;
-        stirGoal = 1;
+        // stirGoal = 1;
 
         SetFlavorGoal(10);
         SetFlavorGoalBonus(5);

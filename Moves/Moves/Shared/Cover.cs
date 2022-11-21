@@ -9,6 +9,7 @@ public class Cover : MoveButton
     protected override void SetUpMove() {
         action.TargetType = "CoverAlly";
         action.SetSkillType(SKILLTYPE);
-        // TODO handle if you want to cover someone that is already covered
+
+        SetIsMove(true);
     }
 }

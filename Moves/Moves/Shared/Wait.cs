@@ -6,6 +6,8 @@ public class Wait : MoveButton
 {
     protected override void SetUpMove() {
         action.TargetType = "Targetless";
+        SetIsMove(true);
+        SetIsSkill(true);
     }
 }
 

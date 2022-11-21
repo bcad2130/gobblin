@@ -12,5 +12,7 @@ public class AcornSnack : MoveButton
         
         AddResourceCost(new Acorn());
         action.SetResourceCost(GetResourceCost());
+        SetIsMove(true);
+        SetIsSkill(true);
     }
 }

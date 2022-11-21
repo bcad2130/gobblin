@@ -9,5 +9,6 @@ public class Eat : MoveButton
         action.SetSkillType("Eat");
 
         action.SetResourceCost(GetResourceCost());
+        SetIsSkill(true);
     }
 }

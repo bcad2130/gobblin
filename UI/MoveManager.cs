@@ -18,16 +18,24 @@ public class MoveManager : MonoBehaviour
     public GameObject ingredientButton;
 
     // Active Buttons
+    public GameObject NextLevelButton;
     public GameObject NextTurnButton;
     public GameObject CancelButton;
     public GameObject ConfirmButton;
 
     private BattleManager bm;
 
+    // CONSTANTS
+    const float XPOS_SKILLS = 150f;
+    const float YPOS_SKILLS = 150f;
+
+    const float XPOS_MOVES  = -150f;
+    const float YPOS_MOVES  = 150f;
+
     private void Awake()
     {
         InitializeBattleManager();
-        InitializeCamera();
+        // InitializeCamera();
     }
 
     private void InitializeBattleManager()
@@ -35,10 +43,10 @@ public class MoveManager : MonoBehaviour
         bm = GameObject.FindObjectOfType<BattleManager>();
     }
 
-    private void InitializeCamera()
-    {
-        canvas.worldCamera = GameObject.FindObjectOfType<Camera>();
-    }
+    // private void InitializeCamera()
+    // {
+    //     canvas.worldCamera = GameObject.FindObjectOfType<Camera>();
+    // }
 
     public void ActivateMoveBox(bool active)
     {
@@ -65,7 +73,7 @@ public class MoveManager : MonoBehaviour
         NextTurnButton.GetComponentInChildren<Text>().text = text;
     }
 
-    public void DisplayMoves(UnitStats unit)
+    public void DisplayActionButtons(UnitStats unit, bool freeMove, bool freeSkill)
     {
         if (!MoveBox.activeSelf) {
             MoveBox.SetActive(true);
@@ -73,25 +81,72 @@ public class MoveManager : MonoBehaviour
 
         CleanUpButtons();
 
+        if (freeMove) DisplayMoves(unit);
+        if (freeSkill) DisplaySkills(unit);
+    }
+
+    public void DisplayMoves(UnitStats unit)
+    {
+        float xPos = XPOS_MOVES;
+
         // Iterate this value to make position lower
-        float yPos = 50f;
+        float yPos = YPOS_MOVES;
 
         if (unit.GetMoves().Count > 0) {
             foreach (MoveButton button in unit.GetMoves()) {
-                MoveButton instantButton = Instantiate(button, new Vector3(0, yPos, 0), Quaternion.identity);
-                instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
+                MoveButton instantButton = Instantiate(button, new Vector3(xPos, yPos, 0), Quaternion.identity);
+                // instantButton.transform.localScale = new Vector3(2.0f,2.0f,1);
                 instantButton.transform.SetParent(MoveBox.transform, false);
                 // second param keeps scale etc the same
 
                 button.SetUpButtonAction();
 
-                string moveText = button.GetName() + " : " + button.GetAction().GetGutsCost().ToString();
+                string moveText = button.GetName();
+
+                if (button.GetAction().GetGutsCost() > 0) {
+                    moveText += " : " + button.GetAction().GetGutsCost().ToString();
+                }
+
                 instantButton.GetComponentInChildren<Text>().text = moveText;
 
-                yPos -= 30f;
+
+                yPos -= 45f;
             }
         } else {
             print ("ERROR: This unit has no moves");
+            // EndTurn();
+        }
+    }
+
+    public void DisplaySkills(UnitStats unit)
+    {
+        float xPos = XPOS_SKILLS;
+
+        // Iterate this value to make position lower
+        float yPos = YPOS_SKILLS;
+
+        if (unit.GetSkills().Count > 0) {
+            foreach (MoveButton button in unit.GetSkills()) {
+                MoveButton instantButton = Instantiate(button, new Vector3(xPos, yPos, 0), Quaternion.identity);
+                // instantButton.transform.localScale = new Vector3(2.0f,2.0f,1);
+                instantButton.transform.SetParent(MoveBox.transform, false);
+                // second param keeps scale etc the same
+
+                button.SetUpButtonAction();
+
+                string moveText = button.GetName();
+
+                if (button.GetAction().GetGutsCost() > 0) {
+                    moveText += " : " + button.GetAction().GetGutsCost().ToString();
+                }
+
+                instantButton.GetComponentInChildren<Text>().text = moveText;
+
+
+                yPos -= 45f;
+            }
+        } else {
+            print ("ERROR: This unit has no SKILLS");
             // EndTurn();
         }
     }
@@ -100,13 +155,15 @@ public class MoveManager : MonoBehaviour
     {
         CleanUpButtons();
 
+        float xPos = 50f;
+
         // Iterate this value to make position lower
-        float yPos = 0f;
+        float yPos = 100f;
 
         if (recipes.Count > 0) {
 
             foreach (Recipe recipe in recipes) {
-                GameObject instantButton = Instantiate(cookRecipeButton, new Vector3(0, yPos, 0), Quaternion.identity);
+                GameObject instantButton = Instantiate(cookRecipeButton, new Vector3(xPos, yPos, 0), Quaternion.identity);
                 instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
                 instantButton.transform.SetParent(MoveBox.transform, false);
                 // second param keeps scale etc the same
@@ -116,27 +173,31 @@ public class MoveManager : MonoBehaviour
                 CookRecipe buttonMove = instantButton.GetComponent<CookRecipe>();
                 buttonMove.SetRecipe(recipe);
 
-                yPos -= 30f;
+                yPos -= 45f;
+
+                ActivateCancelButton(true);
             }
         } else {
-            print ("You have no recipes");
+            FindObjectOfType<CombatLogManager>().PrintToLog("You have no recipes");
+
+            print ("ERROR: You have no recipes");
             bm.ResetTurn();
         }
-
-        ActivateCancelButton(true);
     }
 
     public void DisplayIngredients(Inventory ingredients)
     {
         CleanUpButtons();
 
+        float xPos = 50f;
+
         // Iterate this value to make position lower
-        float yPos = 0f;
+        float yPos = 100f;
 
 
         if (ingredients.CountItems() > 0) {
             foreach (KeyValuePair<string,int> ingredient in ingredients.GetInventoryAsDictionary()) {
-                GameObject instantButton = Instantiate(ingredientButton, new Vector3(0, yPos, 0), Quaternion.identity);
+                GameObject instantButton = Instantiate(ingredientButton, new Vector3(xPos, yPos, 0), Quaternion.identity);
                 instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
                 instantButton.transform.SetParent(MoveBox.transform, false);
                 // second param keeps scale etc the same
@@ -146,22 +207,26 @@ public class MoveManager : MonoBehaviour
                 AddIngredient buttonMove = instantButton.GetComponent<AddIngredient>();
                 buttonMove.SetIngredient(ingredient.Key);
 
-                yPos -= 30f;
+                yPos -= 45f;
+
+                ActivateCancelButton(true);
             }
         } else {
+            FindObjectOfType<CombatLogManager>().PrintToLog("Can't use move: You have no ingredients");
+
             print ("You have no ingredients");
             bm.ResetTurn();
         }
-
-        ActivateCancelButton(true);
     }
 
     public void DisplayMealsToEat(List<Item> meals)
     {
         CleanUpButtons();
 
+        float xPos = 50f;
+
         // Iterate this value to make position lower
-        float yPos = 0f;
+        float yPos = 100f;
         bool atLeastOneTreat = false;
 
 
@@ -170,7 +235,7 @@ public class MoveManager : MonoBehaviour
                 if (meal.Meal && meal.Treat) {
                     atLeastOneTreat = true;
 
-                    GameObject instantButton = Instantiate(eatButton, new Vector3(0, yPos, 0), Quaternion.identity);
+                    GameObject instantButton = Instantiate(eatButton, new Vector3(xPos, yPos, 0), Quaternion.identity);
 
                     instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
                     instantButton.transform.SetParent(MoveBox.transform, false);
@@ -181,25 +246,29 @@ public class MoveManager : MonoBehaviour
 
                     buttonMove.AddResourceCost(meal);
 
-                    yPos -= 30f;
+                    yPos -= 45f;
+
+                    ActivateCancelButton(true);
                 }
             }
         }
 
         if (!atLeastOneTreat) {
+            FindObjectOfType<CombatLogManager>().PrintToLog("Can't use move: You have no treat to eat");
+            
             print ("You have no good treats to eat.");
             bm.ResetTurn();
         }
-
-        ActivateCancelButton(true);
     }
 
     public void DisplayMealsToServe(List<Item> meals, string mealType)
     {
         CleanUpButtons();
 
+        float xPos = 50f;
+
         // Iterate this value to make position lower
-        float yPos = 0f;
+        float yPos = 150f;
         bool atLeastOneTrick = false;
 
         if (meals.Count > 0) {
@@ -210,7 +279,7 @@ public class MoveManager : MonoBehaviour
 
                             atLeastOneTrick = true;
 
-                            GameObject instantButton = Instantiate(serveDrinkButton, new Vector3(0, yPos, 0), Quaternion.identity);
+                            GameObject instantButton = Instantiate(serveDrinkButton, new Vector3(xPos, yPos, 0), Quaternion.identity);
                             instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
                             instantButton.transform.SetParent(MoveBox.transform, false);
                             // second param keeps scale etc the same
@@ -220,7 +289,9 @@ public class MoveManager : MonoBehaviour
                             ServeDrink buttonMove = instantButton.GetComponent<ServeDrink>();
                             buttonMove.AddResourceCost(meal);
 
-                            yPos -= 30f;
+                            yPos -= 45f;
+
+                            ActivateCancelButton(true);
                         }
                         break;
                     case "Food":
@@ -228,7 +299,7 @@ public class MoveManager : MonoBehaviour
 
                             atLeastOneTrick = true;
 
-                            GameObject instantButton = Instantiate(serveFoodButton, new Vector3(0, yPos, 0), Quaternion.identity);
+                            GameObject instantButton = Instantiate(serveFoodButton, new Vector3(xPos, yPos, 0), Quaternion.identity);
                             instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
                             instantButton.transform.SetParent(MoveBox.transform, false);
                             // second param keeps scale etc the same
@@ -238,7 +309,9 @@ public class MoveManager : MonoBehaviour
                             ServeFood buttonMove = instantButton.GetComponent<ServeFood>();
                             buttonMove.AddResourceCost(meal);
 
-                            yPos -= 30f;
+                            yPos -= 45f;
+
+                            ActivateCancelButton(true);
                         }
                         break;
                     case "Meal":
@@ -246,7 +319,7 @@ public class MoveManager : MonoBehaviour
 
                             atLeastOneTrick = true;
 
-                            GameObject instantButton = Instantiate(serveMealButton, new Vector3(0, yPos, 0), Quaternion.identity);
+                            GameObject instantButton = Instantiate(serveMealButton, new Vector3(xPos, yPos, 0), Quaternion.identity);
                             instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
                             instantButton.transform.SetParent(MoveBox.transform, false);
                             // second param keeps scale etc the same
@@ -256,7 +329,9 @@ public class MoveManager : MonoBehaviour
                             ServeMeal buttonMove = instantButton.GetComponent<ServeMeal>();
                             buttonMove.AddResourceCost(meal);
 
-                            yPos -= 30f;
+                            yPos -= 45f;
+
+                            ActivateCancelButton(true);
                         }
                         break;
                     default:
@@ -266,12 +341,12 @@ public class MoveManager : MonoBehaviour
         }
 
         if (!atLeastOneTrick) {
+            FindObjectOfType<CombatLogManager>().PrintToLog("Can't use move: You have no trick to pick");
+
             print ("You have no good tricks to serve.");
 
             bm.ResetTurn();
         }
-
-        ActivateCancelButton(true);
     }
 
     public void DisplayTargets(List<UnitStats> targets)
@@ -290,14 +365,17 @@ public class MoveManager : MonoBehaviour
 
                 // TODO find better way than setting parents
                 instantButton.GetComponent<TargetButton>().SetParentUnit(ref tempTargetUnit);
+
+                ActivateCancelButton(true);
+
             }
             } else {
+                FindObjectOfType<CombatLogManager>().PrintToLog("Can't use move: You have no one to target");
+
                 print ("No PossibleTargets");
 
                 bm.ResetTurn();
             }
-
-        ActivateCancelButton(true);
     }
 
     public void NextTurn()
@@ -336,5 +414,16 @@ public class MoveManager : MonoBehaviour
         ActivateConfirmButton(false);
         ActivateCancelButton(false);
         ActivateNextTurnButton(false);
+    }
+
+    public void NextLevel()
+    {
+        CleanUpButtons();
+
+        GameObject button = Instantiate(NextLevelButton);
+        button.transform.SetParent(MoveBox.transform, false);
+
+
+        // NextLevelButton.SetActive(true);
     }
 }

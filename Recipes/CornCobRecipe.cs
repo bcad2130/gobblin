@@ -12,7 +12,7 @@ public class CornCobRecipe : Recipe
         cookTime  = 1;
 
         stirCount = 0;
-        stirGoal = 0;
+        stirGoal = 1;
 
         SetFlavorGoal(7);
         SetFlavorGoalBonus(3);

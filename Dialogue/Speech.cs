@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Speech : MonoBehaviour
+[System.Serializable]
+public class Speech
 {
-    public string Who;
-    public string What;
+    public string name;
+    public Sprite icon;
+
+    [TextArea(3, 10)]
+    public string sentence;
 }

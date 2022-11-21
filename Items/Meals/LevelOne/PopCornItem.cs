@@ -22,8 +22,9 @@ public class PopCornItem : Item
     {
         Action action = new Action();
         
-        action.TumDamage = 25;
+        action.TumDamage =7;
         action.Sate = 3;
+        action.AddStatusEffect("STUN", 1);
 
         return action;
     }

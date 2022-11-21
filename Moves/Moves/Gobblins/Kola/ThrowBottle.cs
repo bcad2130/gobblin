@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class ThrowBottle : MoveButton
 {
-    protected const int COST = 2;
-    protected const int DAMAGE = 0;
+    protected const int COST = 6;
+    protected const int DAMAGE = 5;
 
     protected override void SetUpMove()
     {
@@ -15,5 +15,7 @@ public class ThrowBottle : MoveButton
         action.StrengthDamage = bm.CurrentUnit.GetNetStrength() + DAMAGE;
 
         action.AddIngredientCost("Bottle");
+
+        SetIsMove(true);
     }
 }

@@ -8,5 +8,6 @@ public class Forage : MoveButton
         action.TargetType = "Targetless";
         
         action.SetSkillType("Forage");
+        SetIsSkill(true);
     }
 }

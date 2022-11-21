@@ -22,8 +22,10 @@ public class GritsItem : Item
     {
         Action action = new Action();
         
-        action.Heal = 30;
-        action.Sate = 5;
+        action.Heal = 8;
+        action.Sate = 8;
+
+        action.AddStatChange("DEFENSE", 2);
         
         return action;
     }

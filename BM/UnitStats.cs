@@ -11,14 +11,16 @@ public class UnitStats : MonoBehaviour
 
 
     // STATS
-    public Sprite icon;
+    public Sprite iconSmall;
+    public Sprite iconLarge;
     public Image figure;
     public GameObject UnitBox;
 
+    private int health;
+    private int guts;
+
     public int maxHealth;
     public int maxGuts;
-    public int health;
-    public int guts;
     public int attack;
     public int defense;
     public int speed;
@@ -29,14 +31,17 @@ public class UnitStats : MonoBehaviour
     public bool isDead;
     public bool isCookin;
     public bool isGutless;
-    public bool NPC;
+    public bool isNPC;
+    public bool isStarving;
+    // public bool isDialogueOnly;
     
     public int turnNumber = 0;
 
-    public Dictionary<string,int> StatusEffects;
-    public Dictionary<string,int> StatChanges;
+    public Dictionary<string,int> StatusEffects = new Dictionary<string,int>();
+    public Dictionary<string,int> StatChanges   = new Dictionary<string,int>();
 
     public List<MoveButton> moves;
+    public List<MoveButton> skills;
 
     public List<Action> actions = new List<Action>();
 
@@ -57,6 +62,11 @@ public class UnitStats : MonoBehaviour
     public Text turnTextPrefab;
     private Text turnText;
 
+    public GameObject DamageText;
+
+    public GameObject stazButtonPrefab;
+    private GameObject stazButton;
+
     public Canvas canvas;
 
 
@@ -74,9 +84,14 @@ public class UnitStats : MonoBehaviour
 
     private const string ARMOR      = "ARMOR";
     private const string STUN       = "STUN";
+    private const string GIRD       = "GIRD";
     private const string GROSS      = "GROSS";
     private const string DODGE      = "DODGE";
     private const string DEFEND     = "DEFEND";
+    private const string GLOW       = "GLOW";
+    private const string FURY       = "FURY";
+
+    // private const string SHARP      = "SHARP";
 
 
 
@@ -92,11 +107,13 @@ public class UnitStats : MonoBehaviour
     private void Awake()
     {
         InitializeBattleManager();
-        InitializeStatusEffects();
-        InitializeStatChanges();
-        InitializeUnitText();
-        InitializeUnitFigure();
-        InitializeCamera();
+        InitializeHealthGuts();
+        // InitializeStazButton();
+        // InitializeStatusEffects();
+        // InitializeStatChanges();
+        // InitializeUnitText();
+        // InitializeUnitFigure();
+        // InitializeCamera();
     }
 
     private void InitializeBattleManager()
@@ -104,30 +121,30 @@ public class UnitStats : MonoBehaviour
         bm = GameObject.FindObjectOfType<BattleManager>();
     }
 
-    private void InitializeStatusEffects()
-    {
-        if (StatusEffects == null) {
-            StatusEffects = new Dictionary<string,int>();
-        }
-    }
+    // private void InitializeStatusEffects()
+    // {
+    //     if (StatusEffects == null) {
+    //         StatusEffects = new Dictionary<string,int>();
+    //     }
+    // }
 
-    private void InitializeStatChanges()
-    {
-        if (StatChanges == null) {
-            StatChanges = new Dictionary<string,int>();
-        }
-    }
+    // private void InitializeStatChanges()
+    // {
+    //     if (StatChanges == null) {
+    //         StatChanges = new Dictionary<string,int>();
+    //     }
+    // }
 
-    private void InitializeUnitText()
+    public void InitializeUnitText()
     {
         // print(GetName());
 
-        nameText = Instantiate(nameTextPrefab);
-        nameText.transform.SetParent(UnitBox.transform, false);
+        // nameText = Instantiate(nameTextPrefab);
+        // nameText.transform.SetParent(UnitBox.transform, false);
 
-        // nameText.transform.localScale = new Vector3(0.2f,0.2f,1);
-        // nameText.transform.position = new Vector3(0,100f,0);
-        nameText.text = GetName();
+        // // nameText.transform.localScale = new Vector3(0.2f,0.2f,1);
+        // // nameText.transform.position = new Vector3(0,100f,0);
+        // nameText.text = GetName();
 
         // turnText = Instantiate(turnTextPrefab, new Vector3(-14, 0, 0), Quaternion.identity);
         // turnText.transform.localScale = new Vector3(0.2f,0.2f,1);
@@ -142,9 +159,10 @@ public class UnitStats : MonoBehaviour
         // healthText.transform.position = new Vector3(-50f,50f,0);
         // set canvas as parent to the text
 
-
-        gutsText = Instantiate(gutsTextPrefab);
-        gutsText.transform.SetParent(UnitBox.transform, false);
+        if (!isGutless) {
+            gutsText = Instantiate(gutsTextPrefab);
+            gutsText.transform.SetParent(UnitBox.transform, false);
+        }
 
         // gutsText.transform.localScale = new Vector3(0.2f,0.2f,1);
         // gutsText.transform.position = new Vector3(50f,50f,0);
@@ -163,6 +181,18 @@ public class UnitStats : MonoBehaviour
         canvas.worldCamera = GameObject.FindObjectOfType<Camera>();
     }
 
+    private void InitializeHealthGuts()
+    {
+        health  = maxHealth;
+        guts    = maxGuts;
+    }
+
+    public void InitializeStazButton()
+    {
+        stazButton = Instantiate(stazButtonPrefab);
+        stazButton.transform.SetParent(UnitBox.transform, false);
+
+    }
 
 
     // STATUS EFFECTS
@@ -241,7 +271,7 @@ public class UnitStats : MonoBehaviour
 
     public int GetStatChangeStacks(string statChange)
     {
-        if (StatChanges.ContainsKey(statChange)) {
+        if (StatChanges != null && StatChanges.ContainsKey(statChange)) {
             return StatChanges[statChange];
         }
 
@@ -295,9 +325,14 @@ public class UnitStats : MonoBehaviour
         return gameObject.name;
     }
 
-    public Sprite GetIcon()
+    public Sprite GetSmallIcon()
     {
-        return icon;
+        return iconSmall;
+    }
+
+    public Sprite GetLargeIcon()
+    {
+        return iconLarge;
     }
 
     public int GetMaxHealth()
@@ -387,12 +422,12 @@ public class UnitStats : MonoBehaviour
 
     public int GetBonusStrength()
     {
-        return GetStatChangeStacks(STRENGTH);
+        return GetStatChangeStacks(STRENGTH) + GetStatusEffectStacks(GLOW);
     }
 
     public int GetNetStrength()
     {
-        return attack + GetStatChangeStacks(STRENGTH);
+        return attack + GetStatChangeStacks(STRENGTH) + GetStatusEffectStacks(GLOW);
     }
 
     public int GetBaseDefense()
@@ -402,12 +437,12 @@ public class UnitStats : MonoBehaviour
 
     public int GetBonusDefense()
     {
-        return GetStatChangeStacks(DEFENSE);
+        return GetStatChangeStacks(DEFENSE) + GetStatusEffectStacks(GLOW);
     }
 
     public int GetNetDefense()
     {
-        return defense + GetStatChangeStacks(DEFENSE);
+        return defense + GetStatChangeStacks(DEFENSE) + GetStatusEffectStacks(GLOW);
     }
 
     public int GetBaseSpeed()
@@ -417,12 +452,12 @@ public class UnitStats : MonoBehaviour
 
     public int GetBonusSpeed()
     {
-        return GetStatChangeStacks(SPEED);
+        return GetStatChangeStacks(SPEED) + GetStatusEffectStacks(GLOW);
     }    
 
     public int GetNetSpeed()
     {
-        return speed + GetStatChangeStacks(SPEED);
+        return speed + GetStatChangeStacks(SPEED) + GetStatusEffectStacks(GLOW);
     }
 
     public int GetBaseTaste()
@@ -432,12 +467,12 @@ public class UnitStats : MonoBehaviour
 
     public int GetBonusTaste()
     {
-        return GetStatChangeStacks(TASTE);
+        return GetStatChangeStacks(TASTE) + GetStatusEffectStacks(GLOW);
     }    
 
     public int GetNetTaste()
     {
-        return taste + GetStatChangeStacks(TASTE);
+        return taste + GetStatChangeStacks(TASTE) + GetStatusEffectStacks(GLOW);
     }
 
     public int GetBaseTum()
@@ -447,12 +482,12 @@ public class UnitStats : MonoBehaviour
 
     public int GetBonusTum()
     {
-        return GetStatChangeStacks(TUM);
+        return GetStatChangeStacks(TUM) + GetStatusEffectStacks(GLOW);
     }
 
     public int GetNetTum()
     {
-        return tum + GetStatChangeStacks(TUM);
+        return tum + GetStatChangeStacks(TUM) + GetStatusEffectStacks(GLOW);
     }
 
     public int GetBaseNose()
@@ -462,12 +497,12 @@ public class UnitStats : MonoBehaviour
 
     public int GetBonusNose()
     {
-        return GetStatChangeStacks(NOSE);
+        return GetStatChangeStacks(NOSE) + GetStatusEffectStacks(GLOW);
     }
 
     public int GetNetNose()
     {
-        return nose + GetStatChangeStacks(NOSE);
+        return nose + GetStatChangeStacks(NOSE) + GetStatusEffectStacks(GLOW);
     }
 
     // UI
@@ -481,9 +516,13 @@ public class UnitStats : MonoBehaviour
 
     private void UpdateHealthText()
     {
+        healthText.text = GetCurrentHealth().ToString();
+
+
         // print(GetCurrentHealth().ToString() + " /" + maxHealth.ToString());
 
-        healthText.text = GetCurrentHealth().ToString() + " / " + maxHealth.ToString();
+        // healthText.text = GetCurrentHealth().ToString() + " / " + maxHealth.ToString();
+
 
         // TODO Show armor as status, not as part of health
         if (GetStatusEffectStatus(ARMOR)) {
@@ -493,7 +532,10 @@ public class UnitStats : MonoBehaviour
 
     private void UpdateGutsText()
     {
-        gutsText.text = GetCurrentGuts().ToString() + " / " + maxGuts.ToString();
+        if (!isGutless) {
+            gutsText.text = GetCurrentGuts().ToString();
+            // gutsText.text = GetCurrentGuts().ToString() + " / " + maxGuts.ToString();
+        }
     }
 
     // private void UpdateTurnText()
@@ -532,7 +574,31 @@ public class UnitStats : MonoBehaviour
     //     turnText.color = newColor;
     // }
 
+    public void CreateDamageText(int damage, Color color, int hits = 1)
+    {
+        // Debug.Log("here");
+        GameObject obj = Instantiate(DamageText);
+        obj.transform.SetParent(UnitBox.transform, false);
 
+        obj.GetComponentInChildren<Text>().text = damage.ToString();
+        obj.GetComponentInChildren<Text>().color = color;
+
+        if (hits > 1) {
+            obj.GetComponentInChildren<Text>().text += "x" + hits.ToString();
+        }
+    }
+
+    public void SetUnitBoxPosition(float x, float y)
+    {
+        // print(new Vector3(x, y, 0));
+        UnitBox.transform.localPosition = new Vector3(x, y, 0);
+    }
+
+    // UNUSED
+    // public void AdjustUnitBoxPosition(float x, float y)
+    // {
+    //     UnitBox.transform.position = UnitBox.transform.position + new Vector3(x, y, 0);
+    // }
 
     // MISC
 
@@ -547,9 +613,19 @@ public class UnitStats : MonoBehaviour
         return ref moves;
     }
 
+    public ref List<MoveButton> GetSkills()
+    {
+        return ref skills;
+    }
+
     public int GetMovesCount()
     {
         return moves.Count;
+    }    
+
+    public int GetSkillsCount()
+    {
+        return skills.Count;
     }    
 
     // TODO move to bm

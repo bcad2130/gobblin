@@ -16,5 +16,8 @@ public class PotLid : MoveButton
         action.GutsCost = COST;
 
         action.AddStatusEffect("DEFEND", 1);
+        action.SetSkillType("Lid");
+
+        SetIsMove(true);
     }
 }

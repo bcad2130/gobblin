@@ -12,6 +12,8 @@ public class MoveButton : MonoBehaviour
     protected int gutsCost;
     protected List<Item> resourceCost = null;
     protected string ingredientCost = null;
+    // protected bool isMove = false;
+    // protected bool isSkill = false;
 
     // public void Awake()
     // {
@@ -146,5 +148,13 @@ public class MoveButton : MonoBehaviour
     public void SetGutsCost(int actionGutsCost)
     {
         gutsCost = actionGutsCost;
+    }
+
+    public void SetIsMove(bool moveIs) {
+        action.SetIsMove(moveIs);
+    }
+
+    public void SetIsSkill(bool skillIs) {
+        action.SetIsSkill(skillIs);
     }
 }

@@ -19,5 +19,6 @@ public class CookPopCorn : MoveButton
 
         action.isRecipe = true;
         // action.Recipe = recipe;
+        SetIsSkill(true);
     }
 }

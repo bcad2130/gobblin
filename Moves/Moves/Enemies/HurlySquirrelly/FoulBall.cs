@@ -14,5 +14,7 @@ public class FoulBall : MoveButton
 
         AddResourceCost(new RottenAcorn());
         action.SetResourceCost(GetResourceCost());
+        SetIsMove(true);
+        SetIsSkill(true);
     }
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Steal : MonoBehaviour
+public class Steal : MoveButton
 {
     // Start is called before the first frame update
     void Start()

@@ -19,5 +19,6 @@ public class CookGrits : MoveButton
 
         action.isRecipe = true;
         // action.Recipe = recipe;
+        SetIsSkill(true);
     }
 }

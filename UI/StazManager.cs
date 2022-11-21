@@ -8,6 +8,7 @@ public class StazManager : MonoBehaviour
     public GameObject StazBox;
     public GameObject AllStaz;
     public GameObject MidTextObj;
+    public Image Icon;
     public Canvas canvas;
 
     private BattleManager bm;
@@ -34,18 +35,17 @@ public class StazManager : MonoBehaviour
 
     void Awake () {
         InitializeBattleManager();
-        InitializeCamera();
+        // InitializeCamera();
     }
 
     private void InitializeBattleManager() {
         bm = GameObject.FindObjectOfType<BattleManager>();
     }
 
-    private void InitializeCamera()
-    {
-        canvas.worldCamera = GameObject.FindObjectOfType<Camera>();
-    }
-
+    // private void InitializeCamera()
+    // {
+    //     canvas.worldCamera = GameObject.FindObjectOfType<Camera>();
+    // }
 
     // decouple this so you only update what you need to
     public void ShowStaz(UnitStats unit) {
@@ -95,6 +95,8 @@ public class StazManager : MonoBehaviour
                 StatusEffects.text += effect.Value + " " + effect.Key + "\n";
             }
         }
+
+        Icon.sprite = unit.GetLargeIcon();
     }
 
     public void ShowMessage(string message)
@@ -104,9 +106,13 @@ public class StazManager : MonoBehaviour
         }
 
         ActivateAllStazText(false);
-        MidTextObj.SetActive(true);
 
-        MidTextObj.GetComponent<Text>().text = message;
+        if (!MidTextObj.activeSelf) {
+            MidTextObj.SetActive(true);
+            MidTextObj.GetComponent<Text>().text = message;
+        } else {
+            MidTextObj.GetComponent<Text>().text += "\n" + message;
+        }
     }
 
     private void ActivateAllStazText(bool active)

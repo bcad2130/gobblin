@@ -22,7 +22,7 @@ public class TurnManager : MonoBehaviour
 
     private void Awake()
     {
-        InitializeCamera();
+        // InitializeCamera();
         // InitializeBattleManager();
         // InitializeNextTurns();
     }
@@ -42,10 +42,10 @@ public class TurnManager : MonoBehaviour
     //     nextTurns.Add(Pos6);
     // }
 
-    private void InitializeCamera()
-    {
-        canvas.worldCamera = GameObject.FindObjectOfType<Camera>();
-    }
+    // private void InitializeCamera()
+    // {
+    //     canvas.worldCamera = GameObject.FindObjectOfType<Camera>();
+    // }
 
     public void DisplayNextTurns(List<UnitStats> nextUnits)
     {
@@ -56,17 +56,20 @@ public class TurnManager : MonoBehaviour
         RemoveAllIcons();
 
         // Iterate this value to make position lower
-        float yPos = 80f;
+        float xPos = -875f;
+
+        // constant
+        float yPos = -0f;
 
         if (nextUnits.Count > 0) {
             foreach (UnitStats unit in nextUnits) {
-                Image icon = Instantiate(iconPrefab, new Vector3(0, yPos, 0), Quaternion.identity);
+                Image icon = Instantiate(iconPrefab, new Vector3(xPos, yPos, 0), Quaternion.identity);
                 // instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
                 icon.transform.SetParent(TurnBox.transform, false);
                 // second param keeps scale etc the same
 
-                icon.sprite = unit.GetIcon();
-                yPos -= 40f;
+                icon.sprite = unit.GetSmallIcon();
+                xPos += 150f;
             }
         }
 
@@ -77,7 +80,7 @@ public class TurnManager : MonoBehaviour
         //     // Debug.Log(nextUnits[i] != null);
         //     if (nextUnits[i] != null && nextTurns[i] != null) {
         //         Debug.Log('A');
-        //         nextTurns[i] = nextUnits[i].GetIcon();
+        //         nextTurns[i] = nextUnits[i].GetSmallIcon();
         //     }
         // }
     }

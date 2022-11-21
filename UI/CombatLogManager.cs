@@ -12,15 +12,15 @@ public class CombatLogManager : MonoBehaviour
     public GameObject CombatLogBox;
     public Canvas canvas;
 
-    private void Awake()
-    {
-        InitializeCamera();
-    }
+    // private void Awake()
+    // {
+    //     // InitializeCamera();
+    // }
 
-    private void InitializeCamera()
-    {
-        canvas.worldCamera = GameObject.FindObjectOfType<Camera>();
-    }
+    // private void InitializeCamera()
+    // {
+    //     canvas.worldCamera = GameObject.FindObjectOfType<Camera>();
+    // }
 
     public void PrintToLog(string text)
     {

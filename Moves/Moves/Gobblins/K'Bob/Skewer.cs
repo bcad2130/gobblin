@@ -13,5 +13,6 @@ public class Skewer : MoveButton
 
         action.GutsCost = COST;
         action.StrengthDamage = bm.CurrentUnit.GetNetStrength() + DAMAGE;
+        SetIsMove(true);
     }
 }

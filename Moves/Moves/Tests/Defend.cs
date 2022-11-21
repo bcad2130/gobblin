@@ -8,5 +8,7 @@ public class Defend : MoveButton
         action.TargetType = "Self";
 
         action.AddStatusEffect("DEFEND", 1);
+        
+        SetIsMove(true);
     }
 }

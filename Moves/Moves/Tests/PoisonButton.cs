@@ -11,5 +11,7 @@ public class PoisonButton : MoveButton
         
         action.GutsCost = COST;
         action.AddStatusEffect("GROSS", 3);
+
+        SetIsMove(true);
     }
 }

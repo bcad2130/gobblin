@@ -1,9 +1,10 @@
 ﻿
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Linq;
+using UnityEngine.SceneManagement;
 
 public class BattleManager : MonoBehaviour
 {
@@ -12,6 +13,10 @@ public class BattleManager : MonoBehaviour
 // ***VARIABLES***
 // ***************
 //
+    // LEVELS
+        public string NextLevel;
+
+        private string CurrentSceneName;
 
     // PREFABS
         public GameObject targetButton;
@@ -43,6 +48,9 @@ public class BattleManager : MonoBehaviour
         private bool recipePicked = false;
         private bool mealPicked = false;
         private bool gameOver = false;
+        private int freeMoves = 0;
+        private int freeSkills = 0;
+
 
     // ACTIVE VARS
         public UnitStats    CurrentUnit;
@@ -70,18 +78,22 @@ public class BattleManager : MonoBehaviour
     // CONSTANTS: STATUSES
         private const string ARMOR      = "ARMOR";
         private const string STUN       = "STUN";
+        private const string GIRD       = "GIRD";
         private const string GROSS      = "GROSS";
         private const string DODGE      = "DODGE";
         private const string DEFEND     = "DEFEND";
+        private const string GLOW       = "GLOW";
+        private const string FURY       = "FURY";
 
 
+    // CONSTANTS: VALUES
+        private const int METABOLISM = 1;
 
 //
 // ***************
 // ***FUNCTIONS***
 // ***************
 //
-
     // INITIALIZATION
 
         private void Awake()
@@ -91,12 +103,17 @@ public class BattleManager : MonoBehaviour
 
         private void StartStage()
         {
-            InitializeItems();
-            InitializeUnitLists();
-            InitializeCurrentAction();
-            InitializeRecipes();
 
-            InitializeUI();
+            // InitializeStageScene();
+            // InitializeIngredients();
+            // InitializeItems();
+            // InitializeUnitLists();
+            // InitializeCurrentAction();
+            // InitializeRecipes();
+
+            // InitializeUI();
+            // InitializeUnitPositions();
+            // InitializeUnitPoints();
             // InitializeDialogue();
 
             DialogueTrigger dt = FindObjectOfType<DialogueTrigger>();
@@ -108,12 +125,118 @@ public class BattleManager : MonoBehaviour
             }
         }
 
+        private void DisplayUnitPoints()
+        {
+            foreach (UnitStats unit in completeList)
+            {
+                unit.InitializeUnitText();
+            }
+        }
+
+        private void InitializeStageScene()
+        {
+            CurrentSceneName = SceneManager.GetActiveScene().name;
+        }
+
+        private void InitializeIngredients()
+        {
+            // Initialize starting Ingredients
+            playerIngredients = new Inventory();
+            switch (CurrentSceneName)
+            {
+                case "Tutorial03":
+                    // AddStartingIngredients();
+                    // Debug.Log('T');
+                    playerIngredients.AddItem("Bottle");
+                    // playerIngredients.AddItem("Bottle");
+
+                    break;
+                case "Tutorial04":
+                    // AddStartingIngredients();
+                    // Debug.Log('T');
+                    // playerIngredients.AddItem("Bottle");
+                    // playerIngredients.AddItem("Bottle");
+
+                    break;
+                // case "Tutorial05":
+                //     // AddStartingIngredients();
+
+                //     break;
+                // case "Tutorial06":
+                //     // AddStartingIngredients();
+
+                //     break;
+                default:
+                    break;
+            }
+
+            // Initialize forageable Ingredients
+            localIngredients = new Inventory();
+            switch (CurrentSceneName)
+            {
+                case "Tutorial04":
+                //     // AddLocalIngredients();
+                    localIngredients.AddItem("Bottle");
+                    localIngredients.AddItem("Bottle");
+                    localIngredients.AddItem("Bottle");
+                    break;
+                case "Tutorial05":
+                    // AddLocalIngredients();
+                    localIngredients.AddItem("Bottle");
+                    localIngredients.AddItem("Bottle");
+                    localIngredients.AddItem("Bottle");
+
+                    // localIngredients.AddItem("Water");
+                    // localIngredients.AddItem("Water");
+                    localIngredients.AddItem("Corn");
+                    localIngredients.AddItem("Corn");
+                    localIngredients.AddItem("Corn");
+                    localIngredients.AddItem("Corn");
+                    localIngredients.AddItem("Corn");
+                    localIngredients.AddItem("Corn");
+
+                    break;
+                case "Tutorial07":
+                    // AddLocalIngredients();
+                    localIngredients.AddItem("Bottle");
+                    localIngredients.AddItem("Bottle");
+                    localIngredients.AddItem("Bottle");
+                    // localIngredients.AddItem("Bottle");
+                    // localIngredients.AddItem("Water");
+                    // localIngredients.AddItem("Water");
+                    // localIngredients.AddItem("Grease");
+                    // localIngredients.AddItem("Grease");
+                    localIngredients.AddItem("Corn");
+                    localIngredients.AddItem("Corn");
+                    localIngredients.AddItem("Corn");
+                    localIngredients.AddItem("Corn");
+                    localIngredients.AddItem("Corn");
+                    localIngredients.AddItem("Corn");
+                    break;
+                case "Stage 1":
+                    // AddLocalIngredients();
+                    localIngredients.AddItem("Bottle");
+                    localIngredients.AddItem("Bottle");
+                    localIngredients.AddItem("Bottle");
+                    localIngredients.AddItem("Bottle");
+                    localIngredients.AddItem("Water");
+                    localIngredients.AddItem("Water");
+                    localIngredients.AddItem("Grease");
+                    localIngredients.AddItem("Grease");
+                    localIngredients.AddItem("Corn");
+                    localIngredients.AddItem("Corn");
+                    localIngredients.AddItem("Corn");
+                    localIngredients.AddItem("Corn");
+                    localIngredients.AddItem("Corn");
+                    localIngredients.AddItem("Corn");
+                    break;
+                default:
+                    break;
+            }
+        }
+
         private void InitializeItems()
         {
-            playerIngredients   = new Inventory();
-
-            localIngredients    = new Inventory();
-
             playerMealItems     = new List<Item>();
             playerEquipmentItems= new List<Item>();
 
@@ -121,49 +244,52 @@ public class BattleManager : MonoBehaviour
             Pot startingPot = new Pot();
             playerEquipmentItems.Add(startingPot);
 
-            // start with pre-made food (for testing)
-            CornCobItem test0 = new CornCobItem();
-            test0.SetQuality(0);
-            playerMealItems.Add(test0);
+            switch (CurrentSceneName)
+            {
+                case "Tutorial04":
+                    // AddStartingItems();
 
-            CornCobItem test1 = new CornCobItem();
-            test1.SetQuality(1);
-            playerMealItems.Add(test1);
+                    CornCobItem test0 = new CornCobItem();
+                    test0.SetQuality(0);
+                    playerMealItems.Add(test0);
 
-            CornCobItem test2 = new CornCobItem();
-            test2.SetQuality(2);
-            playerMealItems.Add(test2);
+                    CobFrappeItem test1 = new CobFrappeItem();
+                    test1.SetQuality(0);
+                    playerMealItems.Add(test1);
 
-            CornCobItem test3 = new CornCobItem();
-            test3.SetQuality(3);
-            playerMealItems.Add(test3);
-            // playerMealItems.Add(new GritsItem());
-            // playerMealItems.Add(new PopCornItem());
-            // playerMealItems.Add(new PopCornItem());
-            // playerMealItems.Add(new BurntMessItem());
+                    break;
+                // case "Tutorial05":
+                //     // AddStartingItems();
 
-            // start with ingredients (for testing)
-            playerIngredients.AddItem("Bottle");
-            playerIngredients.AddItem("Bottle");
-            playerIngredients.AddItem("Bottle");
+                //     break;
+                case "Tutorial06":
+                    // AddStartingItems();
 
-            // populate local ingredients for forage (note that this system results in limited quantities of ingredients)
-            localIngredients.AddItem("Bottle");
-            localIngredients.AddItem("Bottle");
-            localIngredients.AddItem("Bottle");
-            localIngredients.AddItem("Bottle");
-            localIngredients.AddItem("Water");
-            localIngredients.AddItem("Water");
-            localIngredients.AddItem("Grease");
-            localIngredients.AddItem("Grease");
-            localIngredients.AddItem("Corn");
-            localIngredients.AddItem("Corn");
-            localIngredients.AddItem("Corn");
-            localIngredients.AddItem("Corn");
-            localIngredients.AddItem("Corn");
-            localIngredients.AddItem("Corn");
-            localIngredients.AddItem("Corn");
-            localIngredients.AddItem("Corn");
+                    CobFrappeItem test2 = new CobFrappeItem();
+                    test2.SetQuality(0);
+                    playerMealItems.Add(test2);
+
+                    break;
+                default:
+                    break;
+            }
+
+            // // start with pre-made food (for testing)
+            // CornCobItem test0 = new CornCobItem();
+            // test0.SetQuality(0);
+            // playerMealItems.Add(test0);
+
+            // CornCobItem test1 = new CornCobItem();
+            // test1.SetQuality(1);
+            // playerMealItems.Add(test1);
+
+            // CornCobItem test2 = new CornCobItem();
+            // test2.SetQuality(2);
+            // playerMealItems.Add(test2);
+
+            // CornCobItem test3 = new CornCobItem();
+            // test3.SetQuality(3);
+            // playerMealItems.Add(test3);
         }
 
         private void InitializeCurrentAction()
@@ -194,14 +320,35 @@ public class BattleManager : MonoBehaviour
         private void InitializeRecipes()
         {
             playerRecipes = new List<Recipe>();
-            playerRecipes.Add(new CornCobRecipe());
+            playerRecipes.Add(new BurntCornRecipe());
+            // playerRecipes.Add(new CornCobRecipe());
             playerRecipes.Add(new GritsRecipe());
             playerRecipes.Add(new PopCornRecipe());
         }
 
-        private void InitializeUI()
+        // private void InitializeUI()
+        // {
+        //     // ActivateMoveBox(true);
+        // }
+
+        private void InitializeUnitPositions()
         {
-            // ActivateMoveBox(true);
+            UpdateUnitPositions();
+            // float yPos      = 70f;
+            // float xPosAlly  = -110f;
+            // foreach (UnitStats allyUnit in allyList)
+            // {
+            //     allyUnit.SetUnitBoxPosition(xPosAlly, yPos);
+            //     xPosAlly -= 110f;
+            // }
+
+            // float xPosEnemy  = 110f;
+            // foreach (UnitStats enemyUnit in enemyList)
+            // {
+            //     // Debug.Log(xPosEnemy + " " + yPos);
+            //     enemyUnit.SetUnitBoxPosition(xPosEnemy, yPos);
+            //     xPosEnemy += 110f;
+            // }
         }
 
         private void InitializeDialogue()
@@ -244,13 +391,13 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        private void PrintList(List<UnitStats> list)
+        private void DisplayList(List<UnitStats> list)
         {
             // Debug.Log(list);
             // Debug.Log(list.Count);
             foreach (UnitStats unit in list) {
                 if (unit == null) {
-                    Debug.Log("Error : PrintList : Can't print null unit");
+                    Debug.Log("Error : DisplayList : Can't print null unit");
                 }
                 print(unit.GetName());
             }
@@ -261,11 +408,27 @@ public class BattleManager : MonoBehaviour
 
         public void StartCombat()
         {
-            CombatLog("Combat begins!");
+            InitializeUnitLists();
+            // InitializeUI();
+            InitializeUnitFigures();
+            InitializeUnitPositions();
+            InitializeUnitStazButtons();
+
+            InitializeStageScene();
+            InitializeCurrentAction();
+
+            InitializeIngredients();
+            InitializeItems();
+            InitializeRecipes();
 
             // UI
             // NextTurnButton.GetComponentInChildren<Text>().text = "Start\nCombat";
+            // DestroyDialogueOnlyUnits();
+
+            DisplayUnitPoints();
             ActivateMoveBox(true);
+
+            CombatLog("Combat begins!");
 
             StartRound();
         }
@@ -286,7 +449,8 @@ public class BattleManager : MonoBehaviour
 
         private void StartTurn()
         {
-            ClearCombatLog();
+            // redundant cux of start turn updates
+            // ClearCombatLog();
 
             CurrentUnit = WhoseTurn();
             if (CurrentUnit.tag == "Player") {
@@ -307,18 +471,29 @@ public class BattleManager : MonoBehaviour
             // TODO: what if this kills unit? they can still act
             CheckGross(CurrentUnit);
 
+            //  would it make more sense for starving to happen at start of turn
+            if (CurrentUnit.isStarving)
+            {
+                CombatLog(CurrentUnit.GetName() + " is still starving. They skip their turn and take TUM damage!");
+                CurrentUnit.AddStatusEffect("STUN", 1);
+                TakeTumDamage(CurrentUnit, 10);
+            }
+
+            freeMoves = 1;
+            freeSkills = 1;
+
             // UI
             DisplayStaz(CurrentUnit);
         }
 
         private void StartAction()
         {
-            if (CurrentUnit.GetStatusEffectStacks("STUN") > 0 || CurrentUnit.NPC) {
+            if (CurrentUnit.GetStatusEffectStacks("STUN") > 0 || CurrentUnit.isNPC) {
                 // Debug.Log(CurrentUnit.GetName() + " is stunned due to hunger (or is food)");
                 EndTurn();
             } else {
                 if (myTurn) {
-                    PickUnitMove();
+                    PlayerSelectAction();
                 } else {
                     AutoMove();
                 }
@@ -329,6 +504,8 @@ public class BattleManager : MonoBehaviour
         {
             EndTurnUpdates();
 
+            // check for game over here? maybe add a flag for turn over, can activate in check if dead
+
             if (nextUpList.Count == 0) {
                 NextTurn();
             } else {
@@ -338,6 +515,7 @@ public class BattleManager : MonoBehaviour
 
         private void EndTurnUpdates()
         {
+            // build this    
             // TickCurrentUnitStatusEffects();
 
             if (CurrentUnit.GetStatusEffectStatus("STUN")) {
@@ -347,6 +525,8 @@ public class BattleManager : MonoBehaviour
             // TURN MANAGEMENT
             myTurn = false;
             RemoveCurrentUnitFromNextUpList();
+            freeMoves = 0;
+            freeSkills = 0;
 
 
             CurrentUnit.SetTurnNumber(0);
@@ -360,12 +540,15 @@ public class BattleManager : MonoBehaviour
             DisplayNextTurns(nextUpList);
             DisplayStaz(CurrentUnit);
             SetNextTurnButtonText("Next\nTurn");
+
+            CheckIfDead(CurrentUnit);
         }
 
         public void NextTurn()
         {
             ActivateNextTurnButton(false);
 
+            // TODO lets not use the game over bool
             if (!gameOver) {
                 if (nextUpList.Count != 0){
                     StartTurn();
@@ -388,6 +571,7 @@ public class BattleManager : MonoBehaviour
         {
             CheckRecipe();
 
+            // when does all the gut stuff happen? should it happen at the beginnings  or ends of rounds
             Metabolism();
         }
 
@@ -405,131 +589,24 @@ public class BattleManager : MonoBehaviour
             return nextUpList[0];
         }
 
-        /*
-            private void BuildTurnList()
-            {
-                // List<UnitStats> tempUnitList = new List<UnitStats>();
-                nextUpList = completeList.OrderBy(w => w.GetNetSpeed()).Reverse().ToList();
-                // tempUnitList = nextUpList;
-
-                // PrintList(nextUpList);
-
-                // int a = 0;
-                // int b = 0;
-
-                    // for (int i = 0; i < nextUpList.Count - 1; i++)
-                    // for (int i = 0; i < 3; i++)
-                    // int i = 0;
-                    // while (i < nextUpList.Count - 1)
-                    // {
-                        // Debug.Log(i);
-                        // if (nextUpList[i].GetNetSpeed() == nextUpList[i+1].GetNetSpeed()) {
-                        //     // Debug.Log("Ding");
-
-                        //     List<UnitStats> listToRandomize = new List<UnitStats>();
-                        //     // AddUnitToList(nextUpList[i],  listToRandomize);
-
-                        //     int j = 0;
-                        //     int k = i;
-                        //     bool breakOut = false;
-                        //     // do {
-                        //     //         breakOut = true;
-                        //     //         AddUnitToList(nextUpList[i],  tempUnitList);
-
-                        //     //     // AddUnitToList(nextUpList[i + j],  listToRandomize);
-                        //     //     // j++;
-                        //     //     // k++;
-                        //     //     // if (nextUpList[i + j].GetNetSpeed() != nextUpList[i + j + 1].GetNetSpeed()) {
-                        //     //     //     breakOut = true;
-                        //     //     // }
-                        //     // // }   while (j < 3);
-
-                        //     // }   while (k < nextUpList.Count - 1 && !breakOut);
-                        //     // while (nextUpList[i + j].GetNetSpeed() == nextUpList[i + j + 1].GetNetSpeed()) {
-                        //     //     AddUnitToList(nextUpList[i + j + 1],  listToRandomize);
-                        //     //     j++;
-                        //     //     k++;
-                        //     // }
-                        //     i += j;
-                        //     Shuffle(listToRandomize);
-                        //     PrintList(listToRandomize);
-
-                        //     // int randomNumber = Random.Range(0, 2);
-
-                        //     // if (randomNumber == 1) {
-                        //     //     // Debug.Log(a++);
-                        //     //     a++;
-
-                        //     //     UnitStats tempUnit = tempUnitList[i];
-                        //     //     tempUnitList[i] = tempUnitList[i+1];
-                        //     //     tempUnitList[i+1] = tempUnit;
-                        //     // }
-                        //     // b++;
-
-                        //     // Debug.Log(b++);
-                        // } else {
-                        //     // AddUnitToList(nextUpList[i],  tempUnitList);
-                        //     i++;
-                        // }
-                    // }
-                // Debug.Log(a + " : " + b);
-                // PrintList(tempUnitList);
-
-                SetUnitTurnNumbers();
-
-                // TODO: MAKE SORTING SLIGHTLY RANDOM, BUT HIGHER CHANCE IF HIGH STAT?
-            }
-        */
-
-        // private void BuildTurnList()
-        // {
-        //     nextUpList = completeList.OrderBy(w => w.GetNetSpeed()).Reverse().ToList();
-
-        //     SetUnitTurnNumbers();
-
-        //     // if (nextUpList[2] != null) {
-        //     //     Debug.Log(nextUpList[2]);
-        //     // }
-
-        //     List<UnitStats> listToRandomize = new List<UnitStats>();
-        //     bool breakOut = false;
-        //                 // AddUnitToList(nextUpList[i],  listToRandomize);
-        //     int i = 0;
-        //     Debug.Log(nextUpList.Count - 1);
-        //     while (i < nextUpList.Count - 1) {
-        //         // while (!breakOut) {
-        //             if (i+1 < nextUpList.Count) {
-        //                 Debug.Log("Ding");
-        //                 if (nextUpList[i].GetNetSpeed() == nextUpList[i+1].GetNetSpeed()) {
-        //                     AddUnitToList(nextUpList[i],  listToRandomize);
-        //                     AddUnitToList(nextUpList[i+1],  listToRandomize);
-        //                 } else {
-        //                     breakOut = true;
-        //                 }
-        //             }
-        //             breakOut = true;
-        //             i++;
-
-
-        //         // if (nextUpList[i].GetNetSpeed() == nextUpList[i+1].GetNetSpeed()) {
-        //         //         AddUnitToList(nextUpList[i],  listToRandomize);
-        //         //         AddUnitToList(nextUpList[i+1],  listToRandomize);
-        //         // }
-        //         print(i);
-        //     }
-
-        //     Shuffle(listToRandomize);
-        //     PrintList(listToRandomize);
-
-
-        //     // TODO: MAKE SORTING SLIGHTLY RANDOM, BUT HIGHER CHANCE IF HIGH STAT?
-        // }
-
         private void BuildTurnList()
         {
             List<UnitStats> sortedList  = new List<UnitStats>();
+            List<UnitStats> npcList  = new List<UnitStats>();
 
-            sortedList = completeList.OrderBy(w => w.GetNetSpeed()).Reverse().ToList();
+            // nextUpList  = new List<UnitStats>();
+
+            sortedList = completeList.OrderBy(unit => unit.GetNetSpeed()).Reverse().ToList();
+
+            // all NPCs are not sorted into the nextUpList
+            npcList = sortedList.FindAll(u => u.isNPC);
+
+            for (int j = 0; j < npcList.Count; j++)
+            {
+                // Debug.Log(npcList[j]);
+                RemoveUnitFromList(npcList[j], sortedList);
+            }
+
 
             // handling for units with same speed, grab them and randomize their order
             int i = 0;
@@ -562,13 +639,6 @@ public class BattleManager : MonoBehaviour
             DisplayNextTurns(nextUpList);
         }
 
-        // private void BuildTurnList()
-        // {
-        //     nextUpList = completeList.OrderBy(w => w.GetNetSpeed()).Reverse().ToList();
-
-        //     SetUnitTurnNumbers();
-        // }
-
         private void SetUnitTurnNumbers()
         {
             int iter = 1;
@@ -588,7 +658,16 @@ public class BattleManager : MonoBehaviour
             
             DisplayStaz(CurrentUnit);
 
-            PickUnitMove();
+            StartAction();
+        }
+
+        private void CheckEndTurn()
+        {
+            if (freeMoves >  0 || freeSkills > 0)  {
+                ResetTurn();
+            } else {
+                EndTurn();
+            }
         }
 
 
@@ -695,6 +774,7 @@ public class BattleManager : MonoBehaviour
 
             SetRecipePicked(true);
 
+            CombatLog("You started cooking " + CurrentRecipe.GetName() + ". It will take " + CurrentRecipe.GetCookTime() + " round(s).");
             // Debug.Log("You're cooking " + CurrentRecipe.GetName() + ". It will take " + CurrentRecipe.GetCookTime() + " round(s).");
         }
 
@@ -703,14 +783,16 @@ public class BattleManager : MonoBehaviour
             if (CurrentRecipe != null) {
 
                 if (CurrentRecipe.GetCookCount() < CurrentRecipe.GetCookTime()) {
-                    CurrentRecipe.AddCookTurn();
+                    // CurrentRecipe.AddCookTurn();
+                    CookTimeAddTurns(1);
                 } else if (CurrentRecipe.GetCookCount() == CurrentRecipe.GetCookTime()) {
 
                     if (CheckIngredients() && CheckStirring() ) {
                         CreateMeal();
                     } else {
-                        playerMealItems.Add(new BurntMessItem());
-                        Debug.Log("You made a Burnt Mess. Better luck next time!");
+                        // playerMealItems.Add(new BurntMessItem());
+                        CombatLog("Your recipe failed!");
+                        // Debug.Log("You made a Burnt Mess. Better luck next time!");
                     }
 
                     RecipeCleanUp();
@@ -728,6 +810,13 @@ public class BattleManager : MonoBehaviour
             SetRecipe(CurrentAction.Recipe);
 
             CombatLog(CurrentUnit.GetName() + " started cooking " + CurrentRecipe.GetName());
+        }
+
+        private void CookTimeAddTurns(int turns)
+        {
+            if (turns == 1) {
+                CurrentRecipe.AddCookTurn();
+            }
         }
 
         private void Stir()
@@ -757,6 +846,13 @@ public class BattleManager : MonoBehaviour
             CombatLog(CurrentUnit.GetName() + " seasoned the pot, adding " + CurrentUnit.GetNetTaste() + " flavor");
         }
 
+        private void Lid()
+        {
+            if (CurrentAction.Targets.Any(t => t.isCookin)) {
+                CookTimeAddTurns(1);
+            }
+        }
+
         private void CreateMeal()
         {
             // print(CurrentRecipe.GetFlavor());
@@ -783,7 +879,8 @@ public class BattleManager : MonoBehaviour
             // meal.SetNameQuality(meal.Name + " +" + meal.GetQuality().ToString());
 
             playerMealItems.Add(meal);
-            Debug.Log("You made " + meal.Name);
+            // Debug.Log("You made " + meal.Name);
+            CombatLog("You made " + meal.Name);
         }
 
         private void RecipeCleanUp()
@@ -794,12 +891,13 @@ public class BattleManager : MonoBehaviour
 
             CurrentUnit = allyCookinList[0];
 
-            allyCookinList.Remove(CurrentUnit);
-            allyList.Remove(CurrentUnit);
-            meleeAllyList.Remove(CurrentUnit);
-            completeList.Remove(CurrentUnit);
+            // allyCookinList.Remove(CurrentUnit);
+            // allyList.Remove(CurrentUnit);
+            // meleeAllyList.Remove(CurrentUnit);
+            // completeList.Remove(CurrentUnit);
 
-            CurrentUnit.DestroySelf();
+            // CurrentUnit.DestroySelf();
+            KillUnit(CurrentUnit);
 
             CurrentRecipe = null;
             SetRecipePicked(false);
@@ -816,7 +914,12 @@ public class BattleManager : MonoBehaviour
         {
             foreach (UnitStats unit in completeList) {
                 if (!unit.isCookin && !unit.isGutless) { // && !unit.isDead) {
-                    unit.LoseGuts(1);
+                    if (unit.GetStatusEffectStatus(GIRD))
+                    {
+                        unit.SubtractStatusEffect(GIRD, 1);
+                    } else {
+                        unit.LoseGuts(METABOLISM);
+                    }
                 }
             }
         }
@@ -826,19 +929,22 @@ public class BattleManager : MonoBehaviour
             foreach (UnitStats unit in completeList) {
                 // Debug.Log("Gut Check " + unit.GetName());
                 if (!unit.isCookin && !unit.isGutless) {
-                    if (unit.GetCurrentGuts() == 0) {
+                    if (unit.GetCurrentGuts() <= 0) {
                         Starve(unit);
                     }
                 }
             }
+
+            // CheckIfDeadAll();
         }
 
         private void Starve(UnitStats unit)
         {
-            Debug.Log(unit.GetName() + " is starving");
+            CombatLog(unit.GetName() + " is starving. Feed them food before they perish!");
 
-            unit.AddStatusEffect("STUN", 1);
-            TakeTumDamage(unit, 10);
+            unit.isStarving = true;
+            // unit.AddStatusEffect("STUN", 1);
+            // TakeTumDamage(unit, 10);
         }
 
 
@@ -855,7 +961,13 @@ public class BattleManager : MonoBehaviour
                 forageCount++;
             }
 
+
             if (localIngredients.CountItems() > 0) {
+                if (forageCount == 0) {
+                    CombatLog(CurrentUnit.GetName() + " failed to sniff out any resources!");
+                }
+
+                // Debug.Log(forageCount);
                 // if (localIngredients.CountItems() - forageCount < 0)
                 while (forageCount > 0 && localIngredients.CountItems() > 0) {
                     string foragedIngredient = localIngredients.GetRandomItem();
@@ -935,7 +1047,7 @@ public class BattleManager : MonoBehaviour
                 RouteAction();
             } else {
                 ResetTurn();
-                Debug.Log("Cannot do Move");
+                // Debug.Log("Cannot do Move");
             }
         }
 
@@ -955,7 +1067,11 @@ public class BattleManager : MonoBehaviour
         public bool CanAffordResourceCost (Action action)
         {
             if (action.GetIngredientCost() != "") {
+                // Debug.Log(action.GetIngredientCost());
+
                 if (!playerIngredients.CheckItem(action.GetIngredientCost())) {
+                    CombatLog("Can't use move: You don't have the required ingredient");
+
                     Debug.Log("You do not have the required ingredient.");
                     return false;
                 }
@@ -1034,12 +1150,15 @@ public class BattleManager : MonoBehaviour
             return true;
         }
 
-    // ACTION
+    // PREP ACTION
 
 
-        private void PickUnitMove()
+        private void PlayerSelectAction()
         {
-            DisplayMoves(CurrentUnit);
+            bool freeMove = freeMoves > 0;
+            bool freeSkill = freeSkills > 0;
+
+            DisplayActionButtons(CurrentUnit, freeMove, freeSkill);
         }
 
         public void SetCurrentAction(Action action)
@@ -1102,8 +1221,49 @@ public class BattleManager : MonoBehaviour
             ActivateCancelButton(true);
             ActivateConfirmButton(true);
 
-            StazMessage("Action Details Here");
+            PrepareActionPreview(CurrentAction);
         }
+
+        private void PrepareActionPreview(Action action)
+        {
+            // TODO:
+            // Maybe: GutsCost; ItemCost; REsourceCost; Give Item; Summon
+            foreach (UnitStats target in action.Targets) {
+                if (action.StrengthDamage > 0) {
+                    StazMessage(PreviewStrengthDamage(target, action.StrengthDamage));
+                }
+                if (action.TumDamage > 0) {
+                    StazMessage(PreviewTumDamage(target, action.TumDamage));
+                }
+                if (action.Heal > 0) {
+                    StazMessage(PreviewHealDamage(target, action.Heal));
+                }
+                if (action.Sate > 0) {
+                    StazMessage(PreviewSateHunger(target, action.Sate));
+                }
+                if (action.Famish > 0) {
+                    StazMessage(PreviewFamishHunger(target, action.Famish));
+                }
+                // Do i really need to check on the count since i'm doing foreach?
+                if (action.GetAllStatusEffects().Count > 0) {
+                    foreach(KeyValuePair<string,int> effect in action.GetAllStatusEffects()) {
+                        StazMessage("Apply " + effect.Value + " " + effect.Key + " to " + target.GetName());
+                    }
+                }
+                if (action.GetAllStatChanges().Count > 0) {
+                    foreach(KeyValuePair<string,int> statChange in action.GetAllStatChanges()) {
+                        if (statChange.Value > 0) {
+                            StazMessage("Add " + statChange.Value + " " + statChange.Key + " to " + target.GetName());
+                        }
+                        if (statChange.Value < 0) {
+                            StazMessage("Lose " + statChange.Value + " " + statChange.Key + " from " + target.GetName());
+                        }
+                    }
+                }
+            }
+        }
+
+    // TAKE ACTION
 
         public void TakeAction()
         {
@@ -1202,7 +1362,19 @@ public class BattleManager : MonoBehaviour
                 PerformSelfAction();
             }
 
-            EndTurn();
+            if (CurrentAction.GetIsMove()) {
+                freeMoves--;
+            }
+
+            if  (CurrentAction.GetIsSkill()) {
+                freeSkills--;
+            }
+
+            // should i Clear the current action at the end of the turn??
+
+
+            CheckEndTurn();
+            // EndTurn();
         }
 
         public void PerformTargetedAction(UnitStats unit)
@@ -1244,8 +1416,8 @@ public class BattleManager : MonoBehaviour
                 SateHunger(unit, CurrentAction.Sate);
             }
 
-            if (CurrentAction.Tantalize > 0) {
-                TantalizeHunger(unit, CurrentAction.Tantalize);
+            if (CurrentAction.Famish > 0) {
+                FamishHunger(unit, CurrentAction.Famish);
             }
 
             foreach(KeyValuePair<string, int> effect in CurrentAction.GetAllStatusEffects())
@@ -1264,7 +1436,8 @@ public class BattleManager : MonoBehaviour
             unit.UpdateText();
 
             if (CurrentAction.DestroySelf) {
-                unit.DestroySelf();
+                // unit.DestroySelf();
+                KillUnit(unit);
 
                 // TODO: must clear from unit lists etc (might have solved this now, will keep testing)
                 // on this note, will i have revival? should i even keep dead units around?
@@ -1274,6 +1447,7 @@ public class BattleManager : MonoBehaviour
             }
         }
 
+        // TODO redundant, i can probably run all actions with one function
         public void PerformSelfAction()
         {
             Action selfAction = CurrentAction.GetSelfAction();
@@ -1292,8 +1466,8 @@ public class BattleManager : MonoBehaviour
                 SateHunger(CurrentUnit, selfAction.Sate);
             }
 
-            if (selfAction.Tantalize > 0) {
-                TantalizeHunger(CurrentUnit, selfAction.Tantalize);
+            if (selfAction.Famish > 0) {
+                FamishHunger(CurrentUnit, selfAction.Famish);
             }
 
             foreach(KeyValuePair<string, int> effect in selfAction.GetAllStatusEffects())
@@ -1310,7 +1484,8 @@ public class BattleManager : MonoBehaviour
             CurrentUnit.UpdateText();
 
             if (selfAction.DestroySelf) {
-                CurrentUnit.DestroySelf();
+                // CurrentUnit.DestroySelf();
+                KillUnit(CurrentUnit);
 
                 // TODO: must clear from unit lists etc (might have solved this now, will keep testing)
                 // on this note, will i have revival? should i even keep dead units around?
@@ -1335,6 +1510,9 @@ public class BattleManager : MonoBehaviour
                     break;
                 case "Season":
                     Season();
+                    break;
+                case "Lid":
+                    Lid();
                     break;
                 case "Serve":
                 case "Eat":
@@ -1369,9 +1547,11 @@ public class BattleManager : MonoBehaviour
             switch(effectType) {
                 case ARMOR:
                 case STUN:
+                case GIRD:
                 case GROSS:
                 case DODGE:
                 case DEFEND:
+                case FURY:
                     unit.AddStatusEffect(effectType, stacks);
                     CombatLog(unit.GetName() + " got " + stacks + " stacks of " + effectType);
                     break;
@@ -1403,13 +1583,22 @@ public class BattleManager : MonoBehaviour
 
         private void Cover()
         {
-            Debug.Log("Cover");
+            // Debug.Log("Cover");
+            foreach (KeyValuePair<string, UnitStats> unit in coverUnits) {
+                print(unit.Key + " ->  " + unit.Value.GetName());
+            }
+
+
             if (CurrentAction.Targets.Count == 1) {
                 foreach (UnitStats target in CurrentAction.Targets) {
                     CoverUnit(target);
                 }
             } else {
                 Debug.Log("Can only cover one ally!");
+            }
+
+            foreach (KeyValuePair<string, UnitStats> unit in coverUnits) {
+                print(unit.Key + " ->  " + unit.Value.GetName());
             }
         }
 
@@ -1429,29 +1618,41 @@ public class BattleManager : MonoBehaviour
 
         private void UncoverUnit(UnitStats unit)
         {
+            // print("Uncover Unit");
 
             if (IsCovering(unit)) {
-                if (!unit.isDead) {
-                    if (myTurn) {
-                        AddUnitToList(coverUnits[unit.GetName()], meleeAllyList);
-                    } else {
-                        AddUnitToList(coverUnits[unit.GetName()], meleeEnemyList);
-                    }
+                // // todo first add the covered unit to the melee list
+
+                //instead of my turn, check the tag on the unit
+                if (unit.tag == "Player") {
+                    AddUnitToList(coverUnits[unit.GetName()], meleeAllyList);
+                } else {
+                    AddUnitToList(coverUnits[unit.GetName()], meleeEnemyList);
                 }
 
+
+                //  then remove the covering unit from the cover list
                 coverUnits.Remove(unit.GetName());
-            }
+    
 
-            if (IsCovered(unit)) {
-                if (!unit.isDead) {
-                    if (myTurn) {
-                        AddUnitToList(unit, meleeAllyList);
-                    } else {
-                        AddUnitToList(unit, meleeEnemyList);
-                    }
+
+                // leftovers
+                // coverUnits.Remove(GetCoveringUnitName(unit));
+
+            } else if (IsCovered(unit)) {
+
+                // todo fist add the covered unit to the melee list
+
+                //instead of my turn, check the tag on the unit
+                if (unit.tag == "Player") {
+                    AddUnitToList(unit, meleeAllyList);
+                } else {
+                    AddUnitToList(unit, meleeEnemyList);
                 }
 
-                coverUnits.Remove(GetCoveringUnitName(unit));
+                // then remove the covered unit from the cover list
+
+                coverUnits.Remove(GetCoveringUnitName(unit)); //???
             }
         }
 
@@ -1485,7 +1686,7 @@ public class BattleManager : MonoBehaviour
             }
 
             if (coverUnits.ContainsKey(unit.GetName())){
-                return "Covering " + coverUnits[unit.GetName()] + "\n";
+                return "Covering " + coverUnits[unit.GetName()].GetName() + "\n";
             }
 
             if (coverUnits.ContainsValue(unit)){
@@ -1506,7 +1707,7 @@ public class BattleManager : MonoBehaviour
             completeList.Add(summonUnit);
 
             if (CurrentUnit.tag == "Player") {
-            // if (summon.tag == "Player" || summon.tag == "NPC") {
+            // if (summon.tag == "Player" || summon.tag == "isNPC") {
                 allyList.Add(summonUnit);
                 meleeAllyList.Add(summonUnit);
             } else if (CurrentUnit.tag == "Enemy") {
@@ -1529,6 +1730,10 @@ public class BattleManager : MonoBehaviour
 
                 CurrentRecipe.cauldron = summonUnit;
             }
+            summonUnit.InitializeUnitFigure();
+            summonUnit.InitializeUnitText();
+
+            UpdateUnitPositions();
         }
 
 
@@ -1607,6 +1812,13 @@ public class BattleManager : MonoBehaviour
                         RemoveSelfFromPossibleTargets();
 
                         SelectRandomUnitFromPossibleTargets();
+                    }
+                    break;
+                case "AllAllies":
+                    if (myTurn) {
+                        SetTargetsByList(allyList);
+                    } else {
+                        SetTargetsByList(enemyList);
                     }
                     break;
                 case "CoverAlly":
@@ -1703,8 +1915,10 @@ public class BattleManager : MonoBehaviour
 
     // ACTION CALCULATOR
 
-        private void TakeStrengthDamage(UnitStats targetUnit, int rawDamage)
+        private string PreviewStrengthDamage(UnitStats targetUnit, int rawDamage)
         {
+            string preview = "Attacking " + targetUnit.GetName() + " for ";
+
             int attackDamage = rawDamage;
             int attackSpeed = CurrentAction.Speed;
 
@@ -1715,16 +1929,16 @@ public class BattleManager : MonoBehaviour
             if (CurrentAction.isBasicAttack && attackSpeed > targetUnit.GetNetSpeed()) {
                 int speedDiff = attackSpeed - targetUnit.GetNetSpeed();
 
-                if (speedDiff >= 20) {
+                if (speedDiff >= 15) {
                     multiplier = 3;
-                } else if (speedDiff >= 10) {
+                } else if (speedDiff >= 5) {
                     multiplier = 2;
                 }
             }
 
             if (CurrentAction.isBasicAttack && CurrentUnit.GetStatusEffectStatus("BROKENBOTTLE")) {
                 attackDamage += 5;
-                CurrentUnit.SubtractStatusEffect("BROKENBOTTLE", 1);
+                // CurrentUnit.SubtractStatusEffect("BROKENBOTTLE", 1);
             }
 
             // damage is reduced by def if target has DEFEND or by def/2 if no DEFEND
@@ -1740,10 +1954,84 @@ public class BattleManager : MonoBehaviour
                 netDamage = 1;
             }
 
+            if (CurrentAction.isBasicAttack && targetUnit.GetStatusEffectStatus(FURY)) {
+                netDamage += targetUnit.GetStatusEffectStacks(FURY);
+            }
+
+            preview += netDamage + " damage";
+
+            if (multiplier > 1) {
+                preview += " " + multiplier.ToString() + " times";
+            }
+
+            // Debug.Log(netDamage);
+
+            return preview;
+        }
+
+        private void TakeStrengthDamage(UnitStats targetUnit, int rawDamage)
+        {
+            
+            int attackDamage = rawDamage;
+            int attackSpeed = CurrentAction.Speed;
+
+            int multiplier = 1;
+            int netDamage = 0;
+
+            // CHANGE status to BONUS STRENGTH / POWER
+            // instead of too specific broken bottle
+            // bottle move should just add bonus attack
+            if (CurrentAction.isBasicAttack && CurrentUnit.GetStatusEffectStatus("BROKENBOTTLE")) {
+                attackDamage += 5;
+                CurrentUnit.SubtractStatusEffect("BROKENBOTTLE", 1);
+            }
+
+            // MULTI-ATTACK
+            if (CurrentAction.BonusHits > 0) {
+                multiplier = multiplier + CurrentAction.BonusHits;
+            }
+
+            // basic attacks can hit multiple times if your speed is higher than targets
+            if (CurrentAction.isBasicAttack && attackSpeed > targetUnit.GetNetSpeed()) {
+                int speedDiff = attackSpeed - targetUnit.GetNetSpeed();
+
+                if (speedDiff >= 15) {
+                    multiplier = 3;
+                } else if (speedDiff >= 5) {
+                    multiplier = 2;
+                }
+            }
+
+            // TODO SEPARATE THIS INTO HIT CALCULATOR METHOD
+
+            // damage is reduced by def if target has DEFEND or by def/2 if no DEFEND
+            if (targetUnit.GetStatusEffectStatus(DEFEND)) {
+                netDamage = attackDamage - targetUnit.GetNetDefense();
+                targetUnit.SubtractStatusEffect(DEFEND, 1); // or you could lose one at EoT
+            } else  {
+                netDamage = attackDamage - (targetUnit.GetNetDefense() / 2);
+
+                //TODO Add chance of extra +1 damage if %2 remainder
+            }
+
+            // do 1 damage per hit minimum
+            if (netDamage <= 0) {
+                netDamage = 1;
+            }
+
+            if (CurrentAction.isBasicAttack && targetUnit.GetStatusEffectStatus(FURY)) {
+                netDamage += targetUnit.GetStatusEffectStacks(FURY);
+            }
+
+            // Debug.Log(netDamage);
+
+
+            int hits = 0;
             do {
                 int hitDamage = netDamage;
 
                 if (!targetUnit.GetStatusEffectStatus(DODGE)) {
+                    hits++;
                     CombatLog(CurrentUnit.GetName() + " hits " + targetUnit.GetName() + " for " + hitDamage + " STR damage");
 
                     if (targetUnit.GetStatusEffectStatus(ARMOR)) {
@@ -1775,7 +2063,25 @@ public class BattleManager : MonoBehaviour
                 multiplier--;
             } while (multiplier > 0);
 
+            targetUnit.CreateDamageText(netDamage, Color.red, hits);
+
             PostDamageUpdates(targetUnit);
+        }
+
+        private string PreviewTumDamage(UnitStats targetUnit, int rawDamage)
+        {
+            string preview = "Dealing ";
+
+            int netDamage = rawDamage - (targetUnit.GetNetTum() / 2);
+
+            // do 1 damage minimum
+            if (netDamage <= 0) {
+                netDamage = 1;
+            }
+
+            preview += netDamage.ToString() + " TUM damage to " + targetUnit.GetName();
+            
+            return preview;
         }
 
         private void TakeTumDamage (UnitStats targetUnit, int rawDamage)
@@ -1791,8 +2097,9 @@ public class BattleManager : MonoBehaviour
 
             CombatLog(targetUnit.GetName() + " takes " + netDamage + " TUM damage");
 
-            PostDamageUpdates(targetUnit);
+            targetUnit.CreateDamageText(netDamage, Color.red);
 
+            PostDamageUpdates(targetUnit);
         }
 
         private void TakeTrueDamage (UnitStats targetUnit, int rawDamage)
@@ -1810,13 +2117,35 @@ public class BattleManager : MonoBehaviour
             }
         }
 
+        private string PreviewHealDamage (UnitStats targetUnit, int rawHeal)
+        {
+            string preview = "";
+
+            int netHeal = rawHeal + (rawHeal * targetUnit.GetNetTum()) / 10;
+
+            preview += "Heal " + targetUnit.GetName() + " for " + netHeal.ToString();
+            return preview;
+        }
+
         private void HealDamage (UnitStats targetUnit, int rawHeal)
         {
             int netHeal = rawHeal + (rawHeal * targetUnit.GetNetTum()) / 10;
 
             targetUnit.GainHealth(netHeal);
 
+            targetUnit.CreateDamageText(netHeal, Color.green);
+
             CombatLog(targetUnit.GetName() + " recovered " + netHeal + " health");
+        }
+
+        private string PreviewSateHunger (UnitStats targetUnit, int rawSatiation)
+        {
+            string preview = "";
+
+            int netGuts = rawSatiation + (rawSatiation * targetUnit.GetNetTaste()) / 10;
+
+            preview += "Sate " + targetUnit.GetName() + " for " + netGuts.ToString() + " GUTS";
+            return preview;
         }
 
         public void SateHunger (UnitStats targetUnit, int rawSatiation)
@@ -1825,29 +2154,50 @@ public class BattleManager : MonoBehaviour
 
             targetUnit.GainGuts(netGuts);
 
+            targetUnit.CreateDamageText(netGuts, new Color(1.0f, 0.2f, 0));
+
             CombatLog(targetUnit.GetName() + " recovered " + netGuts + " guts");
+            targetUnit.isStarving = false;
         }
 
-        public void TantalizeHunger (UnitStats targetUnit, int rawTantalization)
+        public string PreviewFamishHunger (UnitStats targetUnit, int rawFamish)
         {
-            int netGuts = rawTantalization;
+            string preview = "";
+
+            int netGuts = rawFamish - (targetUnit.GetNetNose() / 2);
+
+            preview += "Famished " + targetUnit.GetName() + " for " + netGuts.ToString() + " GUTS";
+            return preview;
+
+        }
+
+        public void FamishHunger (UnitStats targetUnit, int rawFamish)
+        {
+            int netGuts = rawFamish- (targetUnit.GetNetNose() / 2);
 
             targetUnit.LoseGuts(netGuts);
 
+            targetUnit.CreateDamageText(netGuts, new Color(0.3f, 0.1f, 0));
+
             CombatLog(targetUnit.GetName() + " lost " + netGuts + " guts");
         }
-
         private void PostDamageUpdates(UnitStats unit)
         {
             // unit.UpdateText();
             CheckIfDead(unit);
         }
 
+        // private void CheckIfDeadAll()
+        // {
+        //     completeList.RemoveAll(u => u.isDead);
+        // }
+
         // TODO: there are many references to this, but it should only be used when a unit takes damage/ loses hp
+        // or it just sets the isDead attr and then i do unit cleanup at the end of the relevant phases
         private void CheckIfDead(UnitStats unit)
         {
             if (unit.GetCurrentHealth() <= 0) {
-                HandleDeath(unit);
+                KillUnit(unit);
             }
         }
 
@@ -1877,6 +2227,10 @@ public class BattleManager : MonoBehaviour
             FindObjectOfType<MoveManager>().ActivateMoveBox(active);
         }
 
+        private void DisplayNextLevelButton()
+        {
+            FindObjectOfType<MoveManager>().NextLevel();
+        }
         private void ActivateNextTurnButton(bool active)
         {
             FindObjectOfType<MoveManager>().ActivateNextTurnButton(active);
@@ -1902,9 +2256,9 @@ public class BattleManager : MonoBehaviour
             FindObjectOfType<MoveManager>().CleanUpButtons();
         }
 
-        private void DisplayMoves(UnitStats unit)
+        private void DisplayActionButtons(UnitStats unit, bool freeMove, bool freeSkill)
         {
-            FindObjectOfType<MoveManager>().DisplayMoves(unit);
+            FindObjectOfType<MoveManager>().DisplayActionButtons(unit, freeMove, freeSkill);
         }
 
         private void DisplayRecipes(List<Recipe> recipes)
@@ -1973,53 +2327,68 @@ public class BattleManager : MonoBehaviour
         private void GameWin()
         {
             gameOver = true;
-            print("Game Win");
+            // print("Game Win");
+            CleanUpButtons();
+            DisplayNextLevelButton();
         }
 
         private void GameOver()
         {
             gameOver = true;
-            print("Game Over");
+            // print("Game Over");
+              
+            // TODO this is too sudden, lets add a button like on game win or a yield return pause
+            StartCoroutine(LoadGameOver());
         }
 
-        public void HandleDeath(UnitStats unit)
+        private IEnumerator LoadGameOver()
         {
-            unit.isDead = true;
-            unit.turnNumber = -1;
+            yield return new WaitForSeconds(3);
 
-            unit.UpdateText();
-            // unit.SetTurnText("Dead");
+            SceneManager.LoadScene("GameOverScreen");
+        }
 
-            UncoverUnit(unit);
+        // public void HandleDeath(UnitStats unit)
+        // {
+        //     // unit.isDead = true;
+        //     // unit.turnNumber = -1;
 
-            RemoveUnitFromList(unit, completeList);
-            RemoveUnitFromList(unit, nextUpList);
+        //     // unit.UpdateText();
+        //     // unit.SetTurnText("Dead");
+
+        //     // UncoverUnit(unit);
+
+        //     // unit.DestroySelf();
+        //     KillUnit(unit);
+        //     // UpdateUnitPositions();
+
+        //     CheckGameOver();
+        // }
+
+        // public void HandleDeaths()
+        // {
+        //     completeList.RemoveAll(     unit => unit.isDead == true);
+        //     nextUpList.RemoveAll(       unit => unit.isDead == true);
+        //     enemyList.RemoveAll(        unit => unit.isDead == true);
+        //     allyList.RemoveAll(         unit => unit.isDead == true);
+        //     meleeAllyList.RemoveAll(    unit => unit.isDead == true);
+        //     meleeEnemyList.RemoveAll(   unit => unit.isDead == true);
+
+        //     CheckGameOver();
+        // }
+
+        public void RemoveUnitFromAllLists(UnitStats unit)
+        {
+            // completeList.Remove(unit);
+            // nextUpList.Remove(unit);
+            // enemyList.Remove(unit);
+            // allyList.Remove(unit);
+            RemoveUnitFromList(unit,  completeList);
+            RemoveUnitFromList(unit,  nextUpList);
             RemoveUnitFromList(unit,  allyList);
             RemoveUnitFromList(unit,  enemyList);
             RemoveUnitFromList(unit,  meleeAllyList);
             RemoveUnitFromList(unit,  meleeEnemyList);
-
-            CheckGameOver();
-        }
-
-        public void HandleDeaths()
-        {
-            completeList.RemoveAll(     unit => unit.isDead == true);
-            nextUpList.RemoveAll(       unit => unit.isDead == true);
-            enemyList.RemoveAll(        unit => unit.isDead == true);
-            allyList.RemoveAll(         unit => unit.isDead == true);
-            meleeAllyList.RemoveAll(    unit => unit.isDead == true);
-            meleeEnemyList.RemoveAll(   unit => unit.isDead == true);
-
-            CheckGameOver();
-        }
-
-        public void RemoveUnitFromAllLists(UnitStats unit)
-        {
-            completeList.Remove(unit);
-            nextUpList.Remove(unit);
-            enemyList.Remove(unit);
-            allyList.Remove(unit);
         }
 
 
@@ -2027,6 +2396,9 @@ public class BattleManager : MonoBehaviour
 
         private void AutoMove()
         {
+            // all enemy moves are both skill and move?
+            freeSkills = 0;
+
             if (CurrentUnit.GetMovesCount() > 0) {
 
                 MoveButton tryMove = null;
@@ -2037,6 +2409,7 @@ public class BattleManager : MonoBehaviour
                     tryMove.SetUpButtonAction();
                 } while (!CheckAfford(tryMove.GetAction()));
 
+                canAct = true;
                 CurrentAction = tryMove.GetAction();
 
                 SelectPossibleTargetsByActionType();
@@ -2061,6 +2434,51 @@ public class BattleManager : MonoBehaviour
 
 
     // MISC
+
+        public void LoadNextLevel()
+        {
+            SceneManager.LoadScene(NextLevel);
+        }
+
+        // public void LoadGameOver()
+        // {
+        //     SceneManager.LoadScene("GameOverScreen");
+        // }
+
+        private void InitializeUnitFigures()
+        {
+            foreach (UnitStats unit in completeList) {
+                unit.InitializeUnitFigure();
+            }
+        }
+
+        private void InitializeUnitStazButtons()
+        {
+            foreach (UnitStats unit in completeList) {
+                unit.InitializeStazButton();
+            }
+        }
+
+        private void UpdateUnitPositions()
+        {
+            // TODO: make the units show up in front of who they are blocking
+
+            float yPos      = 300f;
+            float xPosAlly  = -150f;
+            foreach (UnitStats allyUnit in allyList)
+            {
+                allyUnit.SetUnitBoxPosition(xPosAlly, yPos);
+                xPosAlly -= 200f;
+            }
+
+            float xPosEnemy  = 150f;
+            foreach (UnitStats enemyUnit in enemyList)
+            {
+                // Debug.Log(xPosEnemy + " " + yPos);
+                enemyUnit.SetUnitBoxPosition(xPosEnemy, yPos);
+                xPosEnemy += 200f;
+            }
+        }
 
         private void DisplayCurrentUnit()
         {
@@ -2089,4 +2507,31 @@ public class BattleManager : MonoBehaviour
                 list[n] = unit;
             }
         }
+
+        // private void KillUnit(UnitStats unit)
+        // {
+        //     unit.isDead = true;
+        // }
+
+        // TODO
+        // WHEREEVER YOU CALL DESTROYSELF, CALL KILL UNIT INSTEAD
+        private void KillUnit(UnitStats unit)
+        {
+            UncoverUnit(unit);
+
+            RemoveUnitFromAllLists(unit);
+            Destroy(unit.gameObject);
+
+            UpdateUnitPositions();
+
+            CheckGameOver();
+        }
+        // private void DestroyDialogueOnlyUnits()
+        // {
+        //     for (int i = 0; i < completeList.Count; i++)
+        //     {
+        //         if (completeList[i].isDialogueOnly)
+        //             completeList[i].DestroySelf();
+        //     }
+        // }
 }

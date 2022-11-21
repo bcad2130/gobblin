@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ServeMeal : MoveButton
 {
-    // protected const int COST = 4;
+    protected const int COST = 3;
     protected const int DAMAGE = 0;
 
     protected override void SetUpMove()
@@ -16,5 +16,6 @@ public class ServeMeal : MoveButton
         // action.GutsCost = COST;
 
         action.SetResourceCost(GetResourceCost());
+        SetIsSkill(true);
     }
 }

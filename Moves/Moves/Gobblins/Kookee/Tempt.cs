@@ -6,7 +6,7 @@ public class Tempt : MoveButton
 {
     protected const int COST = 6;
     protected const int DAMAGE = 0;
-    protected const int TANTALIZE = 10;
+    protected const int FAMISH = 10;
 
     protected override void SetUpMove() {
         // Debug.Log("test')");
@@ -15,10 +15,11 @@ public class Tempt : MoveButton
 
         action.GutsCost = COST;
 
-        action.Tantalize = TANTALIZE;
+        action.Famish = FAMISH;
 
         action.checkIfCookin = true;
 
+        SetIsMove(true);
         //TODO you can only use if you have a meal, but it doesn't use up the meal
     }
 }

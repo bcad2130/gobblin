@@ -11,5 +11,7 @@ public class Strike : MoveButton
         action.Speed            = bm.CurrentUnit.GetNetSpeed();
 
         action.isBasicAttack = true;
+        SetIsMove(true);
+        SetIsSkill(true);
     }
 }

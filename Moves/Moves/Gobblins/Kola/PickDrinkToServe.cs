@@ -8,5 +8,6 @@ public class PickDrinkToServe : MoveButton
         action.TargetType = "Pick";
         action.SetSkillType("PickDrinkToServe");
         // action.TargetType = "PickDrinkToServe";
+        SetIsMove(true);
     }
 }

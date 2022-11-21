@@ -12,5 +12,8 @@ public class HealButton : MoveButton
 
         action.GutsCost = COST;
         action.Heal = 5;
+
+        SetIsMove(true);
+
     }
 }

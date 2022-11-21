@@ -19,5 +19,7 @@ public class Collude : MoveButton
         selfAction.AddStatusEffect(STATUSEFFECT_TYPE, STATUSEFFECT_STACKS);
 
         action.SetSelfAction(selfAction);
+        SetIsMove(true);
+        SetIsSkill(true);
     }
 }

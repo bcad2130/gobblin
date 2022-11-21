@@ -10,5 +10,6 @@ public class AddIngredient : MoveButton
         action.SetSkillType("AddIngredient");
 
         action.AddIngredientCost(ingredientCost);
+        SetIsSkill(true);
     }
 }
