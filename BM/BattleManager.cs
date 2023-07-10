@@ -1,4 +1,4 @@
-﻿
+
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +26,8 @@ public class BattleManager : MonoBehaviour
         public GameObject serveMealButton;
         public GameObject cookRecipeButton;
         public GameObject ingredientButton;
+
+        public GameObject countdownClockPrefab;
 
     // UI
         // public GameObject MoveBox;
@@ -215,10 +217,10 @@ public class BattleManager : MonoBehaviour
                     break;
                 case "Stage 1":
                     // AddLocalIngredients();
-                    localIngredients.AddItem("Bottle");
-                    localIngredients.AddItem("Bottle");
-                    localIngredients.AddItem("Bottle");
-                    localIngredients.AddItem("Bottle");
+                    // localIngredients.AddItem("Bottle");
+                    // localIngredients.AddItem("Bottle");
+                    // localIngredients.AddItem("Bottle");
+                    // localIngredients.AddItem("Bottle");
                     localIngredients.AddItem("Water");
                     localIngredients.AddItem("Water");
                     localIngredients.AddItem("Grease");
@@ -569,7 +571,7 @@ public class BattleManager : MonoBehaviour
 
         private void EndRoundUpdates()
         {
-            CheckRecipe();
+            TurnEndRecipeCheck();
 
             // when does all the gut stuff happen? should it happen at the beginnings  or ends of rounds
             Metabolism();
@@ -770,29 +772,32 @@ public class BattleManager : MonoBehaviour
 
         public void SetRecipe(Recipe recipeToSet)
         {
+
+            // Debug.Log(recipeToSet.GetName());
+            // Debug.Log(recipeToSet.GetCookCount());
             CurrentRecipe = recipeToSet;
+            // Debug.Log(CurrentRecipe.GetCookCount());
 
             SetRecipePicked(true);
 
-            CombatLog("You started cooking " + CurrentRecipe.GetName() + ". It will take " + CurrentRecipe.GetCookTime() + " round(s).");
-            // Debug.Log("You're cooking " + CurrentRecipe.GetName() + ". It will take " + CurrentRecipe.GetCookTime() + " round(s).");
+            // Debug.Log(CurrentRecipe.GetCookCount());
+            // Debug.Log(CurrentRecipe.GetRequiredIngredients());
         }
 
-        private void CheckRecipe()
+        private void TurnEndRecipeCheck()
         {
             if (CurrentRecipe != null) {
 
                 if (CurrentRecipe.GetCookCount() < CurrentRecipe.GetCookTime()) {
-                    // CurrentRecipe.AddCookTurn();
+                    // Debug.Log('c');
                     CookTimeAddTurns(1);
+                    UpdateCookingCountdown();
                 } else if (CurrentRecipe.GetCookCount() == CurrentRecipe.GetCookTime()) {
-
-                    if (CheckIngredients() && CheckStirring() ) {
+                    Debug.Log('d');
+                    if (CheckIngredientsForCurrentRecipe() && CheckStirring() ) {
                         CreateMeal();
                     } else {
-                        // playerMealItems.Add(new BurntMessItem());
-                        CombatLog("Your recipe failed!");
-                        // Debug.Log("You made a Burnt Mess. Better luck next time!");
+                        FailMeal();
                     }
 
                     RecipeCleanUp();
@@ -807,9 +812,51 @@ public class BattleManager : MonoBehaviour
 
         private void CookRecipe()
         {
-            SetRecipe(CurrentAction.Recipe);
+            Recipe recipe = new Recipe();
+            recipe = CurrentAction.Recipe;
+            SetRecipe(recipe);
 
-            CombatLog(CurrentUnit.GetName() + " started cooking " + CurrentRecipe.GetName());
+            // Debug.Log(CurrentAction.GetName());
+            // Debug.Log(CurrentAction.Recipe.GetName());
+            // Debug.Log(CurrentAction.Recipe.GetCookCount());
+
+            // Debug.Log(CurrentRecipe.GetName());
+            // Debug.Log(CurrentRecipe.GetCookCount());
+
+
+            ShowRecipeIngredients();
+            ShowRecipeCountdown();
+            // seems redundant?
+            // CombatLog(CurrentUnit.GetName() + " started cooking " + CurrentRecipe.GetName());
+
+            // does this look better?
+            CombatLog(CurrentUnit.GetName() + " started cooking " + CurrentRecipe.GetName() + ". It will take " + CurrentRecipe.GetCookTime() + " round(s).");
+        }
+
+        private void ResetRecipe() {
+
+        }
+
+        private void AddIngredientToRecipe(string ingredient)
+        {
+            playerIngredients.RemoveItem(ingredient);
+
+            if (CurrentAction.GetSkillType() == "AddIngredient") {
+                CurrentRecipe.GetRequiredIngredients().RemoveItem(CurrentAction.GetIngredientCost());
+            }
+
+            ClearIngredientIcons();
+            ShowRecipeIngredients();
+        }
+
+        private void UpdateCookingCountdown() {
+            ClearClockIcons();
+            ShowRecipeCountdown();
+        }
+
+        private void ClearCookingIcons() {
+            ClearClockIcons();
+            ClearIngredientIcons();
         }
 
         private void CookTimeAddTurns(int turns)
@@ -850,6 +897,7 @@ public class BattleManager : MonoBehaviour
         {
             if (CurrentAction.Targets.Any(t => t.isCookin)) {
                 CookTimeAddTurns(1);
+                UpdateCookingCountdown();
             }
         }
 
@@ -883,28 +931,79 @@ public class BattleManager : MonoBehaviour
             CombatLog("You made " + meal.Name);
         }
 
+        private void FailMeal()
+        {
+            // UpdateCookingCountdown();
+
+            // playerMealItems.Add(new BurntMessItem());
+            CombatLog("Your recipe failed!");
+            // Debug.Log("You made a Burnt Mess. Better luck next time!");
+        }
+
         private void RecipeCleanUp()
         {
+            ClearCookingIcons();
 
+            KillCauldron();
+
+            RestockCauldron();
+
+            InitializeRecipes();
             // TODO handle having more than one cauldron
             //      handle having enemy cauldrons?
+        }
 
-            CurrentUnit = allyCookinList[0];
+        private void KillCauldron() {
+            // Debug.Log("KillCauldron");
+            UnitStats unit = allyCookinList[0];
+            
+            UncoverUnit(unit);
 
-            // allyCookinList.Remove(CurrentUnit);
-            // allyList.Remove(CurrentUnit);
-            // meleeAllyList.Remove(CurrentUnit);
-            // completeList.Remove(CurrentUnit);
+            // this def isn't on any other lists right? like you can't attack the cauldron anymore?
+            // RemoveUnitFromCookinList(unit);
+            RemoveUnitFromAllLists(unit);
+            Destroy(unit.gameObject);
 
-            // CurrentUnit.DestroySelf();
-            KillUnit(CurrentUnit);
+
+
+            UpdateUnitPositions();
+
+            // CheckGameOver();
 
             CurrentRecipe = null;
             SetRecipePicked(false);
+        }
 
-            // restock cauldron item
+        private void RestockCauldron() {
             Pot startingPot = new Pot();
             playerEquipmentItems.Add(startingPot);
+        }
+
+        private void ShowRecipeIngredients()
+        {
+
+            // string placeholderFoodName = "corn";
+
+            // DisplayIngredientIcons(placeholderFoodName);
+
+            Dictionary<string, int> requiredIngredients = CurrentRecipe.GetRequiredIngredients().GetInventoryAsDictionary();
+
+            DisplayIngredientIcons(requiredIngredients);
+        }
+
+        private void ShowRecipeCountdown()
+        {
+            int recipeCountdown =  CurrentRecipe.GetCookTime() - CurrentRecipe.GetCookCount();
+// Debug.Log("show countdown");
+// Debug.Log(CurrentRecipe.GetCookTime());
+// Debug.Log('-');
+// Debug.Log(CurrentRecipe.GetCookCount());
+// Debug.Log(CurrentRecipe.GetCookTime() - CurrentRecipe.GetCookCount());
+
+
+            DisplayRecipeCountdown(recipeCountdown);
+
+            // GameObject countdownClock = Instantiate(countdownClockPrefab, new Vector3(0, 0, 0), Quaternion.identity); // hardcoded location, should make dynamic
         }
 
 
@@ -1002,12 +1101,8 @@ public class BattleManager : MonoBehaviour
             return false;
         }
 
-        private void SpendIngredient(string ingredient)
-        {
-            playerIngredients.RemoveItem(ingredient);
-        }
 
-        private bool CheckIngredients()
+        private bool CheckIngredientsForCurrentRecipe()
         {
             Dictionary<string,int> requiredIngredients = CurrentRecipe.GetRequiredIngredients().GetInventoryAsDictionary();
 
@@ -1265,6 +1360,7 @@ public class BattleManager : MonoBehaviour
 
     // TAKE ACTION
 
+        // could i use a while loop instead?
         public void TakeAction()
         {
             if (CurrentAction.GetSkillType() != null) {
@@ -1280,10 +1376,7 @@ public class BattleManager : MonoBehaviour
             // new method to check ingredient cost, cuz we should check the cost earlier
             if (CurrentAction.GetIngredientCost() != "") {
                 if (CanAffordIngredient(CurrentAction.GetIngredientCost())) {
-                    SpendIngredient(CurrentAction.GetIngredientCost());
-                    if (CurrentAction.GetSkillType() == "AddIngredient") {
-                        CurrentRecipe.GetRequiredIngredients().RemoveItem(CurrentAction.GetIngredientCost());
-                    }
+                    AddIngredientToRecipe(CurrentAction.GetIngredientCost());
                 } else {
                     canAct = false;
                 }
@@ -1673,6 +1766,7 @@ public class BattleManager : MonoBehaviour
         private bool IsCovering(UnitStats unit)
         {
             if (coverUnits.ContainsKey(unit.GetName())){
+                Debug.Log(unit.GetName());
                 return true;
             }
 
@@ -2181,6 +2275,7 @@ public class BattleManager : MonoBehaviour
 
             CombatLog(targetUnit.GetName() + " lost " + netGuts + " guts");
         }
+
         private void PostDamageUpdates(UnitStats unit)
         {
             // unit.UpdateText();
@@ -2231,6 +2326,7 @@ public class BattleManager : MonoBehaviour
         {
             FindObjectOfType<MoveManager>().NextLevel();
         }
+
         private void ActivateNextTurnButton(bool active)
         {
             FindObjectOfType<MoveManager>().ActivateNextTurnButton(active);
@@ -2310,6 +2406,27 @@ public class BattleManager : MonoBehaviour
         {
             FindObjectOfType<CombatLogManager>().ClearLog();
         }
+
+        private void DisplayRecipeCountdown(int countdown)
+        {
+            FindObjectOfType<CookingManager>().CreateClock(countdown);
+        }
+
+        private void DisplayIngredientIcons(Dictionary<string,int> ingredients)
+        {
+            FindObjectOfType<CookingManager>().CreateIngredientIcons(ingredients);
+        }
+
+        private void ClearIngredientIcons()
+        {
+            FindObjectOfType<CookingManager>().RemoveAllIngredientIcons();
+        }
+
+        private void ClearClockIcons()
+        {
+            FindObjectOfType<CookingManager>().RemoveAllClockIcons();
+        }
+
     // GAME END
 
         private void CheckGameOver()
@@ -2389,6 +2506,11 @@ public class BattleManager : MonoBehaviour
             RemoveUnitFromList(unit,  enemyList);
             RemoveUnitFromList(unit,  meleeAllyList);
             RemoveUnitFromList(unit,  meleeEnemyList);
+            RemoveUnitFromList(unit,  allyCookinList);
+        }
+
+        public void RemoveUnitFromCookinList(UnitStats unit) {
+            RemoveUnitFromList(unit, allyCookinList);
         }
 
 

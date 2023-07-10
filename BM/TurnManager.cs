@@ -20,12 +20,12 @@ public class TurnManager : MonoBehaviour
 
     private BattleManager bm;
 
-    private void Awake()
-    {
-        // InitializeCamera();
-        // InitializeBattleManager();
-        // InitializeNextTurns();
-    }
+    // private void Awake()
+    // {
+    //     // InitializeCamera();
+    //     // InitializeBattleManager();
+    //     // InitializeNextTurns();
+    // }
 
     // private void InitializeBattleManager()
     // {

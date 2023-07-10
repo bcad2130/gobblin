@@ -95,8 +95,14 @@ public class MoveButton : MonoBehaviour
 
     public void SetRecipe(Recipe recipeToSet)
     {
+        // recipeToSet.ResetCookCount();
+        // recipeToSet.ResetIngredients();
+
         recipe = new Recipe();
         recipe = recipeToSet;
+
+        ////
+
     }
 
     public Recipe GetRecipe()

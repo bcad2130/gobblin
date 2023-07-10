@@ -9,10 +9,10 @@ public class Recipe
 
     private string recipeName;
 
-    protected int cookCount;
+    protected int cookCount = 0;
     protected int cookTime;
 
-    protected int stirCount;
+    protected int stirCount = 0;
     protected int stirGoal;
 
     private int flavor = 0;

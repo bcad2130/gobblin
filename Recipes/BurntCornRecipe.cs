@@ -6,6 +6,7 @@ public class BurntCornRecipe : Recipe
 {
     public BurntCornRecipe ()
     {
+        // Debug.Log("BurntCornRecipe");
         SetName("Burnt Corn");
 
         cookCount = 0;

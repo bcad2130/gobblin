@@ -70,6 +70,7 @@ public class Action
         StatusEffects   = new Dictionary<string,int>();
         StatChanges     = new Dictionary<string,int>();
         ResourceCost    = new List<Item>();
+        Recipe          = new Recipe();
 
         // selfAction = new Action();
     }

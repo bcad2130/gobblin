@@ -23,6 +23,8 @@ public class MoveManager : MonoBehaviour
     public GameObject CancelButton;
     public GameObject ConfirmButton;
 
+    public MoveButton PassButton;
+
     private BattleManager bm;
 
     // CONSTANTS
@@ -31,6 +33,9 @@ public class MoveManager : MonoBehaviour
 
     const float XPOS_MOVES  = -150f;
     const float YPOS_MOVES  = 150f;
+
+    const float XPOS_PASS   = 0f;
+    const float YPOS_PASS   = -165f;
 
     private void Awake()
     {
@@ -83,6 +88,7 @@ public class MoveManager : MonoBehaviour
 
         if (freeMove) DisplayMoves(unit);
         if (freeSkill) DisplaySkills(unit);
+        if (freeSkill || freeMove) DisplayPass(unit);
     }
 
     public void DisplayMoves(UnitStats unit)
@@ -149,6 +155,30 @@ public class MoveManager : MonoBehaviour
             print ("ERROR: This unit has no SKILLS");
             // EndTurn();
         }
+    }
+
+    private void DisplayPass(UnitStats unit)
+    {
+        float xPos = XPOS_PASS;
+        float yPos = YPOS_PASS;
+
+        // MoveButton button = new MoveButton();
+        // GameObject button;
+
+        // MoveButton PassButton;
+
+
+        MoveButton instantButton = Instantiate(PassButton, new Vector3(xPos, yPos, 0), Quaternion.identity);
+        instantButton.transform.SetParent(MoveBox.transform, false);
+
+        // PassButton.SetUpButtonAction();
+
+        // string moveText = PassButton.GetName();
+
+        // button.SetUpButtonAction();
+
+        // string moveText = button.GetName();
+        // instantButton.GetComponentInChildren<Text>().text = moveText;
     }
 
     public void DisplayRecipes(List<Recipe> recipes)

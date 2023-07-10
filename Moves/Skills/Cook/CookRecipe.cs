@@ -19,5 +19,7 @@ public class CookRecipe : MoveButton
 
         action.isRecipe = true;
         action.Recipe = GetRecipe();
+
+        SetIsMove(true);
     }
 }
