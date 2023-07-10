@@ -40,18 +40,12 @@ public class MoveManager : MonoBehaviour
     private void Awake()
     {
         InitializeBattleManager();
-        // InitializeCamera();
     }
 
     private void InitializeBattleManager()
     {
         bm = GameObject.FindObjectOfType<BattleManager>();
     }
-
-    // private void InitializeCamera()
-    // {
-    //     canvas.worldCamera = GameObject.FindObjectOfType<Camera>();
-    // }
 
     public void ActivateMoveBox(bool active)
     {
@@ -153,7 +147,6 @@ public class MoveManager : MonoBehaviour
             }
         } else {
             print ("ERROR: This unit has no SKILLS");
-            // EndTurn();
         }
     }
 
