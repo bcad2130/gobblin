@@ -162,23 +162,8 @@ public class MoveManager : MonoBehaviour
         float xPos = XPOS_PASS;
         float yPos = YPOS_PASS;
 
-        // MoveButton button = new MoveButton();
-        // GameObject button;
-
-        // MoveButton PassButton;
-
-
         MoveButton instantButton = Instantiate(PassButton, new Vector3(xPos, yPos, 0), Quaternion.identity);
         instantButton.transform.SetParent(MoveBox.transform, false);
-
-        // PassButton.SetUpButtonAction();
-
-        // string moveText = PassButton.GetName();
-
-        // button.SetUpButtonAction();
-
-        // string moveText = button.GetName();
-        // instantButton.GetComponentInChildren<Text>().text = moveText;
     }
 
     public void DisplayRecipes(List<Recipe> recipes)
