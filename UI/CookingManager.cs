@@ -28,16 +28,12 @@ public class CookingManager : MonoBehaviour
     }
 
     public void CreateClock(int countdown) {
-        // Debug.Log("CreateClock");
-        // Debug.Log(countdown);
         GameObject clockImage = null;
         switch(countdown) {
             case 0:
-                // Debug.Log('0');
                 clockImage = countdownClock_0;
                 break;
             case 1:
-                // Debug.Log('1');
                 clockImage = countdownClock_1;
                 break;
             case 2:
@@ -51,18 +47,7 @@ public class CookingManager : MonoBehaviour
         clock.tag = "ClockIcon";
     }
 
-    // public void CreateIngredientIcons(string foodName) {
     public void CreateIngredientIcons(Dictionary<string, int> requiredIngredients) {
-        // GameObject foodImage = null;
-        // switch(foodName) {
-        //     case "corn":
-        //     default:
-        //         foodImage = cornIcon;
-        //         break;
-        // }
-
-        // GameObject[] foodImages = null;
-
         int j = 0;
 
         foreach (KeyValuePair<string, int> ingredient in requiredIngredients) 
@@ -89,15 +74,9 @@ public class CookingManager : MonoBehaviour
                 j++;
             }
         }
-
-        // GameObject            foodImage = cornIcon;
-
-        // GameObject food = Instantiate(foodImage, new Vector3(-250, 250, 0), Quaternion.identity);
-        // food.transform.SetParent(canvas.transform, false);
     }
 
     public void RemoveAllClockIcons() {
-        // Debug.Log('N');
         for (int i = 0; i < canvas.transform.childCount; i++)
         {
             GameObject child = canvas.transform.GetChild(i).gameObject;
@@ -108,22 +87,6 @@ public class CookingManager : MonoBehaviour
     }
 
     public void RemoveAllIngredientIcons() {
-        // Transform[] allChildren = GetComponentsInChildren<Transform>();
-        // Transform[] allChildren = GetComponentsInChildren<Transform>();
-
-        // List<GameObject> childObjects = new List<GameObject>();
-        // foreach(Transform child in allChildren)
-        // { 
-        //     childObjects.Add(child.gameObject);
-        // }
-
-        // GameObject originalGameObject = Instantiate(prefab);
-        // for (int i = 0; i < originalGameObject.transform.childCount; i++)
-        // {
-        //     GameObject child = originalGameObject.transform.GetChild(i).gameObject;
-        //     //Do something with child
-        // }
-
         for (int i = 0; i < canvas.transform.childCount; i++)
         {
             GameObject child = canvas.transform.GetChild(i).gameObject;
