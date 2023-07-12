@@ -17,6 +17,8 @@ public class CookingManager : MonoBehaviour
     public GameObject greaseIcon;
     public GameObject waterIcon;
 
+    private float cookingIconPosX = -900;
+
     private void Awake()
     {
         InitializeBattleManager();
@@ -42,12 +44,14 @@ public class CookingManager : MonoBehaviour
                 break;
         }
 
-        GameObject clock = Instantiate(clockImage, new Vector3(-250, 300, 0), Quaternion.identity);
+        GameObject clock = Instantiate(clockImage, new Vector3(cookingIconPosX, 300, 0), Quaternion.identity);
         clock.transform.SetParent(canvas.transform, false);
         clock.tag = "ClockIcon";
     }
 
     public void CreateIngredientIcons(Dictionary<string, int> requiredIngredients) {
+        // float cauldronPositionX = GameObject.FindWithTag("Cauldron").transform.position.x;
+
         int j = 0;
 
         foreach (KeyValuePair<string, int> ingredient in requiredIngredients) 
@@ -67,7 +71,9 @@ public class CookingManager : MonoBehaviour
             }
 
             for(int i = 0; i < ingredient.Value; i++) {
-                GameObject food = Instantiate(foodImage, new Vector3(-250 + j*50, 250, 0), Quaternion.identity);
+                GameObject food = Instantiate(foodImage, new Vector3(cookingIconPosX + j*50, 250, 0), Quaternion.identity);
+                // GameObject food = Instantiate(foodImage, new Vector3(cauldronPositionX + j*50, 250, 0), Quaternion.identity);
+
                 food.transform.SetParent(canvas.transform, false);
                 food.tag = "IngredientIcon";
                 
