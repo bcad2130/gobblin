@@ -351,7 +351,7 @@ public class MoveManager : MonoBehaviour
         if (!atLeastOneTrick) {
             FindObjectOfType<CombatLogManager>().PrintToLog("Can't use move: You have no trick to pick");
 
-            print ("You have no good tricks to serve.");
+            // print ("You have no good tricks to serve.");
 
             bm.ResetTurn();
         }

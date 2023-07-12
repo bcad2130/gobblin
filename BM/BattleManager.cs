@@ -788,13 +788,14 @@ public class BattleManager : MonoBehaviour
         {
             if (CurrentRecipe != null) {
 
-                if (CurrentRecipe.GetCookCount() < CurrentRecipe.GetCookTime()) {
-                    // Debug.Log('c');
+                if (CurrentRecipe.GetCookCount() < CurrentRecipe.GetCookTime())
+                {
                     CookTimeAddTurns(1);
                     UpdateCookingCountdown();
-                } else if (CurrentRecipe.GetCookCount() == CurrentRecipe.GetCookTime()) {
-                    Debug.Log('d');
-                    if (CheckIngredientsForCurrentRecipe() && CheckStirring() ) {
+                } else if (CurrentRecipe.GetCookCount() == CurrentRecipe.GetCookTime())
+                {
+                    if (CheckIngredientsForCurrentRecipe() && CheckStirring())
+                    {
                         CreateMeal();
                     } else {
                         FailMeal();
@@ -802,7 +803,8 @@ public class BattleManager : MonoBehaviour
 
                     RecipeCleanUp();
 
-                } else if (CurrentRecipe.GetCookCount() > CurrentRecipe.GetCookTime()) {
+                } else if (CurrentRecipe.GetCookCount() > CurrentRecipe.GetCookTime())
+                {
                     Debug.Log("What is this, Overcooked?");
                 }
             } else {

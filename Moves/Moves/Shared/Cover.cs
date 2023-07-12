@@ -10,6 +10,6 @@ public class Cover : MoveButton
         action.TargetType = "CoverAlly";
         action.SetSkillType(SKILLTYPE);
 
-        SetIsMove(true);
+        SetIsSkill(true);
     }
 }

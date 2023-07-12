@@ -16,6 +16,6 @@ public class ServeMeal : MoveButton
         // action.GutsCost = COST;
 
         action.SetResourceCost(GetResourceCost());
-        SetIsSkill(true);
+        SetIsMove(true);
     }
 }
