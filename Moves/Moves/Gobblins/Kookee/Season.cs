@@ -8,7 +8,7 @@ public class Season : MoveButton
 
     protected override void SetUpMove()
     {
-        action.TargetType = "AllyPot";
+        action.TargetType = "Targetless";
 
         action.SetSkillType("Season");
 

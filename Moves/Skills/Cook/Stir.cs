@@ -5,7 +5,7 @@ using UnityEngine;
 public class Stir : MoveButton
 {
     protected override void SetUpMove() {
-        action.TargetType = "AllyPot";
+        action.TargetType = "Targetless";
         action.SetSkillType("Stir");
         SetIsSkill(true);
     }

@@ -5,7 +5,7 @@ using UnityEngine;
 public class AddIngredient : MoveButton
 {
     protected override void SetUpMove() {
-        action.TargetType = "AllyPot";
+        action.TargetType = "Targetless";
 
         action.SetSkillType("AddIngredient");
 

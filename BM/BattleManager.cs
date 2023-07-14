@@ -825,7 +825,7 @@ public class BattleManager : MonoBehaviour
             // Debug.Log(CurrentRecipe.GetName());
             // Debug.Log(CurrentRecipe.GetCookCount());
 
-
+            ShowPot();
             ShowRecipeIngredients();
             ShowRecipeCountdown();
             // seems redundant?
@@ -857,6 +857,7 @@ public class BattleManager : MonoBehaviour
         }
 
         private void ClearCookingIcons() {
+            ClearPotIcon();
             ClearClockIcons();
             ClearIngredientIcons();
         }
@@ -946,7 +947,7 @@ public class BattleManager : MonoBehaviour
         {
             ClearCookingIcons();
 
-            KillCauldron();
+            // KillCauldron();
 
             RestockCauldron();
 
@@ -1006,6 +1007,11 @@ public class BattleManager : MonoBehaviour
             DisplayRecipeCountdown(recipeCountdown);
 
             // GameObject countdownClock = Instantiate(countdownClockPrefab, new Vector3(0, 0, 0), Quaternion.identity); // hardcoded location, should make dynamic
+        }
+
+        private void ShowPot()
+        {
+            DisplayPot();
         }
 
 
@@ -1284,7 +1290,7 @@ public class BattleManager : MonoBehaviour
                 case "MeleeEnemyPierce":
                 // case "CoveredEnemy": // TODO
                 case "SelfOrAllyOrMeleeEnemy": // TODO THIS DOESN'T TRIGGER UNCOVER IN
-                case "AllyPot":
+                // case "AllyPot":
                 // case "Stir":
                 // case "Season":
                 // case "AddIngredient":
@@ -2419,6 +2425,11 @@ public class BattleManager : MonoBehaviour
             FindObjectOfType<CookingManager>().CreateIngredientIcons(ingredients);
         }
 
+        private void DisplayPot()
+        {
+            FindObjectOfType<CookingManager>().CreatePotIcon();
+        }
+
         private void ClearIngredientIcons()
         {
             FindObjectOfType<CookingManager>().RemoveAllIngredientIcons();
@@ -2427,6 +2438,11 @@ public class BattleManager : MonoBehaviour
         private void ClearClockIcons()
         {
             FindObjectOfType<CookingManager>().RemoveAllClockIcons();
+        }
+
+        private void ClearPotIcon()
+        {
+            FindObjectOfType<CookingManager>().RemovePotIcon();
         }
 
     // GAME END

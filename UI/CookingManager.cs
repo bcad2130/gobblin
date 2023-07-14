@@ -16,8 +16,9 @@ public class CookingManager : MonoBehaviour
     public GameObject cornIcon;
     public GameObject greaseIcon;
     public GameObject waterIcon;
+    public GameObject cauldronIcon;
 
-    private float cookingIconPosX = -900;
+    // private float cookingIconPosX = -900;
 
     private void Awake()
     {
@@ -44,7 +45,7 @@ public class CookingManager : MonoBehaviour
                 break;
         }
 
-        GameObject clock = Instantiate(clockImage, new Vector3(cookingIconPosX, 300, 0), Quaternion.identity);
+        GameObject clock = Instantiate(clockImage, new Vector3(-800, 490, 0), Quaternion.identity);
         clock.transform.SetParent(canvas.transform, false);
         clock.tag = "ClockIcon";
     }
@@ -71,7 +72,7 @@ public class CookingManager : MonoBehaviour
             }
 
             for(int i = 0; i < ingredient.Value; i++) {
-                GameObject food = Instantiate(foodImage, new Vector3(cookingIconPosX + j*50, 250, 0), Quaternion.identity);
+                GameObject food = Instantiate(foodImage, new Vector3(-860 + j*60, 420, 0), Quaternion.identity);
                 // GameObject food = Instantiate(foodImage, new Vector3(cauldronPositionX + j*50, 250, 0), Quaternion.identity);
 
                 food.transform.SetParent(canvas.transform, false);
@@ -80,6 +81,13 @@ public class CookingManager : MonoBehaviour
                 j++;
             }
         }
+    }
+
+    public void CreatePotIcon() {
+        GameObject cauldron = Instantiate(cauldronIcon);
+
+        cauldron.transform.SetParent(canvas.transform, false);
+
     }
 
     public void RemoveAllClockIcons() {
@@ -101,5 +109,10 @@ public class CookingManager : MonoBehaviour
             }
             //Do something with child
         }
+    }
+
+    public void RemovePotIcon() {
+        GameObject cauldron = GameObject.FindWithTag("Cauldron");
+        Destroy(cauldron);
     }
 }

@@ -14,8 +14,8 @@ public class CookRecipe : MoveButton
         AddResourceCost(new Pot());
         action.SetResourceCost(GetResourceCost());
 
-        action.isSummon = true;
-        action.Summon = Cauldron;
+        // action.isSummon = true;
+        // action.Summon = Cauldron;
 
         action.isRecipe = true;
         action.Recipe = GetRecipe();
