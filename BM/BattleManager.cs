@@ -1473,8 +1473,9 @@ public class BattleManager : MonoBehaviour
 
             // should i Clear the current action at the end of the turn??
 
-
-            CheckEndTurn();
+            if (!gameOver) {
+                CheckEndTurn();
+            }
             // EndTurn();
         }
 
@@ -2462,8 +2463,7 @@ public class BattleManager : MonoBehaviour
         private void GameWin()
         {
             gameOver = true;
-            // print("Game Win");
-            CleanUpButtons();
+
             DisplayNextLevelButton();
         }
 
