@@ -5,13 +5,12 @@ using UnityEngine.UI;
 
 public class StazManager : MonoBehaviour
 {
+    private BattleManager bm;
+
     public GameObject StazBox;
     public GameObject AllStaz;
     public GameObject MidTextObj;
     public Image Icon;
-    public Canvas canvas;
-
-    private BattleManager bm;
 
     public Text Name;
     public Text Health;
@@ -25,7 +24,6 @@ public class StazManager : MonoBehaviour
     public Text Cover;
     public Text StatusEffects;
 
-
     private const string STR = "STR";
     private const string DEF = "DEF";
     private const string SPD = "SPD";
@@ -35,17 +33,11 @@ public class StazManager : MonoBehaviour
 
     void Awake () {
         InitializeBattleManager();
-        // InitializeCamera();
     }
 
     private void InitializeBattleManager() {
         bm = GameObject.FindObjectOfType<BattleManager>();
     }
-
-    // private void InitializeCamera()
-    // {
-    //     canvas.worldCamera = GameObject.FindObjectOfType<Camera>();
-    // }
 
     // decouple this so you only update what you need to
     public void ShowStaz(UnitStats unit) {
@@ -118,12 +110,5 @@ public class StazManager : MonoBehaviour
     private void ActivateAllStazText(bool active)
     {
         AllStaz.SetActive(active);
-
-        // GameObject[] allStazText;
-        // allStazText = GameObject.FindGameObjectsWithTag("StazText");
-
-        // foreach (GameObject text in allStazText) {
-        //     text.SetActive(active);
-        // }
     }
 }
