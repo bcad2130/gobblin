@@ -7,23 +7,15 @@ public class CombatLogManager : MonoBehaviour
 {
     public Text CombatText;
     public Text CombatLog;
-    private string lastLog;
-
     public GameObject CombatLogBox;
-    public Canvas canvas;
 
-    // private void Awake()
-    // {
-    //     // InitializeCamera();
-    // }
-
-    // private void InitializeCamera()
-    // {
-    //     canvas.worldCamera = GameObject.FindObjectOfType<Camera>();
-    // }
+    private string lastLog;
 
     public void PrintToLog(string text)
     {
+        // Instantiate(CombatLogBox, canvas);
+        // CombatLogBox = GameObject.FindObjectOfType<CombatLogBox>();
+
         if (!CombatLogBox.activeSelf) {
             CombatLogBox.SetActive(true);
         }
