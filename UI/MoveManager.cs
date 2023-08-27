@@ -6,7 +6,6 @@ using UnityEngine.UI;
 public class MoveManager : MonoBehaviour
 {
     public GameObject MoveBox;
-    public Canvas canvas;
 
     // Instant Buttons
     public GameObject targetButton;
@@ -95,9 +94,8 @@ public class MoveManager : MonoBehaviour
         if (unit.GetMoves().Count > 0) {
             foreach (MoveButton button in unit.GetMoves()) {
                 MoveButton instantButton = Instantiate(button, new Vector3(xPos, yPos, 0), Quaternion.identity);
-                // instantButton.transform.localScale = new Vector3(2.0f,2.0f,1);
                 instantButton.transform.SetParent(MoveBox.transform, false);
-                // second param keeps scale etc the same
+                // second param keeps position, scale and rotation the same
 
                 button.SetUpButtonAction();
 
@@ -114,7 +112,6 @@ public class MoveManager : MonoBehaviour
             }
         } else {
             print ("ERROR: This unit has no moves");
-            // EndTurn();
         }
     }
 
@@ -128,9 +125,8 @@ public class MoveManager : MonoBehaviour
         if (unit.GetSkills().Count > 0) {
             foreach (MoveButton button in unit.GetSkills()) {
                 MoveButton instantButton = Instantiate(button, new Vector3(xPos, yPos, 0), Quaternion.identity);
-                // instantButton.transform.localScale = new Vector3(2.0f,2.0f,1);
                 instantButton.transform.SetParent(MoveBox.transform, false);
-                // second param keeps scale etc the same
+                // second param keeps position, scale and rotation the same
 
                 button.SetUpButtonAction();
 
@@ -172,9 +168,9 @@ public class MoveManager : MonoBehaviour
 
             foreach (Recipe recipe in recipes) {
                 GameObject instantButton = Instantiate(cookRecipeButton, new Vector3(xPos, yPos, 0), Quaternion.identity);
-                instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
+                // instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
                 instantButton.transform.SetParent(MoveBox.transform, false);
-                // second param keeps scale etc the same
+                // second param keeps position, scale and rotation the same
 
                 instantButton.GetComponentInChildren<Text>().text = recipe.GetName();
 
@@ -206,9 +202,9 @@ public class MoveManager : MonoBehaviour
         if (ingredients.CountItems() > 0) {
             foreach (KeyValuePair<string,int> ingredient in ingredients.GetInventoryAsDictionary()) {
                 GameObject instantButton = Instantiate(ingredientButton, new Vector3(xPos, yPos, 0), Quaternion.identity);
-                instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
+                // instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
                 instantButton.transform.SetParent(MoveBox.transform, false);
-                // second param keeps scale etc the same
+                // second param keeps position, scale and rotation the same
 
                 instantButton.GetComponentInChildren<Text>().text = ingredient.Key;
 
@@ -244,10 +240,8 @@ public class MoveManager : MonoBehaviour
                     atLeastOneTreat = true;
 
                     GameObject instantButton = Instantiate(eatButton, new Vector3(xPos, yPos, 0), Quaternion.identity);
-
-                    instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
                     instantButton.transform.SetParent(MoveBox.transform, false);
-                    // second param keeps scale etc the same
+                    // second param keeps position, scale and rotation the same
 
                     instantButton.GetComponentInChildren<Text>().text = meal.Name;
                     Eat buttonMove = instantButton.GetComponent<Eat>();
@@ -288,9 +282,9 @@ public class MoveManager : MonoBehaviour
                             atLeastOneTrick = true;
 
                             GameObject instantButton = Instantiate(serveDrinkButton, new Vector3(xPos, yPos, 0), Quaternion.identity);
-                            instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
+                            // instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
                             instantButton.transform.SetParent(MoveBox.transform, false);
-                            // second param keeps scale etc the same
+                            // second param keeps position, scale and rotation the same
 
                             instantButton.GetComponentInChildren<Text>().text = meal.Name;
 
@@ -308,9 +302,9 @@ public class MoveManager : MonoBehaviour
                             atLeastOneTrick = true;
 
                             GameObject instantButton = Instantiate(serveFoodButton, new Vector3(xPos, yPos, 0), Quaternion.identity);
-                            instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
+                            // instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
                             instantButton.transform.SetParent(MoveBox.transform, false);
-                            // second param keeps scale etc the same
+                            // second param keeps position, scale and rotation the same
 
                             instantButton.GetComponentInChildren<Text>().text = meal.Name;
 
@@ -328,9 +322,9 @@ public class MoveManager : MonoBehaviour
                             atLeastOneTrick = true;
 
                             GameObject instantButton = Instantiate(serveMealButton, new Vector3(xPos, yPos, 0), Quaternion.identity);
-                            instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
+                            // instantButton.transform.localScale = new Vector3(1.0f,1.0f,1);
                             instantButton.transform.SetParent(MoveBox.transform, false);
-                            // second param keeps scale etc the same
+                            // second param keeps position, scale and rotation the same
 
                             instantButton.GetComponentInChildren<Text>().text = meal.Name;
 
@@ -351,8 +345,6 @@ public class MoveManager : MonoBehaviour
         if (!atLeastOneTrick) {
             FindObjectOfType<CombatLogManager>().PrintToLog("Can't use move: You have no trick to pick");
 
-            // print ("You have no good tricks to serve.");
-
             bm.ResetTurn();
         }
     }
@@ -367,7 +359,6 @@ public class MoveManager : MonoBehaviour
 
                 GameObject instantButton = Instantiate(targetButton);
                 instantButton.transform.SetParent(unitBox.transform, false);
-                // instantButton.transform.localScale = new Vector3(.2f,.2f,1);
 
                 UnitStats tempTargetUnit = target;
 
@@ -430,8 +421,5 @@ public class MoveManager : MonoBehaviour
 
         GameObject button = Instantiate(NextLevelButton);
         button.transform.SetParent(MoveBox.transform, false);
-
-
-        // NextLevelButton.SetActive(true);
     }
 }
