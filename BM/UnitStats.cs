@@ -13,8 +13,6 @@ public class UnitStats : MonoBehaviour
     // STATS
     public Sprite iconSmall;
     public Sprite iconLarge;
-    public Image figure;
-    public GameObject UnitBox;
 
     private int health;
     private int guts;
@@ -46,6 +44,7 @@ public class UnitStats : MonoBehaviour
     public List<Action> actions = new List<Action>();
 
     private BattleManager bm;
+    private UIManager     um;
 
 
     // UI
@@ -62,12 +61,18 @@ public class UnitStats : MonoBehaviour
     public Text turnTextPrefab;
     private Text turnText;
 
-    public GameObject DamageText;
+    public GameObject DamageTextPrefab;
 
     public GameObject stazButtonPrefab;
     private GameObject stazButton;
 
-    public Canvas canvas;
+    private GameObject UnitBox;
+    public GameObject UnitBoxPrefab;
+
+    public Image figurePrefab;
+    private Image figure;
+
+    // public Canvas canvas;
 
 
     // CONSTANTS: STATS
@@ -107,7 +112,9 @@ public class UnitStats : MonoBehaviour
     private void Awake()
     {
         InitializeBattleManager();
+        InitializeUIManager();
         InitializeHealthGuts();
+        InitializeUnitUI();
         // InitializeStazButton();
         // InitializeStatusEffects();
         // InitializeStatChanges();
@@ -121,6 +128,16 @@ public class UnitStats : MonoBehaviour
         bm = GameObject.FindObjectOfType<BattleManager>();
     }
 
+    private void InitializeUIManager()
+    {
+        um = GameObject.FindObjectOfType<UIManager>();
+    }
+
+    public void InitializeUnitUI()
+    {
+        UnitBox = Instantiate(UnitBoxPrefab, um.GetCanvas().transform);
+
+    }
     // private void InitializeStatusEffects()
     // {
     //     if (StatusEffects == null) {
@@ -173,13 +190,14 @@ public class UnitStats : MonoBehaviour
 
     public void InitializeUnitFigure()
     {
-        figure.gameObject.SetActive(true);
+        // figure.gameObject.SetActive(true);
+        figure = Instantiate(figurePrefab, UnitBox.transform);
     }
 
-    private void InitializeCamera()
-    {
-        canvas.worldCamera = GameObject.FindObjectOfType<Camera>();
-    }
+    // private void InitializeCamera()
+    // {
+    //     canvas.worldCamera = GameObject.FindObjectOfType<Camera>();
+    // }
 
     private void InitializeHealthGuts()
     {
@@ -191,7 +209,6 @@ public class UnitStats : MonoBehaviour
     {
         stazButton = Instantiate(stazButtonPrefab);
         stazButton.transform.SetParent(UnitBox.transform, false);
-
     }
 
 
@@ -577,7 +594,7 @@ public class UnitStats : MonoBehaviour
     public void CreateDamageText(int damage, Color color, int hits = 1)
     {
         // Debug.Log("here");
-        GameObject obj = Instantiate(DamageText);
+        GameObject obj = Instantiate(DamageTextPrefab);
         obj.transform.SetParent(UnitBox.transform, false);
 
         obj.GetComponentInChildren<Text>().text = damage.ToString();

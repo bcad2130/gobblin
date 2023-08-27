@@ -5,4 +5,8 @@ using UnityEngine;
 public class UIManager : MonoBehaviour
 {
     public Canvas mainCanvas;
+
+    public Canvas GetCanvas() {
+        return mainCanvas;
+    }
 }
