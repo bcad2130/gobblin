@@ -244,7 +244,7 @@ public class MoveManager : MonoBehaviour
                     // second param keeps position, scale and rotation the same
 
                     instantButton.GetComponentInChildren<Text>().text = meal.Name;
-                    Eat buttonMove = instantButton.GetComponent<Eat>();
+                    ConsumeFood buttonMove = instantButton.GetComponent<ConsumeFood>();
 
                     buttonMove.AddResourceCost(meal);
 
