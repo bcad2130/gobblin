@@ -221,10 +221,11 @@ public class BattleManager : MonoBehaviour
                     // localIngredients.AddItem("Bottle");
                     // localIngredients.AddItem("Bottle");
                     // localIngredients.AddItem("Bottle");
-                    localIngredients.AddItem("Water");
-                    localIngredients.AddItem("Water");
+                    // localIngredients.AddItem("Water");
+                    // localIngredients.AddItem("Water");
                     localIngredients.AddItem("Grease");
                     localIngredients.AddItem("Grease");
+                    localIngredients.AddItem("Grease");                    
                     localIngredients.AddItem("Corn");
                     localIngredients.AddItem("Corn");
                     localIngredients.AddItem("Corn");

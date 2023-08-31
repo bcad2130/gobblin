@@ -9,7 +9,7 @@ public class ServeMeal : MoveButton
 
     protected override void SetUpMove()
     {
-        action.TargetType = "MeleeEnemy";
+        action.TargetType = "SelfOrAllyOrMeleeEnemy";
 
         action.SetSkillType("Serve");
 
