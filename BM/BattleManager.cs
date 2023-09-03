@@ -2670,7 +2670,7 @@ public class BattleManager : MonoBehaviour
         private void KillUnit(UnitStats unit)
         {
             UncoverUnit(unit);
-
+            DestroyUnitBox(unit);
             RemoveUnitFromAllLists(unit);
             Destroy(unit.gameObject);
 
@@ -2678,6 +2678,11 @@ public class BattleManager : MonoBehaviour
 
             CheckGameOver();
         }
+
+        private void DestroyUnitBox(UnitStats unit) {
+            Destroy(unit.GetUnitBox());
+        }
+
         // private void DestroyDialogueOnlyUnits()
         // {
         //     for (int i = 0; i < completeList.Count; i++)
