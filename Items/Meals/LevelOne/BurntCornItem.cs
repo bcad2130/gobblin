@@ -22,7 +22,8 @@ public class BurntCornItem  : Item
     {
         Action action = new Action();
 
-        action.TumDamage = 3;
+        // action.TumDamage = 3;
+        action.Heal = 5;
         action.Sate = 5;
         
         return action;

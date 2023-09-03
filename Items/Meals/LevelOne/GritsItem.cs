@@ -25,7 +25,7 @@ public class GritsItem : Item
         action.Heal = 8;
         action.Sate = 8;
 
-        action.AddStatChange("DEFENSE", 2);
+        action.AddStatChange("DEFENSE", 3);
         
         return action;
     }
