@@ -13,6 +13,7 @@ public class Season : MoveButton
         action.SetSkillType("Season");
 
         action.GutsCost = COST;
+        action.checkIfCookin = true;
         
         SetIsMove(true);
     }

@@ -1278,8 +1278,8 @@ public class BattleManager : MonoBehaviour
         public bool CanAffordMisc(Action action)
         {
             if (action.checkIfCookin) {
-                if (allyCookinList.Count == 0) {
-                    Debug.Log("You must be cookin when you use this move.");
+                if (CurrentRecipe == null) {
+                    CombatLog("You must be cookin when you use this move.");
                     return false;
                 }
             }
