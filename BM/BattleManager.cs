@@ -773,34 +773,25 @@ public class BattleManager : MonoBehaviour
 
         public void SetRecipe(Recipe recipeToSet)
         {
-
-            // Debug.Log(recipeToSet.GetName());
-            // Debug.Log(recipeToSet.GetCookCount());
             CurrentRecipe = recipeToSet;
-            // Debug.Log(CurrentRecipe.GetCookCount());
 
             SetRecipePicked(true);
-
-            // Debug.Log(CurrentRecipe.GetCookCount());
-            // Debug.Log(CurrentRecipe.GetRequiredIngredients());
         }
 
         private void TurnEndRecipeCheck()
         {
             if (CurrentRecipe != null) {
-                Debug.Log("(CurrentRecipe != null)");
+                // Debug.Log("(CurrentRecipe != null)");
 
-                if (CurrentRecipe.GetCookCount() < CurrentRecipe.GetCookTime())
+                if (CurrentRecipe.GetCookTurnsLeft() > 0)
+                // if (CurrentRecipe.GetCookCount() < CurrentRecipe.GetCookTime())
                 {
                     CookTimeAddTurns(1);
                     UpdateCookingCountdown();
-                } else if (CurrentRecipe.GetCookCount() == CurrentRecipe.GetCookTime())
+                } else if (CurrentRecipe.GetCookTurnsLeft() == 0)
                 {
-                    Debug.Log("chec");
                     if (CheckIngredientsForCurrentRecipe() && CheckStirring())
                     {
-                    Debug.Log("chec-chech");
-
                         CreateMeal();
                     } else {
                         FailMeal();
@@ -808,7 +799,7 @@ public class BattleManager : MonoBehaviour
 
                     RecipeCleanUp();
 
-                } else if (CurrentRecipe.GetCookCount() > CurrentRecipe.GetCookTime())
+                } else if (CurrentRecipe.GetCookTurnsLeft() < 0)
                 {
                     Debug.Log("What is this, Overcooked?");
                 }
@@ -822,13 +813,6 @@ public class BattleManager : MonoBehaviour
             Recipe recipe = new Recipe();
             recipe = CurrentAction.Recipe;
             SetRecipe(recipe);
-
-            // Debug.Log(CurrentAction.GetName());
-            // Debug.Log(CurrentAction.Recipe.GetName());
-            // Debug.Log(CurrentAction.Recipe.GetCookCount());
-
-            // Debug.Log(CurrentRecipe.GetName());
-            // Debug.Log(CurrentRecipe.GetCookCount());
 
             ShowPot();
             ShowRecipeIngredients();
@@ -899,7 +883,9 @@ public class BattleManager : MonoBehaviour
 
         private bool CheckStirring()
         {
-            if ( CurrentRecipe.GetStirCount() == CurrentRecipe.GetStirGoal() ) {
+            if ( CurrentRecipe.GetReqStirs() == 0 ) {
+                Debug.Log("check stiriing");
+            // if ( CurrentRecipe.GetStirCount() == CurrentRecipe.GetStirGoal() ) {
                 return true;
             } else {
                 return false;
@@ -922,12 +908,8 @@ public class BattleManager : MonoBehaviour
 
         private void Lid()
         {
-            // This won't work now that cauldron is not a  unit
-
-            if (CurrentAction.Targets.Any(t => t.isCookin)) {
                 CookTimeAddTurns(1);
                 UpdateCookingCountdown();
-            }
         }
 
         private void CreateMeal()
@@ -956,7 +938,7 @@ public class BattleManager : MonoBehaviour
 
             playerMealItems.Add(meal);
 
-            ClearCurrentRecipe();
+            // ClearCurrentRecipe();
             // Debug.Log("You made " + meal.Name);
             CombatLog("You made " + meal.Name);
         }
@@ -978,7 +960,8 @@ public class BattleManager : MonoBehaviour
 
             RestockCauldron();
 
-            InitializeRecipes();
+            ClearCurrentRecipe();
+            // InitializeRecipes();
             // TODO handle having more than one cauldron
             //      handle having enemy cauldrons?
         }
@@ -1023,22 +1006,16 @@ public class BattleManager : MonoBehaviour
 
         private void ShowRecipeCountdown()
         {
-            int recipeCountdown =  CurrentRecipe.GetCookTime() - CurrentRecipe.GetCookCount();
-// Debug.Log("show countdown");
-// Debug.Log(CurrentRecipe.GetCookTime());
-// Debug.Log('-');
-// Debug.Log(CurrentRecipe.GetCookCount());
-// Debug.Log(CurrentRecipe.GetCookTime() - CurrentRecipe.GetCookCount());
-
+            int recipeCountdown = CurrentRecipe.GetCookTurnsLeft();
 
             DisplayRecipeCountdown(recipeCountdown);
-
-            // GameObject countdownClock = Instantiate(countdownClockPrefab, new Vector3(0, 0, 0), Quaternion.identity); // hardcoded location, should make dynamic
         }
 
         private void ShowRecipeStirs()
         {
-            int recipeReqStirs = CurrentRecipe.GetStirGoal() - CurrentRecipe.GetStirCount();
+            int recipeReqStirs = CurrentRecipe.GetReqStirs();
+            Debug.Log("ShowRecipeStirs");
+            // int recipeReqStirs = CurrentRecipe.GetStirGoal() - CurrentRecipe.GetStirCount();
 
             DisplayRecipeReqStirs(recipeReqStirs);
         }
@@ -1282,8 +1259,12 @@ public class BattleManager : MonoBehaviour
                     CombatLog("You must be cookin when you use this move.");
                     return false;
                 }
-            }
 
+                if (CurrentAction.GetSkillType() == "Lid" && CurrentRecipe.GetCookTurnsLeft() == 0) {
+                    CombatLog("Don't do that! Your cookin is nearly done!");
+                    return false;
+                }
+            }
             return true;
         }
 
@@ -1324,7 +1305,7 @@ public class BattleManager : MonoBehaviour
                 case "MeleeEnemyPierce":
                 // case "CoveredEnemy": // TODO
                 case "SelfOrAllyOrMeleeEnemy": // TODO THIS DOESN'T TRIGGER UNCOVER IN
-                // case "AllyPot":
+                // case "SelfOrAllyOrPot":
                 // case "Stir":
                 // case "Season":
                 // case "AddIngredient":
@@ -1344,6 +1325,7 @@ public class BattleManager : MonoBehaviour
                     break;
                 case "Pick":
                     // Why should this happen twice?
+                    // could i just set the target to self and then it does its thing from the first routeSkill?
                     Debug.Log("RouteSkill again?");
                     RouteSkill();
                     break;

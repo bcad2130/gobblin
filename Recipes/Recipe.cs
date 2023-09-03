@@ -57,6 +57,11 @@ public class Recipe
         return cookTime;
     }
 
+    public int GetCookTurnsLeft()
+    {
+        return cookTime - cookCount;
+    }
+
     public void AddCookTurn()
     {
         cookCount++;
@@ -75,6 +80,11 @@ public class Recipe
     public int GetStirGoal()
     {
         return stirGoal;
+    }
+
+    public int GetReqStirs()
+    {
+        return stirGoal - stirCount;
     }
 
     public string GetName()
