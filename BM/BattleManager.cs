@@ -1336,6 +1336,8 @@ public class BattleManager : MonoBehaviour
                     ReadyAction();
                     break;
                 case "Pick":
+                    // Why should this happen twice?
+                    Debug.Log("RouteSkill again?");
                     RouteSkill();
                     break;
                 default:
@@ -1628,6 +1630,7 @@ public class BattleManager : MonoBehaviour
 
         public void RouteSkill()
         {
+            Debug.Log("RouteSkill");
             switch (CurrentAction.GetSkillType()) {
                 case "Cover":
                     Cover();
