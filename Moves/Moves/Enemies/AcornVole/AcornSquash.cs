@@ -10,7 +10,7 @@ public class AcornSquash : MoveButton
         action.TargetType = "MeleeEnemy";
         action.GutsCost = COST;
 
-        action.StrengthDamage   = bm.CurrentUnit.GetNetStrength() + 5;
+        action.StrengthDamage   = bm.getCurrentUnit().GetNetStrength() + 5;
         SetIsMove(true);
         SetIsSkill(true);
     }

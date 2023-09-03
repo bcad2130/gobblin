@@ -12,7 +12,7 @@ public class SpoonWhack : MoveButton
         action.TargetType = "MeleeEnemy";
         action.GutsCost = COST;
         
-        action.StrengthDamage = bm.CurrentUnit.GetNetStrength() + DAMAGE;
+        action.StrengthDamage = bm.getCurrentUnit().GetNetStrength() + DAMAGE;
 
         SetIsMove(true);
     }

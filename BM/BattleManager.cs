@@ -55,7 +55,7 @@ public class BattleManager : MonoBehaviour
 
 
     // ACTIVE VARS
-        public UnitStats    CurrentUnit;
+        private UnitStats    CurrentUnit;
         public Action       CurrentAction;
         public Recipe       CurrentRecipe;
         public Item         CurrentMeal;
@@ -1368,6 +1368,9 @@ public class BattleManager : MonoBehaviour
         }
 
     // TAKE ACTION
+        public UnitStats getCurrentUnit() {
+            return CurrentUnit;
+        }
 
         // could i use a while loop instead?
         public void TakeAction()

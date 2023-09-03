@@ -12,7 +12,7 @@ public class ThrowBottle : MoveButton
         action.TargetType = "Enemy";
 
         action.GutsCost = COST;
-        action.StrengthDamage = bm.CurrentUnit.GetNetStrength() + DAMAGE;
+        action.StrengthDamage = bm.getCurrentUnit().GetNetStrength() + DAMAGE;
 
         action.AddIngredientCost("Bottle");
 
