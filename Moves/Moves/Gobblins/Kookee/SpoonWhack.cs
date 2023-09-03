@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class SpoonWhack : MoveButton
 {
-    protected const int COST = 3;
-    protected const int DAMAGE = 3;
+    protected const int COST = 5;
+    protected const int DAMAGE = 4;
 
     protected override void SetUpMove()
     {
