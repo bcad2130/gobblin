@@ -909,14 +909,21 @@ public class BattleManager : MonoBehaviour
         private void Season()
         {
             // print(CurrentUnit.GetNetTaste());
+            if (CurrentRecipe != null) {
+                CurrentRecipe.AddFlavor(CurrentUnit.GetNetTaste());
 
-            CurrentRecipe.AddFlavor(CurrentUnit.GetNetTaste());
+                CombatLog(CurrentUnit.GetName() + " seasoned the pot, adding " + CurrentUnit.GetNetTaste() + " flavor");
+            } else {
+                CombatLog("You can't season if you ain't cookin'");
 
-            CombatLog(CurrentUnit.GetName() + " seasoned the pot, adding " + CurrentUnit.GetNetTaste() + " flavor");
+                canAct = false;
+            }
         }
 
         private void Lid()
         {
+            // This won't work now that cauldron is not a  unit
+
             if (CurrentAction.Targets.Any(t => t.isCookin)) {
                 CookTimeAddTurns(1);
                 UpdateCookingCountdown();
