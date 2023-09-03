@@ -40,7 +40,7 @@ public class BattleManager : MonoBehaviour
         private List<UnitStats> enemyList;
         private List<UnitStats> meleeAllyList;
         private List<UnitStats> meleeEnemyList;
-        private List<UnitStats> allyCookinList;
+        // private List<UnitStats> allyCookinList;
         private Dictionary<string,UnitStats> coverUnits;
 
     // PHASE FLAGS
@@ -308,7 +308,7 @@ public class BattleManager : MonoBehaviour
             enemyList       = new List<UnitStats>();
             meleeAllyList   = new List<UnitStats>();
             meleeEnemyList  = new List<UnitStats>();
-            allyCookinList  = new List<UnitStats>();
+            // allyCookinList  = new List<UnitStats>();
             coverUnits      = new Dictionary<string, UnitStats>();
 
             PopulateListByTag("Player", completeList);
@@ -966,26 +966,26 @@ public class BattleManager : MonoBehaviour
             //      handle having enemy cauldrons?
         }
 
-        private void KillCauldron() {
-            Debug.Log("KillCauldron still happening?");
-            UnitStats unit = allyCookinList[0];
+        // private void KillCauldron() {
+        //     Debug.Log("KillCauldron still happening?");
+        //     UnitStats unit = allyCookinList[0];
             
-            UncoverUnit(unit);
+        //     UncoverUnit(unit);
 
-            // this def isn't on any other lists right? like you can't attack the cauldron anymore?
-            // RemoveUnitFromCookinList(unit);
-            RemoveUnitFromAllLists(unit);
-            Destroy(unit.gameObject);
+        //     // this def isn't on any other lists right? like you can't attack the cauldron anymore?
+        //     // RemoveUnitFromCookinList(unit);
+        //     RemoveUnitFromAllLists(unit);
+        //     Destroy(unit.gameObject);
 
 
 
-            UpdateUnitPositions();
+        //     UpdateUnitPositions();
 
-            // CheckGameOver();
+        //     // CheckGameOver();
 
-            // CurrentRecipe = null;
-            // SetRecipePicked(false);
-        }
+        //     // CurrentRecipe = null;
+        //     // SetRecipePicked(false);
+        // }
 
         private void RestockCauldron() {
             Pot startingPot = new Pot();
@@ -1844,18 +1844,18 @@ public class BattleManager : MonoBehaviour
             }
 
             // this is where i check if its a recipe action, but i should move this higher in the work flow
-            if (summonUnit.isCookin) {
-                AddUnitToList(summonUnit, allyCookinList);
-                // will this work by ref?
-                // SetRecipe();
+            // if (summonUnit.isCookin) {
+            //     AddUnitToList(summonUnit, allyCookinList);
+            //     // will this work by ref?
+            //     // SetRecipe();
 
-                // print("recipe");
-                // print(CurrentRecipe);
-                // print("summon");
-                // print(summon);
+            //     // print("recipe");
+            //     // print(CurrentRecipe);
+            //     // print("summon");
+            //     // print(summon);
 
-                CurrentRecipe.cauldron = summonUnit;
-            }
+            //     CurrentRecipe.cauldron = summonUnit;
+            // }
             summonUnit.InitializeUnitFigure();
             summonUnit.InitializeUnitText();
 
@@ -2012,16 +2012,16 @@ public class BattleManager : MonoBehaviour
                         SetTargetsByList(allyList);
                     }
                     break;
-                case "AllyPot":
-                // case "Stir":
-                // case "Season":
-                // case "AddIngredient":
-                    if (myTurn) {
-                        FindTargetsByList(allyCookinList);
-                    } else {
-                        Debug.Log("ERROR: BM.SelectPossibleTargetsByActionType : Enemies can't interact with cookin");
-                    }
-                    break;
+                // case "AllyPot":
+                // // case "Stir":
+                // // case "Season":
+                // // case "AddIngredient":
+                //     if (myTurn) {
+                //         FindTargetsByList(allyCookinList);
+                //     } else {
+                //         Debug.Log("ERROR: BM.SelectPossibleTargetsByActionType : Enemies can't interact with cookin");
+                //     }
+                //     break;
                 // case "Targetless":
                 // case "Forage":
                 // case "Cook":
@@ -2557,12 +2557,12 @@ public class BattleManager : MonoBehaviour
             RemoveUnitFromList(unit,  enemyList);
             RemoveUnitFromList(unit,  meleeAllyList);
             RemoveUnitFromList(unit,  meleeEnemyList);
-            RemoveUnitFromList(unit,  allyCookinList);
+            // RemoveUnitFromList(unit,  allyCookinList);
         }
 
-        public void RemoveUnitFromCookinList(UnitStats unit) {
-            RemoveUnitFromList(unit, allyCookinList);
-        }
+        // public void RemoveUnitFromCookinList(UnitStats unit) {
+        //     RemoveUnitFromList(unit, allyCookinList);
+        // }
 
 
     // AI
