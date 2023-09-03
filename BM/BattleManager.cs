@@ -788,6 +788,7 @@ public class BattleManager : MonoBehaviour
         private void TurnEndRecipeCheck()
         {
             if (CurrentRecipe != null) {
+                Debug.Log("(CurrentRecipe != null)");
 
                 if (CurrentRecipe.GetCookCount() < CurrentRecipe.GetCookTime())
                 {
@@ -795,8 +796,11 @@ public class BattleManager : MonoBehaviour
                     UpdateCookingCountdown();
                 } else if (CurrentRecipe.GetCookCount() == CurrentRecipe.GetCookTime())
                 {
+                    Debug.Log("chec");
                     if (CheckIngredientsForCurrentRecipe() && CheckStirring())
                     {
+                    Debug.Log("chec-chech");
+
                         CreateMeal();
                     } else {
                         FailMeal();
@@ -836,8 +840,10 @@ public class BattleManager : MonoBehaviour
             CombatLog(CurrentUnit.GetName() + " started cooking " + CurrentRecipe.GetName() + ". It will take " + CurrentRecipe.GetCookTime() + " round(s).");
         }
 
-        private void ResetRecipe() {
+        private void ClearCurrentRecipe() {
+            SetRecipePicked(false);
 
+            CurrentRecipe = null;
         }
 
         private void AddIngredientToRecipe(string ingredient)
@@ -907,7 +913,7 @@ public class BattleManager : MonoBehaviour
 
         private void CreateMeal()
         {
-            // print(CurrentRecipe.GetFlavor());
+            print(CurrentRecipe.GetFlavor() + " Flavor");
 
             int quality = 0;
 
@@ -931,6 +937,8 @@ public class BattleManager : MonoBehaviour
             // meal.SetNameQuality(meal.Name + " +" + meal.GetQuality().ToString());
 
             playerMealItems.Add(meal);
+
+            ClearCurrentRecipe();
             // Debug.Log("You made " + meal.Name);
             CombatLog("You made " + meal.Name);
         }
@@ -958,7 +966,7 @@ public class BattleManager : MonoBehaviour
         }
 
         private void KillCauldron() {
-            // Debug.Log("KillCauldron");
+            Debug.Log("KillCauldron still happening?");
             UnitStats unit = allyCookinList[0];
             
             UncoverUnit(unit);
@@ -974,8 +982,8 @@ public class BattleManager : MonoBehaviour
 
             // CheckGameOver();
 
-            CurrentRecipe = null;
-            SetRecipePicked(false);
+            // CurrentRecipe = null;
+            // SetRecipePicked(false);
         }
 
         private void RestockCauldron() {
