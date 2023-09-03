@@ -880,14 +880,21 @@ public class BattleManager : MonoBehaviour
 
         private void Stir()
         {
-            CurrentRecipe.AddStir();
+            // if (CurrentRecipe.isCookin)
+            if (CurrentRecipe != null) {
+                CurrentRecipe.AddStir();
 
-            CurrentRecipe.AddFlavor(CurrentUnit.GetNetNose());
+                CurrentRecipe.AddFlavor(CurrentUnit.GetNetNose());
 
-            ClearStirIcons();
-            ShowRecipeStirs();
+                ClearStirIcons();
+                ShowRecipeStirs();
 
-            CombatLog(CurrentUnit.GetName() + " stirred the pot, adding " + CurrentUnit.GetNetNose() + " flavor");
+                CombatLog(CurrentUnit.GetName() + " stirred the pot, adding " + CurrentUnit.GetNetNose() + " flavor");
+            } else {
+                CombatLog("You can't stir if you ain't cookin'");
+
+                canAct = false;
+            }
         }
 
         private bool CheckStirring()
@@ -1402,10 +1409,11 @@ public class BattleManager : MonoBehaviour
             // print(CurrentAction);
 
             // SPEND COSTS
-            SpendGuts();
+            if (canAct)
+                SpendGuts();
 
             // new method to check ingredient cost, cuz we should check the cost earlier
-            if (CurrentAction.GetIngredientCost() != "") {
+            if (CurrentAction.GetIngredientCost() != "" && canAct) {
                 if (CanAffordIngredient(CurrentAction.GetIngredientCost())) {
                     AddIngredientToRecipe(CurrentAction.GetIngredientCost());
                 } else {
@@ -1413,7 +1421,7 @@ public class BattleManager : MonoBehaviour
                 }
             }
 
-            if (CurrentAction.ResourceCost.Count != 0) {
+            if (CurrentAction.ResourceCost.Count != 0 && canAct) {
                 SpendResource(CurrentAction.ResourceCost);
             }
 
