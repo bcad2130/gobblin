@@ -6,10 +6,11 @@ public class GritsRecipe : Recipe
 {
     public GritsRecipe ()
     {
+        // Debug.Log("Grits");
         SetName("Grits");
 
         cookCount = 0;
-        cookTime  = 2;
+        cookTime  = 3;
 
         stirCount = 0;
         stirGoal = 1;

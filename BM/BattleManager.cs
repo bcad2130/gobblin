@@ -221,11 +221,11 @@ public class BattleManager : MonoBehaviour
                     // localIngredients.AddItem("Bottle");
                     // localIngredients.AddItem("Bottle");
                     // localIngredients.AddItem("Bottle");
-                    // localIngredients.AddItem("Water");
-                    // localIngredients.AddItem("Water");
-                    localIngredients.AddItem("Grease");
-                    localIngredients.AddItem("Grease");
-                    localIngredients.AddItem("Grease");                    
+                    localIngredients.AddItem("Water");
+                    localIngredients.AddItem("Water");
+                    // localIngredients.AddItem("Grease");
+                    // localIngredients.AddItem("Grease");
+                    // localIngredients.AddItem("Grease");
                     localIngredients.AddItem("Corn");
                     localIngredients.AddItem("Corn");
                     localIngredients.AddItem("Corn");
@@ -833,6 +833,7 @@ public class BattleManager : MonoBehaviour
             ShowPot();
             ShowRecipeIngredients();
             ShowRecipeCountdown();
+            ShowRecipeStirs();
             // seems redundant?
             // CombatLog(CurrentUnit.GetName() + " started cooking " + CurrentRecipe.GetName());
 
@@ -867,6 +868,7 @@ public class BattleManager : MonoBehaviour
             ClearPotIcon();
             ClearClockIcons();
             ClearIngredientIcons();
+            ClearStirIcons();
         }
 
         private void CookTimeAddTurns(int turns)
@@ -881,6 +883,9 @@ public class BattleManager : MonoBehaviour
             CurrentRecipe.AddStir();
 
             CurrentRecipe.AddFlavor(CurrentUnit.GetNetNose());
+
+            ClearStirIcons();
+            ShowRecipeStirs();
 
             CombatLog(CurrentUnit.GetName() + " stirred the pot, adding " + CurrentUnit.GetNetNose() + " flavor");
         }
@@ -913,12 +918,11 @@ public class BattleManager : MonoBehaviour
 
         private void CreateMeal()
         {
-            print(CurrentRecipe.GetFlavor() + " Flavor");
+            // print(CurrentRecipe.GetFlavor() + " Flavor");
 
             int quality = 0;
 
             if (CurrentRecipe.GetFlavor() >= CurrentRecipe.GetFlavorGoal()) {
-                Debug.Log('A');
                 quality++;
             }
 
@@ -1016,6 +1020,13 @@ public class BattleManager : MonoBehaviour
             DisplayRecipeCountdown(recipeCountdown);
 
             // GameObject countdownClock = Instantiate(countdownClockPrefab, new Vector3(0, 0, 0), Quaternion.identity); // hardcoded location, should make dynamic
+        }
+
+        private void ShowRecipeStirs()
+        {
+            int recipeReqStirs = CurrentRecipe.GetStirGoal() - CurrentRecipe.GetStirCount();
+
+            DisplayRecipeReqStirs(recipeReqStirs);
         }
 
         private void ShowPot()
@@ -2438,6 +2449,11 @@ public class BattleManager : MonoBehaviour
             FindObjectOfType<CookingManager>().CreateIngredientIcons(ingredients);
         }
 
+        private void DisplayRecipeReqStirs(int reqStirs)
+        {
+            FindObjectOfType<CookingManager>().CreateReqStirsIcons(reqStirs);
+        }
+
         private void DisplayPot()
         {
             FindObjectOfType<CookingManager>().CreatePotIcon();
@@ -2451,6 +2467,11 @@ public class BattleManager : MonoBehaviour
         private void ClearClockIcons()
         {
             FindObjectOfType<CookingManager>().RemoveAllClockIcons();
+        }
+
+        private void ClearStirIcons()
+        {
+            FindObjectOfType<CookingManager>().RemoveAllStirIcons();
         }
 
         private void ClearPotIcon()

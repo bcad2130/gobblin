@@ -17,6 +17,7 @@ public class CookingManager : MonoBehaviour
     public GameObject greaseIcon;
     public GameObject waterIcon;
     public GameObject cauldronIcon;
+    public GameObject stirIcon;
 
     // private float cookingIconPosX = -900;
 
@@ -83,6 +84,37 @@ public class CookingManager : MonoBehaviour
         }
     }
 
+    public void CreateReqStirsIcons(int reqStirs) {
+        // foreach (KeyValuePair<string, int> ingredient in req) 
+        // {
+        int j = 0;
+
+            GameObject stirImage = stirIcon;
+            // switch(ingredient.Key) {
+            //     case "Grease":
+            //         foodImage = greaseIcon;
+            //         break;
+            //     case "Water":
+            //         foodImage = waterIcon;
+            //         break;
+            //     case "Corn":
+            //     default:
+            //         foodImage = cornIcon;
+            //         break;
+            // }
+
+            for(int i = 0; i < reqStirs; i++) {
+                GameObject food = Instantiate(stirImage, new Vector3(-860 + j*60, 480, 0), Quaternion.identity);
+                // GameObject food = Instantiate(foodImage, new Vector3(cauldronPositionX + j*50, 250, 0), Quaternion.identity);
+
+                food.transform.SetParent(canvas.transform, false);
+                food.tag = "StirIcon";
+                
+                j++;
+            }
+        // }
+    }
+
     public void CreatePotIcon() {
         GameObject cauldron = Instantiate(cauldronIcon);
 
@@ -108,6 +140,16 @@ public class CookingManager : MonoBehaviour
                 Destroy(child);
             }
             //Do something with child
+        }
+    }
+
+    public void RemoveAllStirIcons() {
+        for (int i = 0; i < canvas.transform.childCount; i++)
+        {
+            GameObject child = canvas.transform.GetChild(i).gameObject;
+            if (child.tag == "StirIcon") {
+                Destroy(child);
+            }
         }
     }
 
