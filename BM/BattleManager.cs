@@ -771,7 +771,12 @@ public class BattleManager : MonoBehaviour
 
         public void SetRecipe(Recipe recipeToSet)
         {
+            recipeToSet.GetCookTurnsLeft();
+
+            CurrentRecipe = new Recipe();
             CurrentRecipe = recipeToSet;
+            CurrentRecipe.GetCookTurnsLeft();
+
 
             SetRecipePicked(true);
         }
@@ -816,16 +821,12 @@ public class BattleManager : MonoBehaviour
             ShowRecipeIngredients();
             ShowRecipeCountdown();
             ShowRecipeStirs();
-            // seems redundant?
-            // CombatLog(CurrentUnit.GetName() + " started cooking " + CurrentRecipe.GetName());
 
-            // does this look better?
             CombatLog(CurrentUnit.GetName() + " started cooking " + CurrentRecipe.GetName() + ". It will take " + CurrentRecipe.GetCookTime() + " round(s).");
         }
 
         private void ClearCurrentRecipe() {
             SetRecipePicked(false);
-
             CurrentRecipe = null;
         }
 
@@ -854,7 +855,8 @@ public class BattleManager : MonoBehaviour
         }
 
         private void CookTimeAddTurns(int turns)
-        {
+        {   
+            // why check for one??
             if (turns == 1) {
                 CurrentRecipe.AddCookTurn();
             }
@@ -954,36 +956,18 @@ public class BattleManager : MonoBehaviour
         {
             ClearCookingIcons();
 
-            // KillCauldron();
-
             RestockCauldron();
 
             ClearCurrentRecipe();
-            // InitializeRecipes();
-            // TODO handle having more than one cauldron
-            //      handle having enemy cauldrons?
+
+            // Must initialize again or the recipe that is passed to CurrentRecipe refers to the one contained here
+            // Then the changes like the countdown, will change the recipe itself
+
+            //TODO: make the currentRecipe independent of the recipe list
+            // like copy by value
+            // or make local bm vars for cooking, like current count, ingredient list, etc that do not live in the recipe
+            InitializeRecipes();
         }
-
-        // private void KillCauldron() {
-        //     Debug.Log("KillCauldron still happening?");
-        //     UnitStats unit = allyCookinList[0];
-            
-        //     UncoverUnit(unit);
-
-        //     // this def isn't on any other lists right? like you can't attack the cauldron anymore?
-        //     // RemoveUnitFromCookinList(unit);
-        //     RemoveUnitFromAllLists(unit);
-        //     Destroy(unit.gameObject);
-
-
-
-        //     UpdateUnitPositions();
-
-        //     // CheckGameOver();
-
-        //     // CurrentRecipe = null;
-        //     // SetRecipePicked(false);
-        // }
 
         private void RestockCauldron() {
             Pot startingPot = new Pot();
@@ -992,11 +976,6 @@ public class BattleManager : MonoBehaviour
 
         private void ShowRecipeIngredients()
         {
-
-            // string placeholderFoodName = "corn";
-
-            // DisplayIngredientIcons(placeholderFoodName);
-
             Dictionary<string, int> requiredIngredients = CurrentRecipe.GetRequiredIngredients().GetInventoryAsDictionary();
 
             DisplayIngredientIcons(requiredIngredients);
