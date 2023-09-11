@@ -1296,28 +1296,16 @@ public class BattleManager : MonoBehaviour
                 case "MeleeEnemyPierce":
                 // case "CoveredEnemy": // TODO
                 case "SelfOrAllyOrMeleeEnemy": // TODO THIS DOESN'T TRIGGER UNCOVER IN
-                // case "SelfOrAllyOrPot":
-                // case "Stir":
-                // case "Season":
-                // case "AddIngredient":
-                // case "Eat":
-                // case "ServeDrink":
-                // case "ServeFood":
-                // case "ServeMeal":
-                    // FindTargets();
                     DisplayTargets(CurrentAction.PossibleTargets);
                     break;
                 case "Self":
                 case "AllMeleeEnemies":
                 case "AllCoveredEnemies": // TODO
                 case "AllEnemies":
-                case "Targetless": // or "Untargeted"
-                    ReadyAction();
+                case "Targetless":
+                    ConfirmAction();
                     break;
                 case "Pick":
-                    // Why should this happen twice?
-                    // could i just set the target to self and then it does its thing from the first routeSkill?
-                    // Debug.Log("RouteSkill again?");
                     RouteSkill();
                     break;
                 default:
@@ -1326,7 +1314,7 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        public void ReadyAction()
+        public void ConfirmAction()
         {
             CleanUpButtons();
 
@@ -1610,7 +1598,6 @@ public class BattleManager : MonoBehaviour
 
         public void RouteSkill()
         {
-            // Debug.Log("RouteSkill");
             switch (CurrentAction.GetSkillType()) {
                 case "Cover":
                     Cover();
