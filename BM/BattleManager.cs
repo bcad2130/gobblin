@@ -678,14 +678,12 @@ public class BattleManager : MonoBehaviour
 
         private void Meal()
         {
+            // Check if the action has one resource cost, ie what meal was used to pay for the 'eat' action
             if (CurrentAction.ResourceCost.Count == 1) {
+                // Is there a better way to grab the meal that you are cooking?
                 SetCurrentMeal(CurrentAction.ResourceCost[0]);
 
                 PrepMeal();
-
-                // Debug.Log("You served: " + CurrentMeal.Name + "... Gross!!");
-
-                // SpendResource(CurrentAction.ResourceCost);
             } else {
                 Debug.Log("Error: Meal: You should only consume one meal at a time");
             }
@@ -1014,8 +1012,6 @@ public class BattleManager : MonoBehaviour
         private void ShowRecipeStirs()
         {
             int recipeReqStirs = CurrentRecipe.GetReqStirs();
-            Debug.Log("ShowRecipeStirs");
-            // int recipeReqStirs = CurrentRecipe.GetStirGoal() - CurrentRecipe.GetStirCount();
 
             DisplayRecipeReqStirs(recipeReqStirs);
         }
@@ -1180,23 +1176,30 @@ public class BattleManager : MonoBehaviour
 
         public bool CanAffordResourceCost (Action action)
         {
-            if (action.GetIngredientCost() != "") {
-                // Debug.Log(action.GetIngredientCost());
+            bool canAfford = true;
 
-                if (!playerIngredients.CheckItem(action.GetIngredientCost())) {
+            if (action.GetIngredientCost() != "") {
+                if (playerIngredients.CheckItem(action.GetIngredientCost())) {
+
+                    return true;
+                } else {
                     CombatLog("Can't use move: You don't have the required ingredient");
 
-                    Debug.Log("You do not have the required ingredient.");
+                    canAfford = false;
                     return false;
                 }
             }
 
-            // TODO: Make this work for requiring multiple of the same item
             if (action.ResourceCost != null) {
                 foreach (Item resource in action.ResourceCost) {
                     switch(action.GetSkillType()) {
                         case "CookRecipe":
-                            if (!playerEquipmentItems.Exists(x => x.Name == resource.Name)) {
+                            if (playerEquipmentItems.Exists(x => x.Name == resource.Name)) {
+
+                            } else {
+                                CombatLog("You're already cookin'");
+
+                                canAfford = false;
                                 return false;
                             }
                             break;
@@ -1205,7 +1208,12 @@ public class BattleManager : MonoBehaviour
                         case "ServeDrink":
                         case "ServeFood":
                         case "ServeMeal":
-                            if (!playerMealItems.Exists(x => x.Name == resource.Name)) {
+                            if (playerMealItems.Exists(x => x.Name == resource.Name)) {
+
+                            } else {
+                                CombatLog("You don't have that meal!");
+
+                                canAfford = false;
                                 return false;
                             }
                             break;
@@ -1216,7 +1224,7 @@ public class BattleManager : MonoBehaviour
                 }
             }
 
-            return true;
+            return canAfford;
         }
 
         // todo redo all this with more accurate target types
@@ -1226,7 +1234,8 @@ public class BattleManager : MonoBehaviour
                 foreach (Item resource in resourceCost) {
                     switch(CurrentAction.GetSkillType()) {
                         case "CookRecipe":
-                            playerEquipmentItems.Remove(new Pot());
+                            // this should remove by name, not by index
+                            playerEquipmentItems.RemoveAt(0);
                             break;
                         case "Serve":
                         case "Eat":
@@ -1241,8 +1250,6 @@ public class BattleManager : MonoBehaviour
                     }
                 }
             }
-
-            // print ("we made it this far");
         }
 
         public void SpendGuts ()
@@ -1326,7 +1333,7 @@ public class BattleManager : MonoBehaviour
                 case "Pick":
                     // Why should this happen twice?
                     // could i just set the target to self and then it does its thing from the first routeSkill?
-                    Debug.Log("RouteSkill again?");
+                    // Debug.Log("RouteSkill again?");
                     RouteSkill();
                     break;
                 default:
@@ -1619,7 +1626,7 @@ public class BattleManager : MonoBehaviour
 
         public void RouteSkill()
         {
-            Debug.Log("RouteSkill");
+            // Debug.Log("RouteSkill");
             switch (CurrentAction.GetSkillType()) {
                 case "Cover":
                     Cover();
