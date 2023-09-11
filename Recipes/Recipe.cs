@@ -26,25 +26,7 @@ public class Recipe
 
     public Recipe ()
     {
-        // Debug.Log("Error : Recipe : Don't use the default recipe constructor, right?");
-
         recipeName = "Default";
-
-        // cookCount = 0;
-        // cookTime  = 1;
-
-        // stirCount = 0;
-        // stirGoal = 0;
-
-        // result = new SoupItem();
-
-        // ingredients = new Dictionary<string,int>();
-        // ingredients.Add("Potato", 1);
-
-        // result = new CornCobItem();
-
-        // reqIngredients = new Inventory();
-        // reqIngredients.AddItem("Corn");
     }
 
     public int GetCookCount()

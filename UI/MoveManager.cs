@@ -216,9 +216,9 @@ public class MoveManager : MonoBehaviour
                 ActivateCancelButton(true);
             }
         } else {
+            // bm.CombatLog() is protected. Should it be?
             FindObjectOfType<CombatLogManager>().PrintToLog("Can't use move: You have no ingredients");
 
-            print ("You have no ingredients");
             bm.ResetTurn();
         }
     }

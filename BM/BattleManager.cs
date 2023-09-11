@@ -223,9 +223,10 @@ public class BattleManager : MonoBehaviour
                     // localIngredients.AddItem("Bottle");
                     localIngredients.AddItem("Water");
                     localIngredients.AddItem("Water");
+                    localIngredients.AddItem("Grease");
+                    localIngredients.AddItem("Grease");
                     // localIngredients.AddItem("Grease");
-                    // localIngredients.AddItem("Grease");
-                    // localIngredients.AddItem("Grease");
+                    localIngredients.AddItem("Corn");
                     localIngredients.AddItem("Corn");
                     localIngredients.AddItem("Corn");
                     localIngredients.AddItem("Corn");
@@ -884,8 +885,6 @@ public class BattleManager : MonoBehaviour
         private bool CheckStirring()
         {
             if ( CurrentRecipe.GetReqStirs() == 0 ) {
-                Debug.Log("check stiriing");
-            // if ( CurrentRecipe.GetStirCount() == CurrentRecipe.GetStirGoal() ) {
                 return true;
             } else {
                 return false;
@@ -1128,6 +1127,7 @@ public class BattleManager : MonoBehaviour
         public void TryAction(Action action)
         {
             canAct = true;
+            // could we move this to within the if? then we would never have a current action assigned until we know we can afford it
             SetCurrentAction(action);
 
             if (CheckAfford(action)) {
@@ -1246,7 +1246,12 @@ public class BattleManager : MonoBehaviour
                     return false;
                 }
 
-                if (CurrentAction.GetSkillType() == "Lid" && CurrentRecipe.GetCookTurnsLeft() == 0) {
+                if (action.GetSkillType() == "Stir" && CurrentRecipe.GetReqStirs() == 0) {
+                    CombatLog("You don't need to stir this cookin.");
+                    return false;
+                }
+
+                if (action.GetSkillType() == "Lid" && CurrentRecipe.GetCookTurnsLeft() == 0) {
                     CombatLog("Don't do that! Your cookin is nearly done!");
                     return false;
                 }
