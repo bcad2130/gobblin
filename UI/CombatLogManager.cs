@@ -13,9 +13,6 @@ public class CombatLogManager : MonoBehaviour
 
     public void PrintToLog(string text)
     {
-        // Instantiate(CombatLogBox, canvas);
-        // CombatLogBox = GameObject.FindObjectOfType<CombatLogBox>();
-
         if (!CombatLogBox.activeSelf) {
             CombatLogBox.SetActive(true);
         }
@@ -25,9 +22,9 @@ public class CombatLogManager : MonoBehaviour
 
     public void ClearLog()
     {
-        CombatLog.text  = "";
-        CombatText.text = "";
-        lastLog         = "";
+        SetCombatLogText("");
+        SetCombatText("");
+        lastLog         = null;
     }
 
     private void NewCombatText(string text)
@@ -35,13 +32,14 @@ public class CombatLogManager : MonoBehaviour
         CycleLog();
 
         SetLastLog(text);
-        // SetCombatText(text);
         TypeCombatText(text);
     }
 
     private void CycleLog()
     {
-        if (GetLastLog() != "") {
+        // Debug.Log("CycleLog");
+        // Last Log keeps track of the last string given to the Combat Text, ready to be transferred to CombatLog
+        if (GetLastLog() != null) {
             CombatLog.text += "\n" + GetLastLog();
         }
     }
@@ -54,6 +52,16 @@ public class CombatLogManager : MonoBehaviour
     private void SetLastLog(string text)
     {
         lastLog = text;
+    }
+
+    private string GetCombatLogText()
+    {
+        return lastLog;
+    }
+
+    private void SetCombatLogText(string text)
+    {
+        CombatLog.text = text;
     }
 
     private string GetCombatText()

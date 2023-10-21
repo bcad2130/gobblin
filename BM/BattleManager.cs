@@ -53,9 +53,11 @@ public class BattleManager : MonoBehaviour
         private int freeMoves = 0;
         private int freeSkills = 0;
 
+        // private bool roundOver;
+
 
     // ACTIVE VARS
-        private UnitStats    CurrentUnit;
+        private UnitStats   CurrentUnit;
         public Action       CurrentAction;
         public Recipe       CurrentRecipe;
         public Item         CurrentMeal;
@@ -63,9 +65,10 @@ public class BattleManager : MonoBehaviour
     // INVENTORIES AND ITEMS
         public Inventory playerIngredients;
         public Inventory localIngredients;
+
         private List<Recipe> playerRecipes;
-        private List<Item> playerMealItems;
-        private List<Item> playerEquipmentItems;
+        private List<Item>   playerMealItems;
+        private List<Item>   playerEquipmentItems;
 
 
     // CONSTANTS: STATS
@@ -432,23 +435,30 @@ public class BattleManager : MonoBehaviour
             DisplayUnitPoints();
             ActivateMoveBox(true);
 
-            CombatLog("Combat begins!");
+            // CombatLog("Combat begins!");
 
             StartRound();
         }
 
         private void StartRound()
         {
+            // Debug.Log("StartRound phase");
             BuildTurnList();
 
             StartRoundUpdates();
 
+            SetNextTurnButtonText("Start\nRound");
             ActivateNextTurnButton(true);
         }
 
         private void StartRoundUpdates()
         {
-            GutCheck();
+            // should this be in endroundupdates?
+            // GutCheck();
+
+            // roundOver = false;
+            // ClearCombatLog();
+            CombatLog("New Round Start!");
         }
 
         private void StartTurn()
@@ -469,13 +479,15 @@ public class BattleManager : MonoBehaviour
         private void StartTurnUpdates()
         {
             // UI
-            ClearCombatLog();
+            // ClearCombatLog();
             CombatLog(CurrentUnit.GetName() + "'s turn!");
 
             // TODO: what if this kills unit? they can still act
             CheckGross(CurrentUnit);
 
             //  would it make more sense for starving to happen at start of turn
+            //  maybe i also metab at start of turn? that way you see starving happen right away 
+            // and you know how many guts you have to work with
             if (CurrentUnit.isStarving)
             {
                 CombatLog(CurrentUnit.GetName() + " is still starving. They skip their turn and take TUM damage!");
@@ -506,12 +518,13 @@ public class BattleManager : MonoBehaviour
 
         private void EndTurn()
         {
+            // Debug.Log("EndTurn phase");
             EndTurnUpdates();
 
-            // check for game over here? maybe add a flag for turn over, can activate in check if dead
+            // TODO: maybe check for game over here? maybe add a flag for turn over, can activate in check if dead
 
             if (nextUpList.Count == 0) {
-                NextTurn();
+                EndRound();
             } else {
                 ActivateNextTurnButton(true);
             }
@@ -519,6 +532,11 @@ public class BattleManager : MonoBehaviour
 
         private void EndTurnUpdates()
         {
+
+            //TODO: kinda confusing to  do all this next up list management here
+            // move all that to its own function
+            // in general, its confusing when a unit is the current unit or next up, maybe rework that to its own var
+
             // build this    
             // TickCurrentUnitStatusEffects();
 
@@ -528,10 +546,11 @@ public class BattleManager : MonoBehaviour
 
             // TURN MANAGEMENT
             myTurn = false;
-            RemoveCurrentUnitFromNextUpList();
+            // RemoveCurrentUnitFromNextUpList();
             freeMoves = 0;
             freeSkills = 0;
 
+            RemoveCurrentUnitFromNextUpList();
 
             CurrentUnit.SetTurnNumber(0);
             // CurrentUnit.ChangeTurnTextColor(Color.gray);
@@ -543,48 +562,69 @@ public class BattleManager : MonoBehaviour
             CleanUpButtons();
             DisplayNextTurns(nextUpList);
             DisplayStaz(CurrentUnit);
-            SetNextTurnButtonText("Next\nTurn");
 
+            // why check this here?
             CheckIfDead(CurrentUnit);
+
+            SetNextTurnButtonText("Next\nTurn");
         }
 
         public void NextTurn()
         {
+            ClearCombatLog();
+            // Debug.Log("NextTurn phase");
             ActivateNextTurnButton(false);
 
+            //  WE'RE getting that the next up unit isn't 0
+            //  shouldn't that update before we generate  the next turn button?
+            // maybe the nextup list pops during endturn upates, then we  do nextTurn()
+            // Debug.Log(nextUpList.Count);
+            // PrintCurrentUnit();
+
             // TODO lets not use the game over bool
+            // Debug.Log("if not GameOver, check where to take turn: StartTurn, EndRound, or  StartRound");            
             if (!gameOver) {
-                if (nextUpList.Count != 0){
+                if (nextUpList.Count > 0){
+                    // Debug.Log("nextUpList.Count > 0");
                     StartTurn();
+                // } else if (!roundOver) {
+                //     // Debug.Log("roundOver");
+                //     EndRound();
                 } else {
-                    EndRound();
+                    // Debug.Log("StartRound");
+                    StartRound();
                 }
             }
         }
 
         private void EndRound()
         {
+            // Debug.Log("EndRound phase");
             EndRoundUpdates();
 
-            SetNextTurnButtonText("Next\nRound");
-
-            StartRound();
+            SetNextTurnButtonText("End\nRound");
+            ActivateNextTurnButton(true);
         }
 
         private void EndRoundUpdates()
-        {
+        {   
+            // Debug.Log("EndRoundUpdates");
+
             TurnEndRecipeCheck();
 
             // when does all the gut stuff happen? should it happen at the beginnings  or ends of rounds
+            GutCheck();
             Metabolism();
+
+            // CombatLog("Round Ends!");
         }
 
         private void RemoveCurrentUnitFromNextUpList()
         {
+            // Debug.Log("RemoveCurrentUnitFromNextUpList");
             if (nextUpList.Count > 0) {
                 nextUpList[0].turnNumber = 0;
                 nextUpList.RemoveAt(0);
-                // DisplayNextTurns(nextUpList);
             }
         }
 
@@ -597,8 +637,6 @@ public class BattleManager : MonoBehaviour
         {
             List<UnitStats> sortedList  = new List<UnitStats>();
             List<UnitStats> npcList  = new List<UnitStats>();
-
-            // nextUpList  = new List<UnitStats>();
 
             sortedList = completeList.OrderBy(unit => unit.GetNetSpeed()).Reverse().ToList();
 
@@ -1009,8 +1047,10 @@ public class BattleManager : MonoBehaviour
                     if (unit.GetStatusEffectStatus(GIRD))
                     {
                         unit.SubtractStatusEffect(GIRD, 1);
+                        CombatLog(unit.GetName() + " uses one stack of Gird to skip Metabolism.");
                     } else {
                         unit.LoseGuts(METABOLISM);
+                        CombatLog(unit.GetName() + " metabolizes one gut point.");
                     }
                 }
             }
@@ -2631,9 +2671,13 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        private void DisplayCurrentUnit()
+        private void PrintCurrentUnit()
         {
-            print(nextUpList[0]);
+
+            if (nextUpList.Count > 0)
+                print(nextUpList[0]);
+            else
+                print("No Current Unit");
         }
 
         private UnitStats GetUnitByName(string name)

@@ -68,6 +68,8 @@ public class MoveManager : MonoBehaviour
 
     public void SetNextTurnButtonText(string text)
     {
+        // Debug.Log("SetNextTurnButtonText");
+        // Debug.Log(text);
         NextTurnButton.GetComponentInChildren<Text>().text = text;
     }
 
