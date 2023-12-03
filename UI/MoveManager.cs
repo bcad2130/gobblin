@@ -161,7 +161,7 @@ public class MoveManager : MonoBehaviour
     {
         CleanUpButtons();
 
-        float xPos = 50f;
+        float xPos = 100f;
 
         // Iterate this value to make position lower
         float yPos = 100f;
@@ -195,7 +195,7 @@ public class MoveManager : MonoBehaviour
     {
         CleanUpButtons();
 
-        float xPos = 50f;
+        float xPos = 100f;
 
         // Iterate this value to make position lower
         float yPos = 100f;
@@ -229,7 +229,7 @@ public class MoveManager : MonoBehaviour
     {
         CleanUpButtons();
 
-        float xPos = 50f;
+        float xPos = 100f;
 
         // Iterate this value to make position lower
         float yPos = 100f;
@@ -269,7 +269,7 @@ public class MoveManager : MonoBehaviour
     {
         CleanUpButtons();
 
-        float xPos = 50f;
+        float xPos = 100f;
 
         // Iterate this value to make position lower
         float yPos = 150f;
