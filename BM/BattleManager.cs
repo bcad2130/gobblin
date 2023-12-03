@@ -912,12 +912,14 @@ public class BattleManager : MonoBehaviour
             if (CurrentRecipe != null) {
                 CurrentRecipe.AddStir();
 
-                CurrentRecipe.AddFlavor(CurrentUnit.GetNetNose());
+                // CurrentRecipe.AddFlavor(CurrentUnit.GetNetNose());
+                // TESTING IT W/ TUM INSTEAD
+                CurrentRecipe.AddFlavor(CurrentUnit.GetNetTum());
 
                 ClearStirIcons();
                 ShowRecipeStirs();
 
-                CombatLog(CurrentUnit.GetName() + " stirred the pot, adding " + CurrentUnit.GetNetNose() + " flavor");
+                CombatLog(CurrentUnit.GetName() + " stirred the pot, adding " + CurrentUnit.GetNetTum() + " flavor");
             } else {
                 CombatLog("You can't stir if you ain't cookin'");
 
