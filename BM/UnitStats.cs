@@ -72,6 +72,8 @@ public class UnitStats : MonoBehaviour
     public Image figurePrefab;
     private Image figure;
 
+    // public Animation figureAnimator;
+
     // public Canvas canvas;
 
 
@@ -192,6 +194,8 @@ public class UnitStats : MonoBehaviour
     {
         // figure.gameObject.SetActive(true);
         figure = Instantiate(figurePrefab, UnitBox.transform);
+
+        // figureObject = Instantiate(figureObject, UnitBox);
     }
 
     // private void InitializeCamera()
@@ -609,6 +613,33 @@ public class UnitStats : MonoBehaviour
     {
         // print(new Vector3(x, y, 0));
         UnitBox.transform.localPosition = new Vector3(x, y, 0);
+    }
+
+
+    public void SetAttackingAnimator(bool attacking) {
+        Animator figureAnimator = UnitBox.GetComponentInChildren<Animator>();
+
+
+        if (figureAnimator != null) {
+            // figureAnimator.SetBool("Attacking", attacking);
+            figureAnimator.SetTrigger("AttackTrigger");
+        } else {
+
+            Debug.Log("UHOH");
+        }
+    }
+
+    public void SetDefendingAnimator(bool defending) {
+        Animator figureAnimator = UnitBox.GetComponentInChildren<Animator>();
+Debug.Log('d');
+
+        if (figureAnimator != null) {
+            // figureAnimator.SetBool("Attacking", attacking);
+            figureAnimator.SetTrigger("DefendTrigger");
+        } else {
+
+            Debug.Log("UHOH");
+        }
     }
 
     // UNUSED

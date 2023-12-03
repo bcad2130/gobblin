@@ -163,4 +163,8 @@ public class MoveButton : MonoBehaviour
     public void SetIsSkill(bool skillIs) {
         action.SetIsSkill(skillIs);
     }
+
+    public void SetIsPass(bool passIs) {
+        action.SetIsPass(passIs);
+    }
 }

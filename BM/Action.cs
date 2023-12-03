@@ -18,6 +18,7 @@ public class Action
     protected string skillType = null;
     public string TargetType;
 
+    protected bool isPass = false;
     protected bool isMove = false;
     protected bool isSkill = false;
 
@@ -101,6 +102,14 @@ public class Action
 
     public void SetIsSkill(bool skillIs) {
         isSkill = skillIs;
+    }
+
+    public bool GetIsPass() {
+        return isPass;
+    }
+
+    public void SetIsPass(bool passIs) {
+        isPass = passIs;
     }
 
     // SELECTED TARGETS

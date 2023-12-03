@@ -563,6 +563,8 @@ public class BattleManager : MonoBehaviour
             DisplayNextTurns(nextUpList);
             DisplayStaz(CurrentUnit);
 
+            // CurrentUnit.SetAttackingAnimator(false);
+
             // why check this here?
             CheckIfDead(CurrentUnit);
 
@@ -864,7 +866,8 @@ public class BattleManager : MonoBehaviour
             CombatLog(CurrentUnit.GetName() + " started cooking " + CurrentRecipe.GetName() + ". It will take " + CurrentRecipe.GetCookTime() + " round(s).");
         }
 
-        private void ClearCurrentRecipe() {
+        private void ClearCurrentRecipe()
+        {
             SetRecipePicked(false);
             CurrentRecipe = null;
         }
@@ -881,12 +884,14 @@ public class BattleManager : MonoBehaviour
             ShowRecipeIngredients();
         }
 
-        private void UpdateCookingCountdown() {
+        private void UpdateCookingCountdown()
+        {
             ClearClockIcons();
             ShowRecipeCountdown();
         }
 
-        private void ClearCookingIcons() {
+        private void ClearCookingIcons()
+        {
             ClearPotIcon();
             ClearClockIcons();
             ClearIngredientIcons();
@@ -1006,7 +1011,8 @@ public class BattleManager : MonoBehaviour
             InitializeRecipes();
         }
 
-        private void RestockCauldron() {
+        private void RestockCauldron()
+        {
             Pot startingPot = new Pot();
             playerEquipmentItems.Add(startingPot);
         }
@@ -1494,6 +1500,8 @@ public class BattleManager : MonoBehaviour
 
         private void PerformActions()
         {
+            Debug.Log("PerformActions");
+
             if ( CurrentAction.Targets.Count > 0) {
                 foreach (UnitStats target in CurrentAction.Targets) {
                     PerformTargetedAction(target);
@@ -1506,9 +1514,17 @@ public class BattleManager : MonoBehaviour
 
             if (CurrentAction.GetIsMove()) {
                 freeMoves--;
+                Debug.Log("animate");
+                // Animate
+                CurrentUnit.SetAttackingAnimator(true);
             }
 
             if  (CurrentAction.GetIsSkill()) {
+                freeSkills--;
+            }
+
+            if (CurrentAction.GetIsPass()) {
+                freeMoves--;
                 freeSkills--;
             }
 
@@ -2328,6 +2344,8 @@ public class BattleManager : MonoBehaviour
 
         private void PostDamageUpdates(UnitStats unit)
         {
+            unit.SetDefendingAnimator(true);
+
             // unit.UpdateText();
             CheckIfDead(unit);
         }
