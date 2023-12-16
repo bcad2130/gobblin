@@ -93,6 +93,7 @@ public class BattleManager : MonoBehaviour
 
     // CONSTANTS: VALUES
         private const int METABOLISM = 1;
+        private const int STARVE_DAMAGE = 5;
 
 //
 // ***************
@@ -454,7 +455,7 @@ public class BattleManager : MonoBehaviour
         private void StartRoundUpdates()
         {
             // should this be in endroundupdates?
-            // GutCheck();
+            // HungerCheck();
 
             // roundOver = false;
             // ClearCombatLog();
@@ -485,15 +486,19 @@ public class BattleManager : MonoBehaviour
             // TODO: what if this kills unit? they can still act
             CheckGross(CurrentUnit);
 
+            if (!CurrentUnit.isGutless) {
+                Metabolize(CurrentUnit);
+            }
+
             //  would it make more sense for starving to happen at start of turn
             //  maybe i also metab at start of turn? that way you see starving happen right away 
             // and you know how many guts you have to work with
-            if (CurrentUnit.isStarving)
-            {
-                CombatLog(CurrentUnit.GetName() + " is still starving. They skip their turn and take TUM damage!");
-                CurrentUnit.AddStatusEffect("STUN", 1);
-                TakeTumDamage(CurrentUnit, 10);
-            }
+            // if (CurrentUnit.isStarving)
+            // {
+            //     CombatLog(CurrentUnit.GetName() + " is still starving. They skip their turn and take TUM damage!");
+            //     CurrentUnit.AddStatusEffect("STUN", 1);
+            //     TakeTumDamage(CurrentUnit, 10);
+            // }
 
             freeMoves = 1;
             freeSkills = 1;
@@ -615,8 +620,10 @@ public class BattleManager : MonoBehaviour
             TurnEndRecipeCheck();
 
             // when does all the gut stuff happen? should it happen at the beginnings  or ends of rounds
-            GutCheck();
-            Metabolism();
+
+            // Trying it at the start of the unit's turn
+            // HungerCheck();
+            // Metabolize();
 
             // CombatLog("Round Ends!");
         }
@@ -1048,34 +1055,20 @@ public class BattleManager : MonoBehaviour
 
     // HUNGER MANAGEMENT
 
-        private void Metabolism()
+        private void Metabolize(UnitStats unit)
         {
-            foreach (UnitStats unit in completeList) {
-                if (!unit.isCookin && !unit.isGutless) { // && !unit.isDead) {
-                    if (unit.GetStatusEffectStatus(GIRD))
-                    {
-                        unit.SubtractStatusEffect(GIRD, 1);
-                        CombatLog(unit.GetName() + " uses one stack of Gird to skip Metabolism.");
-                    } else {
-                        unit.LoseGuts(METABOLISM);
-                        CombatLog(unit.GetName() + " metabolizes one gut point.");
-                    }
-                }
+            HungerCheck(unit);
+
+            if (!unit.isStarving) {
+                Digestion(unit);
             }
         }
 
-        private void GutCheck()
+        private void HungerCheck(UnitStats unit)
         {
-            foreach (UnitStats unit in completeList) {
-                // Debug.Log("Gut Check " + unit.GetName());
-                if (!unit.isCookin && !unit.isGutless) {
-                    if (unit.GetCurrentGuts() <= 0) {
-                        Starve(unit);
-                    }
-                }
+            if (unit.GetCurrentGuts() <= 0) {
+                Starve(unit);
             }
-
-            // CheckIfDeadAll();
         }
 
         private void Starve(UnitStats unit)
@@ -1083,8 +1076,20 @@ public class BattleManager : MonoBehaviour
             CombatLog(unit.GetName() + " is starving. Feed them food before they perish!");
 
             unit.isStarving = true;
-            // unit.AddStatusEffect("STUN", 1);
-            // TakeTumDamage(unit, 10);
+            unit.AddStatusEffect("STUN", 1);
+            TakeTumDamage(unit, STARVE_DAMAGE);
+        }
+
+        private void Digestion(UnitStats unit)
+        {
+            if (unit.GetStatusEffectStatus(GIRD))
+            {
+                unit.SubtractStatusEffect(GIRD, 1);
+                CombatLog(unit.GetName() + " uses one stack of Gird to skip Metabolism.");
+            } else {
+                unit.LoseGuts(METABOLISM);
+                CombatLog(unit.GetName() + " metabolizes one gut point.");
+            }
         }
 
 
