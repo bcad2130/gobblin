@@ -220,15 +220,16 @@ public class BattleManager : MonoBehaviour
                     localIngredients.AddItem("Corn");
                     break;
                 case "Stage 1":
+                default:
                     // AddLocalIngredients();
                     // localIngredients.AddItem("Bottle");
                     // localIngredients.AddItem("Bottle");
                     // localIngredients.AddItem("Bottle");
                     // localIngredients.AddItem("Bottle");
-                    localIngredients.AddItem("Water");
-                    localIngredients.AddItem("Water");
-                    localIngredients.AddItem("Grease");
-                    localIngredients.AddItem("Grease");
+                    // localIngredients.AddItem("Water");
+                    // localIngredients.AddItem("Water");
+                    // localIngredients.AddItem("Grease");
+                    // localIngredients.AddItem("Grease");
                     // localIngredients.AddItem("Grease");
                     localIngredients.AddItem("Corn");
                     localIngredients.AddItem("Corn");
@@ -237,8 +238,6 @@ public class BattleManager : MonoBehaviour
                     localIngredients.AddItem("Corn");
                     localIngredients.AddItem("Corn");
                     localIngredients.AddItem("Corn");
-                    break;
-                default:
                     break;
             }
         }
@@ -330,8 +329,8 @@ public class BattleManager : MonoBehaviour
             playerRecipes = new List<Recipe>();
             playerRecipes.Add(new BurntCornRecipe());
             // playerRecipes.Add(new CornCobRecipe());
-            playerRecipes.Add(new GritsRecipe());
-            playerRecipes.Add(new PopCornRecipe());
+            // playerRecipes.Add(new GritsRecipe());
+            // playerRecipes.Add(new PopCornRecipe());
         }
 
         // private void InitializeUI()
