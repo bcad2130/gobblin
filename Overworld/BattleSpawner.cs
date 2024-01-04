@@ -10,7 +10,11 @@ public class BattleSpawner : MonoBehaviour
     [SerializeField]
     private GameObject[] enemyEncounterPrefabs;
 
+    [SerializeField]
+    private GameObject dialogue;
+
     private bool spawning = false;
+    private bool dialoguing = false;
 
     void Start() {
         DontDestroyOnLoad (this.gameObject);
@@ -27,6 +31,11 @@ public class BattleSpawner : MonoBehaviour
                     Instantiate (enemy);
                 }
             }
+
+            if (this.dialoguing && dialogue) {
+                // Debug.Log("spawn dialogue");
+                Instantiate (dialogue);
+            }
             SceneManager.sceneLoaded -= OnSceneLoaded;
             Destroy (this.gameObject);
         }
@@ -36,6 +45,7 @@ public class BattleSpawner : MonoBehaviour
 
         if (other.gameObject.tag == "OverworldPlayer") {
             this.spawning = true;
+            this.dialoguing = true;
             SceneManager.LoadScene(sceneName);
         }
     }

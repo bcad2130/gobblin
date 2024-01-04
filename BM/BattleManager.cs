@@ -102,7 +102,7 @@ public class BattleManager : MonoBehaviour
 //
     // INITIALIZATION
 
-        private void Awake()
+        private void Start()
         {
             StartStage();
         }
@@ -125,9 +125,11 @@ public class BattleManager : MonoBehaviour
             DialogueTrigger dt = FindObjectOfType<DialogueTrigger>();
 
             if (dt != null) {
+                Debug.Log("DialogueTrigger");
                 dt.TriggerDialogue();
             } else {
-                StartCombat();
+                Debug.Log("no DialogueTrigger");
+                // StartCombat();
             }
         }
 

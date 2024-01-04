@@ -11,6 +11,7 @@ public class UnitStats : MonoBehaviour
 
 
     // STATS
+    public string unitName;
     public Sprite iconSmall;
     public Sprite iconLarge;
 
@@ -111,8 +112,11 @@ public class UnitStats : MonoBehaviour
 
     // INITIALIZATION
 
-    private void Awake()
+    private void Start()
     {
+        // gameObject.name = transform.name.Replace("(Clone)","").Trim();
+        // gameObject
+
         InitializeBattleManager();
         InitializeUIManager();
         InitializeHealthGuts();
@@ -215,10 +219,10 @@ public class UnitStats : MonoBehaviour
         stazButton.transform.SetParent(UnitBox.transform, false);
     }
 
-    private void Start()
-    {
-        gameObject.name = transform.name.Replace("(Clone)","").Trim();
-    }
+    // private void Start()
+    // {
+    //     gameObject.name = transform.name.Replace("(Clone)","").Trim();
+    // }
 
 
     // STATUS EFFECTS
@@ -348,7 +352,8 @@ public class UnitStats : MonoBehaviour
 
     public string GetName()
     {
-        return gameObject.name;
+        // return gameObject.name;
+        return unitName;
     }
 
     public Sprite GetSmallIcon()
