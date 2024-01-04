@@ -215,6 +215,11 @@ public class UnitStats : MonoBehaviour
         stazButton.transform.SetParent(UnitBox.transform, false);
     }
 
+    private void Start()
+    {
+        gameObject.name = transform.name.Replace("(Clone)","").Trim();
+    }
+
 
     // STATUS EFFECTS
     //
