@@ -5,6 +5,11 @@ using UnityEngine;
 public class StazTrigger : MonoBehaviour
 {
     // public string LevelName;
+    private UnitStats unit;
+
+    public void SetUnit(UnitStats unitObj) {
+        unit = unitObj;
+    }
 
     public void Trigger ()
     {
@@ -14,7 +19,7 @@ public class StazTrigger : MonoBehaviour
         // Debug.Log("I'm attached to my great-grandparent " + this.transform.parent.parent.parent.gameObject.name);
 
         // UnitStats unit = gameObject.GetComponent<UnitStats>();
-        UnitStats unit = this.transform.parent.parent.parent.gameObject.GetComponent<UnitStats>();
+        // UnitStats unit = this.transform.parent.parent.parent.gameObject.GetComponent<UnitStats>();
 
         // Debug.Log(unit.name);
 

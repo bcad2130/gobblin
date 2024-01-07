@@ -48,9 +48,13 @@ public class StazManager : MonoBehaviour
         ActivateAllStazText(true);
         MidTextObj.SetActive(false);
 
-        Name.text   = unit.GetName().ToString();
-        Health.text = "HP" + "\n" + unit.GetCurrentHealth().ToString() + " / " + unit.GetMaxHealth().ToString();
-        Guts.text   = "GP"   + "\n" + unit.GetCurrentGuts().ToString()   + " / " + unit.GetMaxGuts().ToString();
+        Name.text   = unit.GetName();
+        Health.text =   "Health" + "\n" + unit.GetCurrentHealth().ToString() + " / " + unit.GetMaxHealth().ToString();
+        if (!unit.isGutless) {
+            Guts.text = "Guts" + "\n" + unit.GetCurrentGuts().ToString() + " / " + unit.GetMaxGuts().ToString();
+        } else {
+            Guts.text = "";
+        }
 
         Strength.text   = STR + "\n" + unit.GetBaseStrength().ToString();
         Defense.text    = DEF + "\n" + unit.GetBaseDefense().ToString();

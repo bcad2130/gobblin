@@ -217,6 +217,8 @@ public class UnitStats : MonoBehaviour
     {
         stazButton = Instantiate(stazButtonPrefab);
         stazButton.transform.SetParent(UnitBox.transform, false);
+
+        stazButton.GetComponent<StazTrigger>().SetUnit(this);
     }
 
     // private void Start()
