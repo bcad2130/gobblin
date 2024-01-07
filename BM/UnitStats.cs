@@ -605,7 +605,7 @@ public class UnitStats : MonoBehaviour
     //     turnText.color = newColor;
     // }
 
-    public void CreateDamageText(int damage, Color color, int hits = 1)
+    public void CreateDamageText(int damage, Color color, int hits = 1, float xOffset = 0)
     {
         // Debug.Log("here");
         GameObject obj = Instantiate(DamageTextPrefab);
@@ -616,6 +616,9 @@ public class UnitStats : MonoBehaviour
 
         if (hits > 1) {
             obj.GetComponentInChildren<Text>().text += "x" + hits.ToString();
+        }
+        if (xOffset != 0f) {
+            obj.transform.position = new Vector3(obj.transform.position.x+xOffset, obj.transform.position.y, obj.transform.position.z);
         }
     }
 

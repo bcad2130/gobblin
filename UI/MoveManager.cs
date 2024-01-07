@@ -27,10 +27,10 @@ public class MoveManager : MonoBehaviour
     private BattleManager bm;
 
     // CONSTANTS
-    const float XPOS_SKILLS = 150f;
+    const float XPOS_SKILLS = -150f;
     const float YPOS_SKILLS = 150f;
 
-    const float XPOS_MOVES  = -150f;
+    const float XPOS_MOVES  = 150f;
     const float YPOS_MOVES  = 150f;
 
     const float XPOS_PASS   = 0f;

@@ -2322,7 +2322,7 @@ public class BattleManager : MonoBehaviour
 
             targetUnit.GainGuts(netGuts);
 
-            targetUnit.CreateDamageText(netGuts, new Color(1.0f, 0.2f, 0));
+            targetUnit.CreateDamageText(netGuts, new Color(1.0f, 0.2f, 0), 1, -30);
 
             CombatLog(targetUnit.GetName() + " recovered " + netGuts + " guts");
             targetUnit.isStarving = false;
