@@ -37,9 +37,15 @@ public class DialogueManager : MonoBehaviour {
     //     canvas.worldCamera = GameObject.FindObjectOfType<Camera>();
     // }
 
+    // public void Start() {
+    // }
+
     public void StartDialogue (Dialogue dialogue)
     {
         DialogueBox.SetActive(true);
+        
+        bm = GameObject.FindObjectOfType<BattleManager>();
+        bm.SetDialoguePhase(true);
 
         // animator.SetBool("IsOpen", true);
 
@@ -128,13 +134,13 @@ public class DialogueManager : MonoBehaviour {
     {
         // Debug.Log('E');
         DialogueBox.SetActive(false);
+        bm.SetDialoguePhase(false);
         // animator.SetBool("IsOpen", false);
 
         // Debug.Log(bm);
+        // bm = GameObject.FindObjectOfType<BattleManager>();
 
         // THIS IS A TERRIBLE WAY TO START COMBAT
-        bm = GameObject.FindObjectOfType<BattleManager>();
-
         bm.StartCombat();
     }
 

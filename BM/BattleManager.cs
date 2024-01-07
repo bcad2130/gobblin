@@ -44,6 +44,7 @@ public class BattleManager : MonoBehaviour
         private Dictionary<string,UnitStats> coverUnits;
 
     // PHASE FLAGS
+        private bool duringDialogue = false;
         private bool myTurn = false;
         private bool canAct = false;
         // private bool movePicked = false;
@@ -2760,4 +2761,14 @@ public class BattleManager : MonoBehaviour
         //             completeList[i].DestroySelf();
         //     }
         // }
+
+        public void SetDialoguePhase(bool isDialoguePhase)
+        {
+            duringDialogue = isDialoguePhase;
+        }
+
+        public bool GetDialoguePhase()
+        {
+            return duringDialogue;
+        }
 }
