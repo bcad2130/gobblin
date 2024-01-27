@@ -259,8 +259,7 @@ public class MoveManager : MonoBehaviour
 
         if (!atLeastOneTreat) {
             FindObjectOfType<CombatLogManager>().PrintToLog("Can't use move: You have no treat to eat");
-            
-            print ("You have no good treats to eat.");
+
             bm.ResetTurn();
         }
     }

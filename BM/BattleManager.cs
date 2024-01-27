@@ -126,10 +126,10 @@ public class BattleManager : MonoBehaviour
             DialogueTrigger dt = FindObjectOfType<DialogueTrigger>();
 
             if (dt != null) {
-                Debug.Log("DialogueTrigger");
+                // Debug.Log("DialogueTrigger");
                 dt.TriggerDialogue();
             } else {
-                Debug.Log("no DialogueTrigger");
+                Debug.Log("no DialogueTrigger is set");
                 // StartCombat();
             }
         }
@@ -1509,7 +1509,7 @@ public class BattleManager : MonoBehaviour
 
         private void PerformActions()
         {
-            Debug.Log("PerformActions");
+            // Debug.Log("PerformActions");
 
             if ( CurrentAction.Targets.Count > 0) {
                 foreach (UnitStats target in CurrentAction.Targets) {
@@ -1523,7 +1523,7 @@ public class BattleManager : MonoBehaviour
 
             if (CurrentAction.GetIsMove()) {
                 freeMoves--;
-                Debug.Log("animate");
+                // Debug.Log("animate");
                 // Animate
                 CurrentUnit.SetAttackingAnimator(true);
             }

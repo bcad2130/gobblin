@@ -646,14 +646,11 @@ public class UnitStats : MonoBehaviour
 
     public void SetDefendingAnimator(bool defending) {
         Animator figureAnimator = UnitBox.GetComponentInChildren<Animator>();
-Debug.Log('d');
 
         if (figureAnimator != null) {
-            // figureAnimator.SetBool("Attacking", attacking);
             figureAnimator.SetTrigger("DefendTrigger");
         } else {
-
-            Debug.Log("UHOH");
+            Debug.Log("SetDefendingAnimator without figureAnimator");
         }
     }
 
