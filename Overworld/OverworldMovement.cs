@@ -5,6 +5,9 @@ using UnityEngine;
 public class OverworldMovement : MonoBehaviour
 {
     public float speed = 1f;
+    private StatusTracker tracker;
+
+    public GameObject StatusTrackerObj;
 
     void Update()
     {
@@ -31,5 +34,14 @@ public class OverworldMovement : MonoBehaviour
         }
 
         transform.position = pos;
+    }
+
+    void Awake()
+    {
+        tracker = GameObject.FindObjectOfType<StatusTracker>();
+
+        if (tracker == null) {
+            Instantiate(StatusTrackerObj);
+        }
     }
 }

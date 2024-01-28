@@ -56,6 +56,9 @@ public class BattleManager : MonoBehaviour
 
         // private bool roundOver;
 
+        private StatusTracker tracker;
+
+
 
     // ACTIVE VARS
         private UnitStats   CurrentUnit;
@@ -2541,6 +2544,11 @@ public class BattleManager : MonoBehaviour
         private void GameWin()
         {
             gameOver = true;
+
+            // When you beat a level, set the cleared levels to that stages clear number
+            tracker = GameObject.FindObjectOfType<StatusTracker>();
+            int stageCleared = tracker.GetActiveStageNumber();
+            tracker.SetStageClearTotal(stageCleared);
 
             DisplayNextLevelButton();
         }

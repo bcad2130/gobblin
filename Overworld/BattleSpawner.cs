@@ -1,17 +1,18 @@
-// using System.Collections;
-// using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class BattleSpawner : MonoBehaviour
 {
     public string sceneName;
+    public int stageClearNumber;
 
     [SerializeField]
     private GameObject[] enemyEncounterPrefabs;
 
     [SerializeField]
     private GameObject dialogue;
+
+    private StatusTracker tracker;
 
     private bool spawning = false;
     private bool dialoguing = false;
@@ -20,11 +21,17 @@ public class BattleSpawner : MonoBehaviour
         DontDestroyOnLoad (this.gameObject);
 
         SceneManager.sceneLoaded += OnSceneLoaded;
+
+        tracker = GameObject.FindObjectOfType<StatusTracker>();
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
+        tracker = GameObject.FindObjectOfType<StatusTracker>();
+
         if (scene.name == "Battle") {
             if (this.spawning && enemyEncounterPrefabs.Length > 0) {
+                
+                tracker.SetActiveStageNumber(stageClearNumber);
 
                 foreach(GameObject enemy in enemyEncounterPrefabs)
                 {
@@ -42,11 +49,16 @@ public class BattleSpawner : MonoBehaviour
     }
 
     void OnTriggerEnter2D(Collider2D other) {
-
         if (other.gameObject.tag == "OverworldPlayer") {
-            this.spawning = true;
-            this.dialoguing = true;
-            SceneManager.LoadScene(sceneName);
+            if (tracker.GetStageClearTotal() < stageClearNumber) {
+                LoadBattleScene();
+            }
         }
+    }
+
+    void LoadBattleScene() {
+        this.spawning = true;
+        this.dialoguing = true;
+        SceneManager.LoadScene(sceneName);
     }
 }
