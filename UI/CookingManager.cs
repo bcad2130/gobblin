@@ -6,8 +6,10 @@ using UnityEngine.UI;
 public class CookingManager : MonoBehaviour
 {
     private BattleManager bm;
+    private GameObject inventoryBox;
 
     public Canvas canvas;
+    public Font font;
 
     public GameObject countdownClock_0;
     public GameObject countdownClock_1;
@@ -24,11 +26,17 @@ public class CookingManager : MonoBehaviour
     private void Awake()
     {
         InitializeBattleManager();
+        InitializeInventoryBox();
     }
 
     private void InitializeBattleManager()
     {
         bm = GameObject.FindObjectOfType<BattleManager>();
+    }
+
+    private void InitializeInventoryBox()
+    {
+        inventoryBox = GameObject.FindWithTag("InventoryBox");
     }
 
     public void CreateClock(int countdown) {
@@ -156,5 +164,58 @@ public class CookingManager : MonoBehaviour
     public void RemovePotIcon() {
         GameObject cauldron = GameObject.FindWithTag("Cauldron");
         Destroy(cauldron);
+    }
+
+    private void RemoveAllInventoryIcons() {
+        for (int i = 0; i < inventoryBox.transform.childCount; i++)
+        {
+            GameObject child = inventoryBox.transform.GetChild(i).gameObject;
+            Destroy(child);
+        }
+    }
+
+    public void DisplayIngredientIcons(Inventory ingredients) {
+
+        RemoveAllInventoryIcons();
+
+        if (ingredients.CountItems() > 0) {
+
+            float xPos = 0f;
+            float yPos = 0f;
+
+            foreach (KeyValuePair<string,int> ingredient in ingredients.GetInventoryAsDictionary()) {
+
+                GameObject ingredientIcon = null;
+                switch(ingredient.Key) {
+                    case "Grease":
+                        ingredientIcon = greaseIcon;
+                        break;
+                    case "Water":
+                        ingredientIcon = waterIcon;
+                        break;
+                    case "Corn":
+                    default:
+                        ingredientIcon = cornIcon;
+                        break;
+                }
+
+                GameObject instantIcon = Instantiate(ingredientIcon, new Vector3(xPos, yPos, 0), Quaternion.identity);
+
+                instantIcon.transform.SetParent(inventoryBox.transform, false);
+
+                GameObject ingredientAmountLabel = new GameObject();
+                ingredientAmountLabel.transform.SetParent(inventoryBox.transform, false);
+                ingredientAmountLabel.transform.localPosition = new Vector3(100, yPos-25, 0);
+                ingredientAmountLabel.AddComponent<Text>();
+                Text text = ingredientAmountLabel.GetComponent<Text>();
+                text.font = font;
+                text.text = ingredient.Value.ToString();
+                text.fontSize = 48;
+
+                yPos -= 75f;
+            }
+        } else {
+            Debug.Log("no ingredients in inventory");
+        }
     }
 }

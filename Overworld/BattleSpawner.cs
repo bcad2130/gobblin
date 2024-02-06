@@ -30,7 +30,7 @@ public class BattleSpawner : MonoBehaviour
 
         if (scene.name == "Battle") {
             if (this.spawning && enemyEncounterPrefabs.Length > 0) {
-                
+
                 tracker.SetActiveStageNumber(stageClearNumber);
 
                 foreach(GameObject enemy in enemyEncounterPrefabs)
@@ -50,7 +50,7 @@ public class BattleSpawner : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other) {
         if (other.gameObject.tag == "OverworldPlayer") {
-            if (tracker.GetStageClearTotal() < stageClearNumber) {
+            if (tracker.GetStageClearTotal() + 1 == stageClearNumber) {
                 LoadBattleScene();
             }
         }

@@ -892,6 +892,7 @@ public class BattleManager : MonoBehaviour
                 CurrentRecipe.GetRequiredIngredients().RemoveItem(CurrentAction.GetIngredientCost());
             }
 
+            DisplayInventoryIcons(playerIngredients);
             ClearIngredientIcons();
             ShowRecipeIngredients();
         }
@@ -1130,7 +1131,12 @@ public class BattleManager : MonoBehaviour
                     CombatLog(CurrentUnit.GetName() + " found: " + foragedIngredient);
 
                     // TODO Kola should get a 50% chance to grab a bottle too (maybe nose multiplier?`)
+
+                    // DisplayInventoryIcons(playerIngredients);
                 }
+
+                DisplayInventoryIcons(playerIngredients);
+
             } else {
 
                 CombatLog("No ingredients left to forage!");
@@ -1441,6 +1447,7 @@ public class BattleManager : MonoBehaviour
                 SpendGuts();
 
             // new method to check ingredient cost, cuz we should check the cost earlier
+            // is it possible to spend an ingredient and not get the action?
             if (CurrentAction.GetIngredientCost() != "" && canAct) {
                 if (CanAffordIngredient(CurrentAction.GetIngredientCost())) {
                     AddIngredientToRecipe(CurrentAction.GetIngredientCost());
@@ -2525,6 +2532,11 @@ public class BattleManager : MonoBehaviour
         private void ClearPotIcon()
         {
             FindObjectOfType<CookingManager>().RemovePotIcon();
+        }
+
+        private void DisplayInventoryIcons(Inventory inventory)
+        {
+            FindObjectOfType<CookingManager>().DisplayIngredientIcons(inventory);
         }
 
     // GAME END
