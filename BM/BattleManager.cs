@@ -809,7 +809,12 @@ public class BattleManager : MonoBehaviour
     // COOKING MANAGEMENT
         private void PickRecipe()
         {
-            DisplayRecipes(playerRecipes);
+            if (CurrentRecipe == null) {
+                DisplayRecipes(playerRecipes);
+            } else {
+                CombatLog("Can't use move: You're already cookin!");
+                canAct = false;
+            }
         }
 
         public void SetRecipePicked(bool pick)
@@ -1150,7 +1155,7 @@ public class BattleManager : MonoBehaviour
                 DisplayIngredients(playerIngredients);
             } else {
                 if (CurrentRecipe == null) CombatLog("Can't use move: You aren't Cookin'!");
-                if (playerIngredients.CountItems() <= 0) CombatLog("Can't use move: You have no Ingredients!");
+                else if (playerIngredients.CountItems() <= 0) CombatLog("Can't use move: You have no Ingredients!");
 
                 canAct = false;
             }
