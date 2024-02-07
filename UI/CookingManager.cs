@@ -214,8 +214,6 @@ public class CookingManager : MonoBehaviour
 
                 yPos -= 75f;
             }
-        } else {
-            Debug.Log("no ingredients in inventory");
         }
     }
 }

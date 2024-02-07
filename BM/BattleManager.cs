@@ -846,7 +846,7 @@ public class BattleManager : MonoBehaviour
                     UpdateCookingCountdown();
                 } else if (CurrentRecipe.GetCookTurnsLeft() == 0)
                 {
-                    if (CheckIngredientsForCurrentRecipe() && CheckStirring())
+                    if (CheckIngredientStatusForCurrentRecipe() && CheckStirring())
                     {
                         CreateMeal();
                     } else {
@@ -888,9 +888,8 @@ public class BattleManager : MonoBehaviour
         {
             playerIngredients.RemoveItem(ingredient);
 
-            if (CurrentAction.GetSkillType() == "AddIngredient") {
-                CurrentRecipe.GetRequiredIngredients().RemoveItem(CurrentAction.GetIngredientCost());
-            }
+            CurrentRecipe.GetRequiredIngredients().RemoveItem(CurrentAction.GetIngredientCost());
+
 
             DisplayInventoryIcons(playerIngredients);
             ClearIngredientIcons();
@@ -1146,7 +1145,15 @@ public class BattleManager : MonoBehaviour
 
         private void PickIngredient()
         {
-            DisplayIngredients(playerIngredients);
+
+            if (playerIngredients.CountItems() > 0 && CurrentRecipe != null) {
+                DisplayIngredients(playerIngredients);
+            } else {
+                if (CurrentRecipe == null) CombatLog("Can't use move: You aren't Cookin'!");
+                if (playerIngredients.CountItems() <= 0) CombatLog("Can't use move: You have no Ingredients!");
+
+                canAct = false;
+            }
         }
 
         private bool CanAffordIngredient(string ingredient)
@@ -1159,19 +1166,19 @@ public class BattleManager : MonoBehaviour
         }
 
 
-        private bool CheckIngredientsForCurrentRecipe()
+        private bool CheckIngredientStatusForCurrentRecipe()
         {
             Dictionary<string,int> requiredIngredients = CurrentRecipe.GetRequiredIngredients().GetInventoryAsDictionary();
 
             foreach (KeyValuePair<string, int> ingredient in requiredIngredients) {
                 if (ingredient.Value > 0) {
-                    print("Not enough ingredients");
+                    // print("Not enough ingredients");
                     return false;
                     // break
                     // recipe explodes
                     // did you forget the <which ever ingredient proc'ed this>
                 } else if (ingredient.Value < 0) {
-                    print("Too many ingredients");
+                    // print("Too many ingredients");
                     return false;
 
                     // break
@@ -1442,13 +1449,9 @@ public class BattleManager : MonoBehaviour
             // canAct = true;
             // print(CurrentAction);
 
-            // SPEND COSTS
-            if (canAct)
-                SpendGuts();
-
             // new method to check ingredient cost, cuz we should check the cost earlier
             // is it possible to spend an ingredient and not get the action?
-            if (CurrentAction.GetIngredientCost() != "" && canAct) {
+            if (canAct && CurrentAction.GetIngredientCost() != "") {
                 if (CanAffordIngredient(CurrentAction.GetIngredientCost())) {
                     AddIngredientToRecipe(CurrentAction.GetIngredientCost());
                 } else {
@@ -1456,7 +1459,7 @@ public class BattleManager : MonoBehaviour
                 }
             }
 
-            if (CurrentAction.ResourceCost.Count != 0 && canAct) {
+            if (canAct && CurrentAction.ResourceCost.Count != 0) {
                 SpendResource(CurrentAction.ResourceCost);
             }
 
@@ -1493,11 +1496,14 @@ public class BattleManager : MonoBehaviour
             // i should have certain slots premade (enumerated?) and then it fills in the next available ally/enemy spot
             // then i can have a certain number of ally spots available as you level
             // and maybe a certain number of cauldron spots, upgradeable
-            if (CurrentAction.isSummon == true) {
+            if (canAct && CurrentAction.isSummon == true) {
                 SummonUnit();
             }
 
             if (canAct) {
+                // SPEND COSTS
+                SpendGuts();
+
                 PerformActions();
 
                 // if ( CurrentAction.Targets.Count > 0) {
