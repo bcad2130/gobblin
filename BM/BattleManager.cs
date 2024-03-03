@@ -851,7 +851,7 @@ public class BattleManager : MonoBehaviour
                     UpdateCookingCountdown();
                 } else if (CurrentRecipe.GetCookTurnsLeft() == 0)
                 {
-                    if (CheckIngredientStatusForCurrentRecipe() && CheckStirring())
+                    if (CheckIngredientStatusForCurrentRecipe() && CheckStirringComplete())
                     {
                         CreateMeal();
                     } else {
@@ -944,9 +944,9 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        private bool CheckStirring()
+        private bool CheckStirringComplete()
         {
-            if ( CurrentRecipe.GetReqStirs() == 0 ) {
+            if ( CurrentRecipe.GetReqStirs() <= 0 ) {
                 return true;
             } else {
                 return false;
@@ -1006,10 +1006,18 @@ public class BattleManager : MonoBehaviour
 
         private void FailMeal()
         {
-            // UpdateCookingCountdown();
+            CombatLog("Your recipe failed!");
+
+            if (!CheckIngredientStatusForCurrentRecipe()) {
+                CombatLog("Did you add all the ingredients?");
+            }
+
+            if (!CheckStirringComplete()) {
+                CombatLog("Did you stir it enough?");
+            }
 
             // playerMealItems.Add(new BurntMessItem());
-            CombatLog("Your recipe failed!");
+
             // Debug.Log("You made a Burnt Mess. Better luck next time!");
         }
 
